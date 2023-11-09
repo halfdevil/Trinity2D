@@ -29,7 +29,7 @@ namespace Trinity
 	{
 	public:
 
-		static constexpr const char* kDefaultShader = "/Assets/Framework/Shaders/Gui.wgsl";
+		static constexpr const char* kDefaultShader = "/Assets/Engine/Shaders/ImGui.wgsl";
 		static constexpr uint32_t kCommonBindGroupIndex = 0;
 		static constexpr uint32_t kTextureBindGroupIndex = 1;
 

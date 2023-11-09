@@ -3,6 +3,18 @@
 
 namespace Trinity
 {
+	glm::mat4 Camera::getView() const
+	{
+		auto& transform = mNode->getTransform();
+		return glm::inverse(transform.getWorldMatrix());
+	}
+
+	glm::mat4 Camera::getProjection() const
+	{
+		return glm::ortho(mLeft, mRight, mBottom, mTop, 
+			mNearPlane, mFarPlane);
+	}
+
 	std::type_index Camera::getType() const
 	{
 		return typeid(Camera);
@@ -13,19 +25,34 @@ namespace Trinity
 		return getStaticType();
 	}
 
-	void Camera::setProjection(const glm::mat4& projection)
+	void Camera::setLeft(float left)
 	{
-		mProjection = projection;
+		mLeft = left;
 	}
 
-	void Camera::setView(const glm::mat4& view)
+	void Camera::setRight(float right)
 	{
-		mView = view;
+		mRight = right;
 	}
 
-	void Camera::setNode(Node& node)
+	void Camera::setBottom(float bottom)
 	{
-		mNode = &node;
+		mBottom = bottom;
+	}
+
+	void Camera::setTop(float top)
+	{
+		mTop = top;
+	}
+
+	void Camera::setNearPlane(float nearPlane)
+	{
+		mNearPlane = nearPlane;
+	}
+
+	void Camera::setFarPlane(float farPlane)
+	{
+		mFarPlane = farPlane;
 	}
 
 	std::string Camera::getStaticType()

@@ -1,5 +1,4 @@
 #include "Scene/Components/Light.h"
-#include "Scene/Node.h"
 
 namespace Trinity
 {
@@ -11,11 +10,6 @@ namespace Trinity
 	std::string Light::getTypeName() const
 	{
 		return getStaticType();
-	}
-
-	void Light::setNode(Node& node)
-	{
-		mNode = &node;
 	}
 
 	void Light::setLightType(LightType lightType)

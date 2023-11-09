@@ -1,6 +1,5 @@
 #include "Scene/Components/ScriptContainer.h"
 #include "Scene/Components/Script.h"
-#include "Scene/Node.h"
 
 namespace Trinity
 {
@@ -58,16 +57,6 @@ namespace Trinity
 		else
 		{
 			mScripts.insert(std::make_pair(script.getTypeName(), &script));
-		}
-	}
-
-	void ScriptContainer::setNode(Node& node)
-	{
-		mNode = &node;
-
-		for (auto& it : mScripts)
-		{
-			it.second->setNode(node);
 		}
 	}
 

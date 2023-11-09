@@ -11,7 +11,8 @@ namespace Trinity
     public:
 
         VertexLayout() = default;
-        VertexLayout(std::vector<wgpu::VertexAttribute> attributes);
+        VertexLayout(std::vector<wgpu::VertexAttribute> attributes,
+            wgpu::VertexStepMode stepMode = wgpu::VertexStepMode::Vertex);
 
         const std::vector<wgpu::VertexAttribute>& getAttributes() const
         {
@@ -29,7 +30,8 @@ namespace Trinity
         }
 
         virtual std::type_index getType() const override;
-        virtual void setAttributes(std::vector<wgpu::VertexAttribute> attributes);
+        virtual void setAttributes(std::vector<wgpu::VertexAttribute> attributes,
+            wgpu::VertexStepMode stepMode = wgpu::VertexStepMode::Vertex);
 
     private:
 

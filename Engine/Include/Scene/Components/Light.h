@@ -5,8 +5,6 @@
 
 namespace Trinity
 {
-	class Node;
-
 	enum class LightType
 	{
 		Directional = 0,
@@ -38,11 +36,6 @@ namespace Trinity
 		Light(Light&&) = default;
 		Light& operator = (Light&&) = default;
 
-		Node* getNode() const
-		{
-			return mNode;
-		}
-
 		LightType getLightType() const
 		{
 			return mLightType;
@@ -56,7 +49,6 @@ namespace Trinity
 		virtual std::type_index getType() const override;
 		virtual std::string getTypeName() const override;
 
-		virtual void setNode(Node& node);
 		virtual void setLightType(LightType lightType);
 		virtual void setLightProperties(const LightProperties& properties);
 
@@ -66,7 +58,6 @@ namespace Trinity
 
 	protected:
 
-		Node* mNode{ nullptr };
 		LightType mLightType{ LightType::Directional };
 		LightProperties mProperties;
 	};

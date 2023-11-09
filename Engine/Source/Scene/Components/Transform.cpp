@@ -21,6 +21,12 @@ namespace Trinity
 			glm::scale(glm::mat4(1.0f), mScale);
 	}
 
+	glm::mat4 Transform::getWorldMatrix()
+	{
+		updateWorldTransform();
+		return mWorldMatrix;
+	}
+
 	void Transform::setMatrix(const glm::mat4& matrix)
 	{
 		glm::vec3 skew;
@@ -28,11 +34,6 @@ namespace Trinity
 		glm::decompose(matrix, mScale, mRotation, mTranslation, skew, perspective);
 
 		invalidateWorldMatrix();
-	}
-
-	void Transform::setNode(Node& node)
-	{
-		mNode = &node;
 	}
 
 	void Transform::setTranslation(const glm::vec3& translation)

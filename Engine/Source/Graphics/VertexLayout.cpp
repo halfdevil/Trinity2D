@@ -2,9 +2,10 @@
 
 namespace Trinity
 {
-    VertexLayout::VertexLayout(std::vector<wgpu::VertexAttribute> attributes)
+    VertexLayout::VertexLayout(std::vector<wgpu::VertexAttribute> attributes,
+        wgpu::VertexStepMode stepMode)
     {
-        setAttributes(std::move(attributes));
+        setAttributes(std::move(attributes), stepMode);
     }
 
     std::type_index VertexLayout::getType() const
@@ -12,7 +13,8 @@ namespace Trinity
         return typeid(VertexLayout);
     }
 
-    void VertexLayout::setAttributes(std::vector<wgpu::VertexAttribute> attributes)
+    void VertexLayout::setAttributes(std::vector<wgpu::VertexAttribute> attributes,
+        wgpu::VertexStepMode stepMode)
     {
         mAttributes = std::move(attributes);
         mSize = 0;
@@ -59,7 +61,7 @@ namespace Trinity
 
         mBufferLayout = {
             .arrayStride = mSize,
-            .stepMode = wgpu::VertexStepMode::Vertex,
+            .stepMode = stepMode,
             .attributeCount = (uint32_t)mAttributes.size(),
             .attributes = mAttributes.data()
         };

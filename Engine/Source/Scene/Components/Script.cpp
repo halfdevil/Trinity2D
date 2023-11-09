@@ -1,5 +1,4 @@
 #include "Scene/Components/Script.h"
-#include "Scene/Node.h"
 
 namespace Trinity
 {
@@ -13,8 +12,9 @@ namespace Trinity
 		return getStaticType();
 	}
 
-	void Script::init()
+	bool Script::init()
 	{
+		return true;
 	}
 
 	void Script::update(float deltaTime)
@@ -23,11 +23,6 @@ namespace Trinity
 
 	void Script::resize(uint32_t width, uint32_t height)
 	{
-	}
-
-	void Script::setNode(Node& node)
-	{
-		mNode = &node;
 	}
 
 	std::string Script::getStaticType()

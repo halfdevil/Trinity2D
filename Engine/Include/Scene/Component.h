@@ -7,6 +7,8 @@
 
 namespace Trinity
 {
+	class Node;
+
 	class Component
 	{
 	public:
@@ -25,7 +27,13 @@ namespace Trinity
 			return mName;
 		}
 
+		Node* getNode() const
+		{
+			return mNode;
+		}
+
 		virtual void setName(const std::string& name);
+		virtual void setNode(Node& node);
 
 		virtual std::type_index getType() const = 0;
 		virtual std::string getTypeName() const = 0;
@@ -33,5 +41,6 @@ namespace Trinity
 	protected:
 
 		std::string mName;
+		Node* mNode{ nullptr };
 	};
 }

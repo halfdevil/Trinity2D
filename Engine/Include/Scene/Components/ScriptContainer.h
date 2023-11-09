@@ -5,7 +5,6 @@
 
 namespace Trinity
 {
-	class Node;
 	class Script;
 
 	class ScriptContainer : public Component
@@ -21,11 +20,6 @@ namespace Trinity
 		ScriptContainer(ScriptContainer&&) = default;
 		ScriptContainer& operator = (ScriptContainer&&) = default;
 
-		Node* getNode() const
-		{
-			return mNode;
-		}
-
 		virtual std::type_index getType() const override;
 		virtual std::string getTypeName() const override;
 
@@ -36,7 +30,6 @@ namespace Trinity
 		virtual Script& getScript(const std::string& type);
 		virtual bool hasScript(const std::string& type);
 		virtual void setScript(Script& script);
-		virtual void setNode(Node& node);
 
 	public:
 
@@ -56,7 +49,6 @@ namespace Trinity
 
 	protected:
 
-		Node* mNode{ nullptr };
 		std::unordered_map<std::string, Script*> mScripts;
 	};
 }

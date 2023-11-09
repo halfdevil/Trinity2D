@@ -5,8 +5,6 @@
 
 namespace Trinity
 {
-	class Node;
-
 	class Camera : public Component
 	{
 	public:
@@ -20,27 +18,48 @@ namespace Trinity
 		Camera(Camera&&) = default;
 		Camera& operator = (Camera&&) = default;
 
-		Node* getNode() const
+		float getLeft() const
 		{
-			return mNode;
+			return mLeft;
 		}
 
-		const glm::mat4& getProjection() const
+		float getRight() const
 		{
-			return mProjection;
+			return mRight;
 		}
 
-		const glm::mat4& getView() const
+		float getBottom() const
 		{
-			return mView;
+			return mBottom;
 		}
+
+		float getTop() const
+		{
+			return mTop;
+		}
+
+		float getNearPlane() const
+		{
+			return mNearPlane;
+		}
+
+		float getFarPlane() const
+		{
+			return mFarPlane;
+		}
+
+		virtual glm::mat4 getView() const;
+		virtual glm::mat4 getProjection() const;
 
 		virtual std::type_index getType() const override;
 		virtual std::string getTypeName() const override;
 
-		virtual void setProjection(const glm::mat4& projection);
-		virtual void setView(const glm::mat4& view);
-		virtual void setNode(Node& node);
+		virtual void setLeft(float left);
+		virtual void setRight(float right);
+		virtual void setBottom(float bottom);
+		virtual void setTop(float top);
+		virtual void setNearPlane(float nearPlane);
+		virtual void setFarPlane(float farPlane);
 
 	public:
 
@@ -48,8 +67,11 @@ namespace Trinity
 
 	protected:
 
-		Node* mNode{ nullptr };
-		glm::mat4 mProjection;
-		glm::mat4 mView;
+		float mLeft{ -1.0f };
+		float mRight{ 1.0f };
+		float mBottom{ -1.0f };
+		float mTop{ 1.0f };
+		float mNearPlane{ 0.0f };
+		float mFarPlane{ 1.0f };
 	};
 }

@@ -1,5 +1,5 @@
-#include "Gui/ImGuiRenderer.h"
-#include "Gui/ImGuiFont.h"
+#include "ImGui/ImGuiRenderer.h"
+#include "ImGui/ImGuiFont.h"
 #include "Graphics/RenderPass.h"
 #include "Graphics/Texture.h"
 #include "Graphics/Sampler.h"

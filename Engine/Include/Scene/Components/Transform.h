@@ -21,11 +21,6 @@ namespace Trinity
 		Transform(Transform&&) = default;
 		Transform& operator = (Transform&&) = default;
 
-		Node* getNode() const
-		{
-			return mNode;
-		}
-
 		const glm::vec3& getTranslation() const
 		{
 			return mTranslation;
@@ -41,19 +36,13 @@ namespace Trinity
 			return mScale;
 		}
 
-		const glm::mat4& getWorldMatrix() const
-		{
-			const_cast<Transform*>(this)->updateWorldTransform();
-			return mWorldMatrix;
-		}
-
 		virtual std::type_index getType() const override;
 		virtual std::string getTypeName() const override;
 
 		glm::mat4 getMatrix() const;
-		void setMatrix(const glm::mat4& matrix);
+		glm::mat4 getWorldMatrix();
 
-		void setNode(Node& node);
+		void setMatrix(const glm::mat4& matrix);
 		void setTranslation(const glm::vec3& translation);
 		void setRotation(const glm::quat& rotation);
 		void setScale(const glm::vec3& scale);
@@ -69,7 +58,6 @@ namespace Trinity
 
 	protected:
 
-		Node* mNode{ nullptr };
 		glm::vec3 mTranslation{ 0.0f, 0.0f, 0.0f };
 		glm::quat mRotation{ 1.0f, 0.0f, 0.0f, 0.0f };
 		glm::vec3 mScale{ 1.0f, 1.0f, 1.0f };
