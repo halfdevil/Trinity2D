@@ -520,9 +520,9 @@ namespace Trinity
 	{
 		auto vertexLayout = std::make_unique<VertexLayout>();
 		vertexLayout->setAttributes({
-			{ wgpu::VertexFormat::Float32x2, 0, 0 },
-			{ wgpu::VertexFormat::Float32x2, 8, 1 },
-			{ wgpu::VertexFormat::Float32x4, 16, 2 }
+			{ wgpu::VertexFormat::Float32x3, 0, 0 },
+			{ wgpu::VertexFormat::Float32x2, 12, 1 },
+			{ wgpu::VertexFormat::Float32x4, 20, 2 }
 		});
 
 		uint32_t numVertices = 128 * 1024;

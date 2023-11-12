@@ -47,4 +47,5 @@ include_directories("ThirdParty/imgui")
 
 # Include sub-projects.
 add_subdirectory("Engine")
+add_subdirectory("Editor")
 add_subdirectory("Playground")

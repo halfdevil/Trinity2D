@@ -5,23 +5,21 @@
 namespace Trinity
 {
 	class Font;
-	class Scene;
-	class Camera;
 	class ImGuiRenderer;
 	class TextRenderer;
 
-	class Playground : public Application
+	class Editor : public Application
 	{
 	public:
 
-		Playground() = default;
-		virtual ~Playground() = default;
+		Editor() = default;
+		virtual ~Editor() = default;
 
-		Playground(const Playground&) = delete;
-		Playground& operator = (const Playground&) = delete;
+		Editor(const Editor&) = delete;
+		Editor& operator = (const Editor&) = delete;
 
-		Playground(Playground&&) = default;
-		Playground& operator = (Playground&&) = default;
+		Editor(Editor&&) = default;
+		Editor& operator = (Editor&&) = default;
 
 	protected:
 
@@ -32,10 +30,8 @@ namespace Trinity
 
 	protected:
 
-		Font* mFont{ nullptr };
-		Scene* mScene{ nullptr };
-		Camera* mCamera{ nullptr };
 		std::unique_ptr<ImGuiRenderer> mImGuiRenderer{ nullptr };
 		std::unique_ptr<TextRenderer> mTextRenderer{ nullptr };
+		Font* mFont{ nullptr };
 	};
 }

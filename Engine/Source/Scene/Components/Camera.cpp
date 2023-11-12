@@ -11,8 +11,7 @@ namespace Trinity
 
 	glm::mat4 Camera::getProjection() const
 	{
-		return glm::ortho(mLeft, mRight, mBottom, mTop, 
-			mNearPlane, mFarPlane);
+		return glm::ortho(mLeft, mRight, mBottom, mTop, mNearPlane, mFarPlane);
 	}
 
 	std::type_index Camera::getType() const

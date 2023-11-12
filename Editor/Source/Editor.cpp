@@ -1,4 +1,4 @@
-#include "Playground.h"
+#include "Editor.h"
 #include "Input/Input.h"
 #include "ImGui/ImGuiRenderer.h"
 #include "Gui/Font.h"
@@ -18,7 +18,7 @@
 
 namespace Trinity
 {
-	bool Playground::init()
+	bool Editor::init()
 	{
 		if (!Application::init())
 		{
@@ -46,39 +46,19 @@ namespace Trinity
 			return false;
 		}
 
-		auto scene = std::make_unique<Scene>();
-		if (!scene->create("newScene"))
-		{
-			LogError("Scene::create() failed");
-			return false;
-		}
-
-		auto rootNode = std::make_unique<Node>();
-		rootNode->setName("root");
-
-		scene->setRoot(*rootNode);
-		scene->addNode(std::move(rootNode));
-
-		auto* camera = scene->addCamera("mainCamera", 0.0f, (float)mWindow->getWidth(), (float)mWindow->getHeight(), 
-			0.0f, 0.1f, 100.0f, glm::vec3(0.0f));
-
 		mFont = font.get();
-		mScene = scene.get();
-		mCamera = camera;
-
 		mResourceCache->addResource(std::move(font));
-		mResourceCache->addResource(std::move(scene));
 
 		return true;
 	}
 
-	void Playground::draw(float deltaTime)
+	void Editor::draw(float deltaTime)
 	{
 		Application::draw(deltaTime);
 		onGui();
 	}
 
-	void Playground::setupInput()
+	void Editor::setupInput()
 	{
 		Application::setupInput();
 
@@ -87,14 +67,8 @@ namespace Trinity
 		});
 	}
 
-	void Playground::onGui()
+	void Editor::onGui()
 	{
-		auto projView = mCamera->getProjection() * mCamera->getView();
-		auto transform = glm::translate(glm::mat4(1.0f), glm::vec3{ 200.0f, 200.0f, 1.0f });
-
-		mTextRenderer->begin(projView);
-		mTextRenderer->drawText("Hello World!", mFont, 64.0f, glm::vec4{ 0.0f, 0.0f, 1.0f, 1.0f }, glm::vec2{ 0.0f }, transform);
-		mTextRenderer->end();
 	}
 }
 
@@ -102,13 +76,13 @@ using namespace Trinity;
 
 int main(int argc, char* argv[])
 {
-	static Playground app;
+	static Editor app;
 	app.run({
-		.title = "Trinity2D - Playground",
+		.title = "Trinity2D - Editor",
 #ifdef __EMSCRIPTEN__
-		.configFile = "/Assets/AppConfig.json",
+		.configFile = "/Assets/EditorConfig.json",
 #else
-		.configFile = "AppConfig.json",
+		.configFile = "EditorConfig.json",
 #endif
 	});
 

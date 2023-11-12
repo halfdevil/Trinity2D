@@ -1,7 +1,7 @@
 
 struct VertexInput
 {
-    @location(0) position : vec2<f32>,
+    @location(0) position : vec3<f32>,
     @location(1) uv : vec2<f32>,
     @location(2) color : vec4<f32>
 };
@@ -41,7 +41,7 @@ fn vs_main(in : VertexInput) -> VertexOutput
     var out: VertexOutput;
     out.uv = in.uv;
     out.color = in.color;
-    out.clip_position = per_frame_data.viewProj * vec4<f32>(in.position, 0.0, 1.0);
+    out.clip_position = per_frame_data.viewProj * vec4<f32>(in.position, 1.0);
 
     return out;
 }
@@ -52,7 +52,7 @@ fn fs_main(in: VertexOutput) -> FragmentOutput {
     color.a = textureSample(diffuse_texture, diffuse_sampler, in.uv).r;
 
     var out: FragmentOutput;    
-    out.frag_color = vec4(1.0);// color;
+    out.frag_color = color;
 
     return out;
 }

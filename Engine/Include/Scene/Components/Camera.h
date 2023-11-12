@@ -1,10 +1,6 @@
 #pragma once
 
 #include "Scene/Component.h"
-
-#ifndef GLM_FORCE_DEPTH_ZERO_TO_ONE
-	#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#endif
 #include <glm/glm.hpp>
 
 namespace Trinity

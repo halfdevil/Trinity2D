@@ -178,9 +178,16 @@ namespace Trinity
 	bool TextRenderer::drawText(const std::string& text, Font* font, float size, const glm::vec4& color,
 		const glm::vec2& origin, const glm::mat4& transform)
 	{
+		if (!font->hasSize(size))
+		{
+			LogError("Font not loaded with size: %f", size);
+			return false;
+		}
+
 		auto* texture = font->getTexture();
-		auto& charInfos = font->getCharInfos();
-		auto offset = font->getLineDistance() - font->getLineGap();
+		auto* metrics = font->getMetrics(size);
+		auto& glyphs = metrics->glyphs;
+		auto offset = metrics->lineDistance - metrics->lineGap;
 
 		auto fontWidth = texture->getWidth();
 		auto fontHeight = texture->getHeight();
@@ -191,26 +198,27 @@ namespace Trinity
 		for (auto& c : text)
 		{
 			auto code = c - 32;
-			auto& charInfo = charInfos[code];
+			auto& charInfo = glyphs[code];
 
-			textSize.x += charInfo.xadvance * (size / font->getSize());
-
+			textSize.x += charInfo.xadvance;
 			auto height = (charInfo.yoff2 - charInfo.yoff) / fontHeight;
+
 			if (textSize.y < height)
 			{
 				textSize.y = height;
 			}
 		}
 
-		glm::vec2 localOrigin {
+		glm::vec3 localOrigin {
 			textSize.x * origin.x,
-			textSize.y * origin.y
+			textSize.y * origin.y,
+			0.0f
 		};
 
 		for (auto& c : text)
 		{
 			auto code = c - 32;
-			auto& charInfo = charInfos[code];
+			auto& charInfo = glyphs[code];
 
 			float x1 = position.x + charInfo.xoff - localOrigin.x;
 			float y1 = position.y + charInfo.yoff + offset - localOrigin.y;
@@ -222,15 +230,15 @@ namespace Trinity
 			glm::vec4 p3 = transform * glm::vec4{ x2, y2, 0.0f, 1.0f };
 			glm::vec4 p4 = transform * glm::vec4{ x2, y1, 0.0f, 1.0f };
 
-			glm::vec2 q1 = localOrigin + glm::vec2{ p1.x, p1.y };
-			glm::vec2 q2 = localOrigin + glm::vec2{ p2.x, p2.y };
-			glm::vec2 q3 = localOrigin + glm::vec2{ p3.x, p3.y };
-			glm::vec2 q4 = localOrigin + glm::vec2{ p4.x, p4.y };
+			glm::vec3 q1 = localOrigin + glm::vec3{ p1.x, p1.y, 1.0f };
+			glm::vec3 q2 = localOrigin + glm::vec3{ p2.x, p2.y, 1.0f };
+			glm::vec3 q3 = localOrigin + glm::vec3{ p3.x, p3.y, 1.0f };
+			glm::vec3 q4 = localOrigin + glm::vec3{ p4.x, p4.y, 1.0f };
 
-			float u1{ (float)charInfo.x0 / (float)fontWidth };
-			float v1{ (float)charInfo.y0 / (float)fontHeight };
-			float u2{ (float)charInfo.x1 / (float)fontWidth };
-			float v2{ (float)charInfo.y1 / (float)fontHeight };
+			float u1 = charInfo.x0 / (float)fontWidth;
+			float v1 = charInfo.y0 / (float)fontHeight;
+			float u2 = charInfo.x1 / (float)fontWidth;
+			float v2 = charInfo.y1 / (float)fontHeight;
 
 			Vertex vertices[4] = {
 				{.position = q1, .uv = { u1, v1 }, .color = color },
@@ -255,7 +263,7 @@ namespace Trinity
 				return false;
 			}
 
-			position.x += charInfo.xadvance * (size / font->getSize());
+			position.x += charInfo.xadvance;
 		}
 
 		return true;
@@ -458,10 +466,10 @@ namespace Trinity
 	{
 		auto vertexLayout = std::make_unique<VertexLayout>();
 		vertexLayout->setAttributes({
-			{ wgpu::VertexFormat::Float32x2, 0, 0 },
-			{ wgpu::VertexFormat::Float32x2, 8, 1 },
-			{ wgpu::VertexFormat::Float32x4, 16, 2 }
-			});
+			{ wgpu::VertexFormat::Float32x3, 0, 0 },
+			{ wgpu::VertexFormat::Float32x2, 12, 1 },
+			{ wgpu::VertexFormat::Float32x4, 20, 2 }
+		});
 
 		uint32_t numVertices = 128 * 1024;
 		uint32_t numIndices = 256 * 1024;
