@@ -29,7 +29,7 @@ namespace Trinity
 
 		struct Vertex
 		{
-			glm::vec2 position{ 0.0f };
+			glm::vec3 position{ 0.0f };
 			glm::vec2 uv{ 0.0f };
 			glm::vec4 color{ 0.0f };
 		};
@@ -106,6 +106,7 @@ namespace Trinity
 			const glm::vec2& dstPosition,
 			const glm::vec2& dstSize, 
 			const glm::vec4& color = glm::vec4(0.0f),
+			float depth = 0.0f,
 			bool flipX = false, 
 			bool flipY = false
 		);

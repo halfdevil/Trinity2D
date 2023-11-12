@@ -3,9 +3,11 @@
 #include "Core/Debugger.h"
 #include "Core/Clock.h"
 #include "Core/Window.h"
+#include "Core/ResourceCache.h"
 #include "VFS/FileSystem.h"
 #include "VFS/DiskFile.h"
 #include "Input/Input.h"
+#include "ImGui/ImGuiRenderer.h"
 #include "Graphics/GraphicsDevice.h"
 #include "Graphics/SwapChain.h"
 #include "Graphics/RenderPass.h"
@@ -164,6 +166,7 @@ namespace Trinity
 
 		mGraphicsDevice->setClearColor({ 0.5f, 0.5f, 0.5f, 1.0f });
 		mWindow->showMouse(true, false);
+		mResourceCache = std::make_unique<ResourceCache>();
 		mMainPass = std::make_unique<RenderPass>();
 
 		return true;
@@ -173,7 +176,7 @@ namespace Trinity
 	{		
 	}
 
-	void Application::render(float deltaTime)
+	void Application::draw(float deltaTime)
 	{
 	}
 
@@ -184,7 +187,7 @@ namespace Trinity
 		mGraphicsDevice->clearScreen();
 
 		update(mClock->getDeltaTime());
-		render(mClock->getDeltaTime());
+		draw(mClock->getDeltaTime());
 
 		mGraphicsDevice->present();
 		mInput->postUpdate();

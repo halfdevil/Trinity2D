@@ -25,6 +25,7 @@ namespace Trinity
 	{
 	public:
 
+		static constexpr const char* kDefaultShader = "/Assets/Engine/Shaders/TextRenderer.wgsl";
 		static constexpr uint32_t kCommonBindGroupIndex = 0;
 		static constexpr uint32_t kTextureBindGroupIndex = 1;
 
@@ -86,7 +87,7 @@ namespace Trinity
 		TextRenderer(TextRenderer&&) = default;
 		TextRenderer& operator = (TextRenderer&&) = default;
 
-		virtual bool create(const std::string& shaderFile);
+		virtual bool create(const std::string& shaderFile = kDefaultShader);
 		virtual void destroy();
 
 		virtual void begin(const glm::mat4& viewProj);

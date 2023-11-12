@@ -76,7 +76,7 @@ namespace Trinity
 			.primitive = {
 				.topology = wgpu::PrimitiveTopology::TriangleList,
 				.frontFace = wgpu::FrontFace::CW,
-				.cullMode = wgpu::CullMode::Back
+				.cullMode = wgpu::CullMode::None
 			}
 		};
 
@@ -149,6 +149,7 @@ namespace Trinity
 		indexBuffer->write(0, sizeof(uint32_t) * mStagingContext.numIndices,
 			mStagingContext.indices.data());
 
+		mRenderPass->begin();
 		mRenderPass->setVertexBuffer(0, *mRenderContext.vertexBuffer);
 		mRenderPass->setIndexBuffer(*mRenderContext.indexBuffer);
 		mRenderPass->setPipeline(*mRenderContext.pipeline);
@@ -165,8 +166,12 @@ namespace Trinity
 			mRenderPass->drawIndexed(command.numIndices, 1, command.baseIndex, command.baseVertex);
 		}
 
+		mRenderPass->end();
+		mRenderPass->submit();
+
 		mStagingContext.numVertices = 0;
 		mStagingContext.numIndices = 0;
+		mCurrentTexture = nullptr;
 		mCommands.clear();
 	}
 
@@ -327,6 +332,32 @@ namespace Trinity
 			return false;
 		}
 
+		const std::vector<BindGroupLayoutItem> imageLayoutItems =
+		{
+			{
+				.binding = 0,
+				.shaderStages = wgpu::ShaderStage::Fragment,
+				.bindingLayout = SamplerBindingLayout {
+					.type = wgpu::SamplerBindingType::Filtering
+				}
+			},
+			{
+				.binding = 1,
+				.shaderStages = wgpu::ShaderStage::Fragment,
+				.bindingLayout = TextureBindingLayout {
+					.sampleType = wgpu::TextureSampleType::Float,
+					.viewDimension = wgpu::TextureViewDimension::e2D
+				}
+			}
+		};
+
+		auto imageBindGroupLayout = std::make_unique<BindGroupLayout>();
+		if (!imageBindGroupLayout->create(imageLayoutItems))
+		{
+			LogError("BindGroupLayout::create() failed!!");
+			return false;
+		}
+
 		const std::vector<BindGroupLayoutItem> layoutItems =
 		{
 			{
@@ -365,47 +396,18 @@ namespace Trinity
 		mRenderContext.perFrameBuffer = perFrameBuffer.get();
 		mRenderContext.bindGroupLayout = bindGroupLayout.get();
 		mRenderContext.bindGroup = bindGroup.get();
+		mImageContext.bindGroupLayout = imageBindGroupLayout.get();
+
 		mResourceCache->addResource(std::move(perFrameBuffer));
 		mResourceCache->addResource(std::move(bindGroupLayout));
 		mResourceCache->addResource(std::move(bindGroup));
+		mResourceCache->addResource(std::move(imageBindGroupLayout));
 
 		return true;
 	}
 
 	bool TextRenderer::createImageBindGroup(const Texture& texture)
 	{
-		if (mImageContext.bindGroupLayout == nullptr)
-		{
-			const std::vector<BindGroupLayoutItem> layoutItems =
-			{
-				{
-					.binding = 0,
-					.shaderStages = wgpu::ShaderStage::Fragment,
-					.bindingLayout = SamplerBindingLayout {
-						.type = wgpu::SamplerBindingType::Filtering
-					}
-				},
-				{
-					.binding = 1,
-					.shaderStages = wgpu::ShaderStage::Fragment,
-					.bindingLayout = TextureBindingLayout {
-						.sampleType = wgpu::TextureSampleType::Float,
-						.viewDimension = wgpu::TextureViewDimension::e2D
-					}
-				}
-			};
-
-			auto bindGroupLayout = std::make_unique<BindGroupLayout>();
-			if (!bindGroupLayout->create(layoutItems))
-			{
-				LogError("BindGroupLayout::create() failed!!");
-				return false;
-			}
-
-			mImageContext.bindGroupLayout = bindGroupLayout.get();
-			mResourceCache->addResource(std::move(bindGroupLayout));
-		}
-
 		if (mImageContext.sampler == nullptr)
 		{
 			auto sampler = std::make_unique<Sampler>();

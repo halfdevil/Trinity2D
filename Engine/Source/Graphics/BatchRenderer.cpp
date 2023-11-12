@@ -75,7 +75,7 @@ namespace Trinity
 			.primitive = {
 				.topology = wgpu::PrimitiveTopology::TriangleList,
 				.frontFace = wgpu::FrontFace::CW,
-				.cullMode = wgpu::CullMode::Back
+				.cullMode = wgpu::CullMode::None
 			}
 		};
 
@@ -120,9 +120,10 @@ namespace Trinity
 		bool flipY
 	)
 	{
-		glm::vec2 localOrigin = { 
+		glm::vec3 localOrigin = { 
 			srcSize.x * origin.x, 
-			srcSize.y * origin.y 
+			srcSize.y * origin.y,
+			0.0f
 		};
 
 		float x1{ -localOrigin.x };
@@ -135,10 +136,10 @@ namespace Trinity
 		glm::vec4 p3 = transform * glm::vec4{ x2, y2, 0.0f, 1.0f };
 		glm::vec4 p4 = transform * glm::vec4{ x2, y1, 0.0f, 1.0f };
 
-		glm::vec2 q1 = localOrigin + glm::vec2{ p1.x, p1.y };
-		glm::vec2 q2 = localOrigin + glm::vec2{ p2.x, p2.y };
-		glm::vec2 q3 = localOrigin + glm::vec2{ p3.x, p3.y };
-		glm::vec2 q4 = localOrigin + glm::vec2{ p4.x, p4.y };
+		glm::vec3 q1 = localOrigin + glm::vec3{ p1.x, p1.y, p1.z };
+		glm::vec3 q2 = localOrigin + glm::vec3{ p2.x, p2.y, p2.z };
+		glm::vec3 q3 = localOrigin + glm::vec3{ p3.x, p3.y, p3.z };
+		glm::vec3 q4 = localOrigin + glm::vec3{ p4.x, p4.y, p4.z };
 
 		float u1{ srcPosition.x * mInvTextureSize.x };
 		float v1{ srcPosition.y * mInvTextureSize.y };
@@ -192,14 +193,20 @@ namespace Trinity
 		const glm::vec2& dstPosition, 
 		const glm::vec2& dstSize, 
 		const glm::vec4& color,
+		float depth,
 		bool flipX, 
 		bool flipY
 	)
 	{
+		mInvTextureSize = {
+			1.0f / (float)texture->getWidth(),
+			1.0f / (float)texture->getHeight()
+		};
+
 		float x1{ dstPosition.x };
 		float y1{ dstPosition.y };
 		float x2{ dstPosition.x + dstSize.x };
-		float y2{ dstPosition.x + dstSize.y };
+		float y2{ dstPosition.y + dstSize.y };
 
 		float u1{ srcPosition.x * mInvTextureSize.x };
 		float v1{ srcPosition.y * mInvTextureSize.y };
@@ -221,10 +228,10 @@ namespace Trinity
 		}
 
 		Vertex vertices[4] = {
-			{ .position = { x1, y1 }, .uv = { u1, v1 }, .color = color },
-			{ .position = { x1, y2 }, .uv = { u1, v2 }, .color = color },
-			{ .position = { x2, y2 }, .uv = { u2, v2 }, .color = color },
-			{ .position = { x2, y1 }, .uv = { u2, v1 }, .color = color }
+			{ .position = { x1, y1, depth }, .uv = { u1, v1 }, .color = color },
+			{ .position = { x1, y2, depth }, .uv = { u1, v2 }, .color = color },
+			{ .position = { x2, y2, depth }, .uv = { u2, v2 }, .color = color },
+			{ .position = { x2, y1, depth }, .uv = { u2, v1 }, .color = color }
 		};
 
 		auto numVertices = mStagingContext.numVertices;
@@ -285,6 +292,7 @@ namespace Trinity
 		indexBuffer->write(0, sizeof(uint32_t) * mStagingContext.numIndices,
 			mStagingContext.indices.data());
 
+		mRenderPass->begin();
 		mRenderPass->setVertexBuffer(0, *mRenderContext.vertexBuffer);
 		mRenderPass->setIndexBuffer(*mRenderContext.indexBuffer);
 		mRenderPass->setPipeline(*mRenderContext.pipeline);
@@ -301,8 +309,12 @@ namespace Trinity
 			mRenderPass->drawIndexed(command.numIndices, 1, command.baseIndex, command.baseVertex);
 		}
 
+		mRenderPass->end();
+		mRenderPass->submit();
+
 		mStagingContext.numVertices = 0;
 		mStagingContext.numIndices = 0;
+		mCurrentTexture = nullptr;
 		mCommands.clear();
 	}
 
@@ -417,50 +429,47 @@ namespace Trinity
 			return false;
 		}
 
+		const std::vector<BindGroupLayoutItem> imageLayoutItems =
+		{
+			{
+				.binding = 0,
+				.shaderStages = wgpu::ShaderStage::Fragment,
+				.bindingLayout = SamplerBindingLayout {
+					.type = wgpu::SamplerBindingType::Filtering
+				}
+			},
+			{
+				.binding = 1,
+				.shaderStages = wgpu::ShaderStage::Fragment,
+				.bindingLayout = TextureBindingLayout {
+					.sampleType = wgpu::TextureSampleType::Float,
+					.viewDimension = wgpu::TextureViewDimension::e2D
+				}
+			}
+		};
+
+		auto imageBindGroupLayout = std::make_unique<BindGroupLayout>();
+		if (!imageBindGroupLayout->create(imageLayoutItems))
+		{
+			LogError("BindGroupLayout::create() failed!!");
+			return false;
+		}
+
 		mRenderContext.perFrameBuffer = perFrameBuffer.get();
 		mRenderContext.bindGroupLayout = bindGroupLayout.get();
 		mRenderContext.bindGroup = bindGroup.get();
+		mImageContext.bindGroupLayout = imageBindGroupLayout.get();
+
 		mResourceCache->addResource(std::move(perFrameBuffer));
 		mResourceCache->addResource(std::move(bindGroupLayout));
 		mResourceCache->addResource(std::move(bindGroup));
+		mResourceCache->addResource(std::move(imageBindGroupLayout));
 
 		return true;
 	}
 
 	bool BatchRenderer::createImageBindGroup(const Texture& texture)
 	{
-		if (mImageContext.bindGroupLayout == nullptr)
-		{
-			const std::vector<BindGroupLayoutItem> layoutItems =
-			{
-				{
-					.binding = 0,
-					.shaderStages = wgpu::ShaderStage::Fragment,
-					.bindingLayout = SamplerBindingLayout {
-						.type = wgpu::SamplerBindingType::Filtering
-					}
-				},
-				{
-					.binding = 1,
-					.shaderStages = wgpu::ShaderStage::Fragment,
-					.bindingLayout = TextureBindingLayout {
-						.sampleType = wgpu::TextureSampleType::Float,
-						.viewDimension = wgpu::TextureViewDimension::e2D
-					}
-				}
-			};
-
-			auto bindGroupLayout = std::make_unique<BindGroupLayout>();
-			if (!bindGroupLayout->create(layoutItems))
-			{
-				LogError("BindGroupLayout::create() failed!!");
-				return false;
-			}
-
-			mImageContext.bindGroupLayout = bindGroupLayout.get();
-			mResourceCache->addResource(std::move(bindGroupLayout));
-		}
-
 		if (mImageContext.sampler == nullptr)
 		{
 			auto sampler = std::make_unique<Sampler>();

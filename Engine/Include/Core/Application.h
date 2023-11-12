@@ -13,8 +13,10 @@ namespace Trinity
     class Clock;
     class FileSystem;
     class Input;
+    class ResourceCache;
     class GraphicsDevice;
     class RenderPass;
+    class ImGuiRenderer;
 
     struct ApplicationOptions
     {
@@ -79,6 +81,11 @@ namespace Trinity
             return mInput.get();
         }
 
+        ResourceCache* getResourceCache() const
+        {
+            return mResourceCache.get();
+        }
+
         GraphicsDevice* getGraphicsDevice() const
         {
             return mGraphicsDevice.get();
@@ -89,13 +96,18 @@ namespace Trinity
             return mMainPass.get();
         }
 
+        ImGuiRenderer* getImGuiRenderer() const
+        {
+            return mImGuiRenderer.get();
+        }
+
         virtual void run(const ApplicationOptions& options);
 
     protected:
 
         virtual bool init();
         virtual void update(float deltaTime);
-        virtual void render(float deltaTime);
+        virtual void draw(float deltaTime);
         virtual void frame();
 		virtual void exit();
 
@@ -113,7 +125,9 @@ namespace Trinity
         std::unique_ptr<Window> mWindow{ nullptr };
         std::unique_ptr<FileSystem> mFileSystem{ nullptr };
         std::unique_ptr<Input> mInput{ nullptr };
+		std::unique_ptr<ResourceCache> mResourceCache{ nullptr };
         std::unique_ptr<GraphicsDevice> mGraphicsDevice{ nullptr };
-        std::unique_ptr<RenderPass> mMainPass{ nullptr };
+		std::unique_ptr<RenderPass> mMainPass{ nullptr };
+		std::unique_ptr<ImGuiRenderer> mImGuiRenderer{ nullptr };
     };
 }

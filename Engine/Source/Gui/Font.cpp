@@ -47,15 +47,15 @@ namespace Trinity
 		{
 			mCharInfos.push_back({
 				.id = index++,
-				.x0 = charInfo.x0 / (float)width,
-				.y0 = charInfo.y0 / (float)height,
-				.x1 = charInfo.x1 / (float)width,
-				.y1 = charInfo.y1 / (float)height,
-				.xoff = charInfo.xoff / (float)width,
-				.yoff = charInfo.yoff / (float)height,
-				.xoff2 = charInfo.xoff2 / (float)width,
-				.yoff2 = charInfo.yoff2 / (float)height,
-				.xadvance = charInfo.xadvance
+				.x0 = (float)charInfo.x0,// / (float)width,
+				.y0 = (float)charInfo.y0,// / (float)height,
+				.x1 = (float)charInfo.x1,// / (float)width,
+				.y1 = (float)charInfo.y1,// / (float)height,
+				.xoff = charInfo.xoff,// / (float)width,
+				.yoff = charInfo.yoff,// / (float)height,
+				.xoff2 = charInfo.xoff2,// / (float)width,
+				.yoff2 = charInfo.yoff2,// / (float)height,
+				.xadvance = charInfo.xadvance,// / (float)width
 			});
 		}
 

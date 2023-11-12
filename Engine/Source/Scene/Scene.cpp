@@ -3,6 +3,7 @@
 #include "Scene/Component.h"
 #include "Scene/Components/Light.h"
 #include "Scene/Components/ScriptContainer.h"
+#include "Scene/Components/Camera.h"
 #include "Scene/ComponentFactory.h"
 #include "VFS/FileSystem.h"
 #include "Core/ResourceCache.h"
@@ -13,7 +14,6 @@ namespace Trinity
 {
 	bool Scene::create(const std::string& fileName)
 	{
-		mResourceCache = std::make_unique<ResourceCache>();
 		mComponentFactory = std::make_unique<ComponentFactory>();
 		registerDefaultComponents();
 		
@@ -171,5 +171,41 @@ namespace Trinity
 		const LightProperties& properties, Node* parent)
 	{
 		return addLight(LightType::Spot, position, rotation, properties, parent);
+	}
+
+	Camera* Scene::addCamera(const std::string& nodeName, float left, float right, float bottom, float top, float nearPlane, 
+		float farPlane, const glm::vec3& position, const glm::quat& rotation, Node* parent)
+	{
+		auto cameraPtr = std::make_unique<Camera>();
+		auto cameraNode = std::make_unique<Node>();
+
+		if (parent != nullptr)
+		{
+			cameraNode->setParent(*parent);
+		}
+
+		cameraPtr->setName("camera");
+		cameraNode->setName(nodeName);
+
+		cameraPtr->setNode(*cameraNode);
+		cameraPtr->setLeft(left);
+		cameraPtr->setRight(right);
+		cameraPtr->setBottom(bottom);
+		cameraPtr->setTop(top);
+		cameraPtr->setNearPlane(nearPlane);
+		cameraPtr->setFarPlane(farPlane);
+
+		auto& transform = cameraNode->getTransform();
+		transform.setTranslation(position);
+		transform.setRotation(rotation);
+
+		auto* camera = cameraPtr.get();
+		cameraNode->setComponent(*camera);
+
+		addChild(*cameraNode);
+		addComponent(std::move(cameraPtr), *cameraNode);
+		addNode(std::move(cameraNode));
+
+		return camera;
 	}
 }

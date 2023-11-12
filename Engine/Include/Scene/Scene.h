@@ -16,6 +16,7 @@ namespace Trinity
 {
 	class ResourceCache;
 	class ComponentFactory;
+	class Camera;
 
 	class Scene : public Resource
 	{
@@ -33,11 +34,6 @@ namespace Trinity
 		Node* getRoot() const
 		{
 			return mRoot;
-		}
-
-		ResourceCache* getResourceCache() const
-		{
-			return mResourceCache.get();
 		}
 
 		ComponentFactory* getComponentFactory()
@@ -76,6 +72,10 @@ namespace Trinity
 
 		virtual Light* addSpotLight(const glm::vec3& position, const glm::quat& rotation = {},
 			const LightProperties& properties = {}, Node* parent = nullptr);
+
+		virtual Camera* addCamera(const std::string& nodeName, float left, float right, float bottom, float top,
+			float nearPlane, float farPlane, const glm::vec3& position,	const glm::quat& rotation = {}, 
+			Node* parent = nullptr);
 
 	public:
 
@@ -127,7 +127,6 @@ namespace Trinity
 	protected:
 
 		Node* mRoot{ nullptr };
-		std::unique_ptr<ResourceCache> mResourceCache{ nullptr };
 		std::unique_ptr<ComponentFactory> mComponentFactory{ nullptr };
 		std::vector<std::unique_ptr<Node>> mNodes;
 		std::unordered_map<std::type_index, std::vector<std::unique_ptr<Component>>> mComponents;

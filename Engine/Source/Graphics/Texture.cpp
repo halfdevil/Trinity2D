@@ -7,15 +7,11 @@
 
 namespace Trinity
 {
-	void Texture::destroy()
+	Texture::~Texture()
 	{
-		if (mHandle)
-		{
-			mHandle = nullptr;
-			mView = nullptr;
-		}
+		destroy();
 	}
-	
+
 	bool Texture::create(uint32_t width, uint32_t height, wgpu::TextureFormat format, wgpu::TextureUsage usage)
 	{
 		const wgpu::Device& device = GraphicsDevice::get();
@@ -134,6 +130,27 @@ namespace Trinity
 		}
 
 		return true;
+	}
+
+	bool Texture::create(const std::string& fileName, wgpu::TextureFormat format, bool mipmaps)
+	{
+		auto image = std::make_unique<Image>();
+		if (!image->create(fileName))
+		{
+			LogError("Image::create() failed for '%s'", fileName.c_str());
+			return false;
+		}
+
+		return create(image.get(), format, mipmaps);
+	}
+
+	void Texture::destroy()
+	{
+		if (mHandle)
+		{
+			mHandle = nullptr;
+			mView = nullptr;
+		}
 	}
 
 	void Texture::upload(uint32_t channels, const void* data, uint32_t size)

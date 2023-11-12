@@ -51,6 +51,7 @@ namespace Trinity
         }
 
 		virtual bool create(uint32_t width, uint32_t height, wgpu::TextureFormat format, wgpu::TextureUsage usage);
+        virtual bool create(const std::string& fileName, wgpu::TextureFormat format, bool mipmaps = false);
 		virtual bool create(Image* image, wgpu::TextureFormat format, bool mipmaps = false);
 		virtual void destroy();
 
