@@ -1,12 +1,11 @@
 #pragma once
 
-#include "Core/Resource.h"
-#include <webgpu/webgpu_cpp.h>
+#include "Graphics/RenderTarget.h"
 #include <string>
 
 namespace Trinity
 {
-    class SwapChain : public Resource
+    class SwapChain : public RenderTarget
     {
     public:
 
@@ -39,11 +38,6 @@ namespace Trinity
             return mHandle.GetCurrentTextureView();
         }
 
-        bool hasDepthStencilAttachment() const
-        {
-            return mDepthStencilView != nullptr;
-        }
-
         uint32_t getWidth() const
         {
             return mWidth;
@@ -64,24 +58,30 @@ namespace Trinity
             return mColorFormat;
         }
 
-        wgpu::TextureFormat getDepthFormat() const
-        {
-            return mDepthFormat;
-        }
-
         operator const wgpu::SwapChain& () const
         {
             return mHandle;
         }
 
-        virtual bool create(uint32_t width, uint32_t height, const wgpu::Surface& surface,
-            wgpu::PresentMode presentMode, wgpu::TextureFormat depthFormat);
+        virtual bool create(
+            uint32_t width, 
+            uint32_t height, 
+            const wgpu::Surface& surface,
+            wgpu::PresentMode presentMode, 
+            wgpu::TextureFormat colorFormat, 
+            wgpu::TextureFormat depthFormat
+        );
 
 		virtual void destroy();
         virtual void setClearColor(const wgpu::Color& clearColor);
         virtual void present();
 
-		virtual std::type_index getType() const override;
+        virtual std::vector<wgpu::TextureFormat> getColorFormats() const override;
+        virtual wgpu::TextureFormat getDepthFormat() const override;
+
+        virtual bool hasDepthStencilAttachment() const override;
+        virtual std::vector<wgpu::RenderPassColorAttachment> getColorAttachments() const override;
+        virtual wgpu::RenderPassDepthStencilAttachment getDepthStencilAttachment() const override;
 
     private:
 

@@ -4,33 +4,52 @@
 
 namespace Trinity
 {
-    std::type_index FrameBuffer::getType() const
+    std::vector<wgpu::TextureFormat> FrameBuffer::getColorFormats() const
     {
-        return typeid(Resource);
+        return mColorFormats;
     }
 
-    bool FrameBuffer::addColorAttachment(const Texture& texture, wgpu::Color clearColor)
+    wgpu::TextureFormat FrameBuffer::getDepthFormat() const
     {
-        wgpu::RenderPassColorAttachment colorAttachment = {
+        return mDepthFormat;
+    }
+
+    bool FrameBuffer::hasDepthStencilAttachment() const
+    {
+        return mDepthFormat != wgpu::TextureFormat::Undefined;
+    }
+
+    std::vector<wgpu::RenderPassColorAttachment> FrameBuffer::getColorAttachments() const
+    {
+        return mColorAttachments;
+    }
+
+    wgpu::RenderPassDepthStencilAttachment FrameBuffer::getDepthStencilAttachment() const
+    {
+        return mDepthStencilAttachment;
+    }
+
+    void FrameBuffer::addColorAttachment(const Texture& texture, wgpu::Color clearColor, 
+        wgpu::LoadOp loadOp, wgpu::StoreOp storeOp)
+    {
+        mColorFormats.push_back(texture.getFormat());
+        mColorAttachments.push_back({
             .view = texture.getView(),
-            .loadOp = wgpu::LoadOp::Clear,
-            .storeOp = wgpu::StoreOp::Store,
+            .loadOp = loadOp,
+            .storeOp = storeOp,
             .clearValue = clearColor
-        };
-
-        mColorAttachments.push_back(std::move(colorAttachment));
-        return true;
+        });
     }
 
-    bool FrameBuffer::setDepthAttachment(const Texture& texture, float depthValue)
+    void FrameBuffer::setDepthStencilAttachment(const Texture& texture, float depthValue, 
+        wgpu::LoadOp loadOp, wgpu::StoreOp storeOp)
     {
+        mDepthFormat = texture.getFormat();
         mDepthStencilAttachment = {
             .view = texture.getView(),
-            .depthLoadOp = wgpu::LoadOp::Clear,
-            .depthStoreOp = wgpu::StoreOp::Store,
+            .depthLoadOp = loadOp,
+            .depthStoreOp = storeOp,
             .depthClearValue = depthValue
         };
-
-        return true;
     }
 }

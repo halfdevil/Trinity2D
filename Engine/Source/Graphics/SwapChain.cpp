@@ -10,12 +10,17 @@ namespace Trinity
         destroy();
     }
 
-    bool SwapChain::create(uint32_t width, uint32_t height, const wgpu::Surface& surface,
-        wgpu::PresentMode presentMode, wgpu::TextureFormat depthFormat)
+    bool SwapChain::create(
+        uint32_t width, 
+        uint32_t height, 
+        const wgpu::Surface& surface,
+        wgpu::PresentMode presentMode, 
+        wgpu::TextureFormat colorFormat, 
+        wgpu::TextureFormat depthFormat)
     {
         mWidth = width;
         mHeight = height;
-        mColorFormat = wgpu::TextureFormat::BGRA8Unorm;
+        mColorFormat = colorFormat;
         mDepthFormat = depthFormat;
 
         const wgpu::Device& device = GraphicsDevice::get();
@@ -85,8 +90,38 @@ namespace Trinity
 #endif
     }
 
-    std::type_index SwapChain::getType() const
+    std::vector<wgpu::TextureFormat> SwapChain::getColorFormats() const
     {
-        return typeid(SwapChain);
+        return { mColorFormat };
+    }
+
+    wgpu::TextureFormat SwapChain::getDepthFormat() const
+    {
+        return mDepthFormat;
+    }
+
+    bool SwapChain::hasDepthStencilAttachment() const
+    {
+        return mDepthFormat != wgpu::TextureFormat::Undefined;
+    }
+
+    std::vector<wgpu::RenderPassColorAttachment> SwapChain::getColorAttachments() const
+    {
+        return { {
+            .view = mHandle.GetCurrentTextureView(),
+            .loadOp = wgpu::LoadOp::Load,
+            .storeOp = wgpu::StoreOp::Store,
+            .clearValue = mClearColor
+        } };
+    }
+
+    wgpu::RenderPassDepthStencilAttachment SwapChain::getDepthStencilAttachment() const
+    {
+        return {
+            .view = mDepthStencilView,
+            .depthLoadOp = wgpu::LoadOp::Clear,
+            .depthStoreOp = wgpu::StoreOp::Store,
+            .depthClearValue = 1.0f
+        };
     }
 }

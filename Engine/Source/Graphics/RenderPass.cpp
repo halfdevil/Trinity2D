@@ -1,5 +1,6 @@
 #include "Graphics/RenderPass.h"
 #include "Graphics/GraphicsDevice.h"
+#include "Graphics/RenderTarget.h"
 #include "Core/Debugger.h"
 #include "Core/Logger.h"
 
@@ -10,17 +11,17 @@ namespace Trinity
         return typeid(RenderPass);
     }
 
-    bool RenderPass::begin(const FrameBuffer& frameBuffer)
+    bool RenderPass::begin(const RenderTarget& renderTarget)
     {        
-        const auto& colorAttachments = frameBuffer.getColorAttachments();
-        const auto& depthStencilAttachment = frameBuffer.getDepthAttachment();
+        auto colorAttachments = renderTarget.getColorAttachments();
+        auto depthStencilAttachment = renderTarget.getDepthStencilAttachment();
 
         wgpu::RenderPassDescriptor renderPassDesc = {
             .colorAttachmentCount = (uint32_t)colorAttachments.size(),
             .colorAttachments = colorAttachments.data()
         };
 
-        if (frameBuffer.hasDepthStencilAttachment())
+        if (renderTarget.hasDepthStencilAttachment())
         {
             renderPassDesc.depthStencilAttachment = &depthStencilAttachment;
         }
@@ -28,52 +29,6 @@ namespace Trinity
         auto& graphicsDevice = GraphicsDevice::get();
         mCommandEncoder = graphicsDevice.getDevice().CreateCommandEncoder();
 
-        if (!mCommandEncoder)
-        {
-            LogError("Device::CreateCommandEncoder() failed");
-            return false;
-        }
-
-        mRenderPassEncoder = mCommandEncoder.BeginRenderPass(&renderPassDesc);
-        if (!mRenderPassEncoder)
-        {
-            LogError("wgpu::CommandEncoder::BeginRenderPass() failed!!");
-            return false;
-        }
-
-        return true;
-    }
-
-    bool RenderPass::begin()
-    {
-        auto& graphicsDevice = GraphicsDevice::get();
-        auto& swapChain = graphicsDevice.getSwapChain();
-
-        wgpu::RenderPassColorAttachment colorAttachment = {
-            .view = swapChain.getCurrentView(),
-            .loadOp = wgpu::LoadOp::Load,
-            .storeOp = wgpu::StoreOp::Store,
-            .clearValue = swapChain.getClearColor()
-        };
-
-        wgpu::RenderPassDescriptor renderPassDesc = {
-            .colorAttachmentCount = 1,
-            .colorAttachments = &colorAttachment
-        };
-
-        if (swapChain.hasDepthStencilAttachment())
-        {
-            wgpu::RenderPassDepthStencilAttachment depthStencilAttachment = {
-                .view = swapChain.getDepthStencilView(),
-                .depthLoadOp = wgpu::LoadOp::Clear,
-                .depthStoreOp = wgpu::StoreOp::Store,
-                .depthClearValue = 1.0f
-            };
-
-            renderPassDesc.depthStencilAttachment = &depthStencilAttachment;
-        }
-                
-        mCommandEncoder = graphicsDevice.getDevice().CreateCommandEncoder();
         if (!mCommandEncoder)
         {
             LogError("Device::CreateCommandEncoder() failed");

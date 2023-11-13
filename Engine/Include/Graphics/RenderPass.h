@@ -1,12 +1,11 @@
 #pragma once
 
 #include "Core/Resource.h"
-#include "Graphics/FrameBuffer.h"
-#include "Graphics/SwapChain.h"
 #include "Graphics/RenderPipeline.h"
 #include "Graphics/VertexBuffer.h"
 #include "Graphics/IndexBuffer.h"
 #include "Graphics/BindGroup.h"
+#include "Graphics/RenderTarget.h"
 
 namespace Trinity
 {
@@ -25,9 +24,7 @@ namespace Trinity
 
         virtual std::type_index getType() const override;
 
-        virtual bool begin(const FrameBuffer& frameBuffer);
-        virtual bool begin();
-        
+        virtual bool begin(const RenderTarget& renderTarget);
         virtual void end();
         virtual void submit();
 

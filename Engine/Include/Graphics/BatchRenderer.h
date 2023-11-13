@@ -4,6 +4,7 @@
 #include <string>
 #include <unordered_map>
 #include <glm/glm.hpp>
+#include <webgpu/webgpu_cpp.h>
 
 namespace Trinity
 {
@@ -19,6 +20,7 @@ namespace Trinity
 	class VertexLayout;
 	class VertexBuffer;
 	class IndexBuffer;
+	class RenderTarget;
 
 	class BatchRenderer
 	{
@@ -85,7 +87,7 @@ namespace Trinity
 		BatchRenderer(BatchRenderer&&) = default;
 		BatchRenderer& operator = (BatchRenderer&&) = default;
 
-		virtual bool create(const std::string& shaderFile);
+		virtual bool create(const std::string& shaderFile, RenderTarget& renderTarget);
 		virtual void destroy();
 
 		virtual bool drawTexture(
@@ -133,6 +135,7 @@ namespace Trinity
 		StagingContext mStagingContext;
 		std::unique_ptr<ResourceCache> mResourceCache{ nullptr };
 		std::unique_ptr<RenderPass> mRenderPass{ nullptr };
+		RenderTarget* mRenderTarget{ nullptr };
 		Texture* mCurrentTexture{ nullptr };
 		glm::vec2 mInvTextureSize{ 0.0f };
 		std::vector<DrawCommand> mCommands;

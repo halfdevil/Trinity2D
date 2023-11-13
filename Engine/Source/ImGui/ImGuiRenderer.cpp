@@ -14,6 +14,8 @@
 #include "Graphics/UniformBuffer.h"
 #include "Graphics/GraphicsDevice.h"
 #include "Graphics/SwapChain.h"
+#include "Graphics/FrameBuffer.h"
+#include "Graphics/RenderTarget.h"
 #include "Input/Types.h"
 #include "Core/Window.h"
 #include "Core/Logger.h"
@@ -167,7 +169,7 @@ namespace Trinity
 		destroy();
 	}
 
-	bool ImGuiRenderer::create(Window& window, const std::string& defaultFontPath)
+	bool ImGuiRenderer::create(Window& window, const std::string& defaultFontPath, RenderTarget& renderTarget)
 	{
 		ImGui::CreateContext();
 
@@ -199,12 +201,13 @@ namespace Trinity
 			return false;
 		}
 
+		mRenderTarget = &renderTarget;
 		mImageContext.font = font.get();
 		mResourceCache = std::make_unique<ResourceCache>();
 		mResourceCache->addResource(std::move(font));
 		mRenderPass = std::make_unique<RenderPass>();
 
-		if (!createDeviceObjects())
+		if (!createDeviceObjects(renderTarget))
 		{
 			LogError("createDeviceObjects() failed!!");
 			return false;
@@ -250,7 +253,7 @@ namespace Trinity
 			return;
 		}
 
-		mRenderPass->begin();
+		mRenderPass->begin(*mRenderTarget);
 
 		if (mStagingContext.numVertices < (uint32_t)drawData->TotalVtxCount)
 		{
@@ -441,7 +444,7 @@ namespace Trinity
 		}
 	}
 
-	bool ImGuiRenderer::createDeviceObjects()
+	bool ImGuiRenderer::createDeviceObjects(RenderTarget& renderTarget)
 	{
 		if (!createBufferData())
 		{
@@ -468,16 +471,14 @@ namespace Trinity
 			return false;
 		}
 
-		const SwapChain& swapChain = GraphicsDevice::get().getSwapChain();
-		RenderPipelineProperties renderProps = {
-			.shader = shader.get(),
-			.bindGroupLayouts = {
-				mRenderContext.bindGroupLayout,
-				mImageContext.bindGroupLayout
-			},
-			.vertexLayouts = { mRenderContext.vertexLayout },
-			.colorTargets = {{
-				.format = swapChain.getColorFormat(),
+		auto colorFormats = renderTarget.getColorFormats();
+		auto depthFormat = renderTarget.getDepthFormat();
+
+		std::vector<ColorTargetState> colorTargetStates;
+		for (auto& colorFormat : colorFormats)
+		{
+			colorTargetStates.push_back({
+				.format = colorFormat,
 				.blendState = wgpu::BlendState {
 					.color = {
 						.operation = wgpu::BlendOperation::Add,
@@ -490,7 +491,17 @@ namespace Trinity
 						.dstFactor = wgpu::BlendFactor::OneMinusSrcAlpha
 					}
 				}
-			}},
+			});
+		}
+
+		RenderPipelineProperties renderProps = {
+			.shader = shader.get(),
+			.bindGroupLayouts = {
+				mRenderContext.bindGroupLayout,
+				mImageContext.bindGroupLayout
+			},
+			.vertexLayouts = { mRenderContext.vertexLayout },
+			.colorTargets = std::move(colorTargetStates),
 			.primitive = {
 				.topology = wgpu::PrimitiveTopology::TriangleList,
 				.frontFace = wgpu::FrontFace::CW,
@@ -498,10 +509,9 @@ namespace Trinity
 			}
 		};
 
-		wgpu::TextureFormat depthFormat = swapChain.getDepthFormat();
-		if (depthFormat != wgpu::TextureFormat::Undefined)
+		if (renderTarget.hasDepthStencilAttachment())
 		{
-			renderProps.depthStencil = DepthStencilState{
+			renderProps.depthStencil = {
 				.format = depthFormat,
 				.depthWriteEnabled = false,
 				.depthCompare = wgpu::CompareFunction::Less

@@ -14,6 +14,7 @@
 #include "Graphics/UniformBuffer.h"
 #include "Graphics/GraphicsDevice.h"
 #include "Graphics/SwapChain.h"
+#include "Graphics/RenderTarget.h"
 #include "Core/Logger.h"
 #include "Core/ResourceCache.h"
 #include "glm/gtx/matrix_decompose.hpp"
@@ -25,7 +26,7 @@ namespace Trinity
 		destroy();
 	}
 
-	bool TextRenderer::create(const std::string& shaderFile)
+	bool TextRenderer::create(const std::string& shaderFile, RenderTarget& renderTarget)
 	{
 		mResourceCache = std::make_unique<ResourceCache>();
 		mRenderPass = std::make_unique<RenderPass>();
@@ -50,16 +51,14 @@ namespace Trinity
 			return false;
 		}
 
-		const SwapChain& swapChain = GraphicsDevice::get().getSwapChain();
-		RenderPipelineProperties renderProps = {
-			.shader = shader.get(),
-			.bindGroupLayouts = {
-				mRenderContext.bindGroupLayout,
-				mImageContext.bindGroupLayout
-			},
-			.vertexLayouts = { mRenderContext.vertexLayout },
-			.colorTargets = {{
-				.format = swapChain.getColorFormat(),
+		auto colorFormats = renderTarget.getColorFormats();
+		auto depthFormat = renderTarget.getDepthFormat();
+
+		std::vector<ColorTargetState> colorTargetStates;
+		for (auto& colorFormat : colorFormats)
+		{
+			colorTargetStates.push_back({
+				.format = colorFormat,
 				.blendState = wgpu::BlendState {
 					.color = {
 						.operation = wgpu::BlendOperation::Add,
@@ -72,7 +71,17 @@ namespace Trinity
 						.dstFactor = wgpu::BlendFactor::OneMinusSrcAlpha
 					}
 				}
-			}},
+			});
+		}
+
+		RenderPipelineProperties renderProps = {
+			.shader = shader.get(),
+			.bindGroupLayouts = {
+				mRenderContext.bindGroupLayout,
+				mImageContext.bindGroupLayout
+			},
+			.vertexLayouts = { mRenderContext.vertexLayout },
+			.colorTargets = std::move(colorTargetStates),
 			.primitive = {
 				.topology = wgpu::PrimitiveTopology::TriangleList,
 				.frontFace = wgpu::FrontFace::CW,
@@ -80,10 +89,9 @@ namespace Trinity
 			}
 		};
 
-		wgpu::TextureFormat depthFormat = swapChain.getDepthFormat();
-		if (depthFormat != wgpu::TextureFormat::Undefined)
+		if (renderTarget.hasDepthStencilAttachment())
 		{
-			renderProps.depthStencil = DepthStencilState{
+			renderProps.depthStencil = {
 				.format = depthFormat,
 				.depthWriteEnabled = false,
 				.depthCompare = wgpu::CompareFunction::Less
@@ -97,6 +105,7 @@ namespace Trinity
 			return false;
 		}
 
+		mRenderTarget = &renderTarget;
 		mRenderContext.shader = shader.get();
 		mRenderContext.pipeline = pipeline.get();
 		mResourceCache->addResource(std::move(shader));
@@ -149,7 +158,7 @@ namespace Trinity
 		indexBuffer->write(0, sizeof(uint32_t) * mStagingContext.numIndices,
 			mStagingContext.indices.data());
 
-		mRenderPass->begin();
+		mRenderPass->begin(*mRenderTarget);
 		mRenderPass->setVertexBuffer(0, *mRenderContext.vertexBuffer);
 		mRenderPass->setIndexBuffer(*mRenderContext.indexBuffer);
 		mRenderPass->setPipeline(*mRenderContext.pipeline);

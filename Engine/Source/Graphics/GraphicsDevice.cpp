@@ -66,11 +66,14 @@ namespace Trinity
         mInstance = nullptr;
     }
 
-    bool GraphicsDevice::setupSwapChain(const Window& window, wgpu::PresentMode presentMode,
+    bool GraphicsDevice::setupSwapChain(
+        const Window& window, 
+        wgpu::PresentMode presentMode,
+        wgpu::TextureFormat colorFormat,
         wgpu::TextureFormat depthFormat)
     {
-        if (!mSwapChain.create(window.getWidth(), window.getHeight(),
-            mSurface, presentMode, depthFormat))
+        if (!mSwapChain.create(window.getWidth(), window.getHeight(), mSurface, 
+            presentMode, colorFormat, depthFormat))
         {
             LogError("SwapChain::create() failed!!");
             return false;

@@ -4,6 +4,7 @@
 #include <string>
 #include <unordered_map>
 #include <glm/glm.hpp>
+#include "webgpu/webgpu_cpp.h"
 #include "imgui.h"
 #include "imgui_internal.h"
 
@@ -24,6 +25,7 @@ namespace Trinity
 	class IndexBuffer;
 	class SwapChain;
 	class Window;
+	class RenderTarget;
 
 	class ImGuiRenderer
 	{
@@ -75,17 +77,16 @@ namespace Trinity
 		ImGuiRenderer(ImGuiRenderer&&) = default;
 		ImGuiRenderer& operator = (ImGuiRenderer&&) = default;
 
-		bool create(Window& window, const std::string& defaultFontPath);
-		void destroy();
-
-		void newFrame(Window& window, float deltaTime);
-		void draw();
+		virtual bool create(Window& window, const std::string& defaultFontPath, RenderTarget& renderTarget);
+		virtual void destroy();
+		virtual void newFrame(Window& window, float deltaTime);
+		virtual void draw();
 
 	protected:
 
 		void setupCallbacks(Window& window);
 		void updateMouseCursor(Window& window);
-		bool createDeviceObjects();
+		bool createDeviceObjects(RenderTarget& renderTarget);
 		void setupRenderStates(ImDrawData* drawData);
 
 		bool createCommonBindGroup();
@@ -100,5 +101,6 @@ namespace Trinity
 		std::unique_ptr<ResourceCache> mResourceCache{ nullptr };
 		std::unique_ptr<RenderPass> mRenderPass{ nullptr };
 		glm::vec2 mLastValidMousePos{ 0.0f };
+		RenderTarget* mRenderTarget{ nullptr };
 	};
 }

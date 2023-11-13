@@ -4,17 +4,18 @@
 #include "Scene/Components/SpriteRenderable.h"
 #include "Graphics/BatchRenderer.h"
 #include "Graphics/RenderPass.h"
+#include "Graphics/RenderTarget.h"
 #include "Core/ResourceCache.h"
 #include "Core/Logger.h"
 
 namespace Trinity
 {
-	bool SpriteRenderer::prepare(Scene& scene)
+	bool SpriteRenderer::create(Scene& scene, RenderTarget& renderTarget)
 	{
 		mScene = &scene;
 		mRenderer = std::make_unique<BatchRenderer>();
 
-		if (!mRenderer->create(kShader))
+		if (!mRenderer->create(kShader, renderTarget))
 		{
 			LogError("BatchRenderer::create() failed with shader: '%s'", kShader);
 			return true;

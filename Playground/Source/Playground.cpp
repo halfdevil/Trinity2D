@@ -25,15 +25,17 @@ namespace Trinity
 			return false;
 		}
 
+		auto& swapChain = mGraphicsDevice->getSwapChain();
 		mImGuiRenderer = std::make_unique<ImGuiRenderer>();
-		if (!mImGuiRenderer->create(*mWindow, "/Assets/Fonts/CascadiaCode.ttf"))
+
+		if (!mImGuiRenderer->create(*mWindow, "/Assets/Fonts/CascadiaCode.ttf", swapChain))
 		{
 			LogError("Gui::create() failed!!");
 			return false;
 		}
 
 		mTextRenderer = std::make_unique<TextRenderer>();
-		if (!mTextRenderer->create())
+		if (!mTextRenderer->create(TextRenderer::kDefaultShader, swapChain))
 		{
 			LogError("TextRenderer::create() failed");
 			return false;

@@ -1,11 +1,11 @@
 #pragma once
 
-#include "Core/Resource.h"
+#include "Graphics/RenderTarget.h"
 #include "Graphics/Texture.h"
 
 namespace Trinity
 {
-    class FrameBuffer : public Resource
+    class FrameBuffer : public RenderTarget
     {
     public:
 
@@ -18,30 +18,31 @@ namespace Trinity
         FrameBuffer(FrameBuffer&&) = default;
         FrameBuffer& operator = (FrameBuffer&&) = default;
 
-        const std::vector<wgpu::RenderPassColorAttachment>& getColorAttachments() const
-        {
-            return mColorAttachments;
-        }
+        virtual std::vector<wgpu::TextureFormat> getColorFormats() const override;
+        virtual wgpu::TextureFormat getDepthFormat() const override;
 
-        const wgpu::RenderPassDepthStencilAttachment& getDepthAttachment() const
-        {
-            return mDepthStencilAttachment;
-        }
+        virtual bool hasDepthStencilAttachment() const override;
+        virtual std::vector<wgpu::RenderPassColorAttachment> getColorAttachments() const override;
+        virtual wgpu::RenderPassDepthStencilAttachment getDepthStencilAttachment() const override;
 
-        bool hasDepthStencilAttachment() const
-        {
-            return mHasDepthStencilAttachment;
-        }
+        void addColorAttachment(
+            const Texture& texture, 
+            wgpu::Color clearColor = { 0, 0, 0, 1 },
+            wgpu::LoadOp loadOp = wgpu::LoadOp::Clear,
+            wgpu::StoreOp storeOp = wgpu::StoreOp::Store
+        );
 
-        virtual std::type_index getType() const override;
-
-        bool addColorAttachment(const Texture& texture, wgpu::Color clearColor = { 0, 0, 0, 1 });
-        bool setDepthAttachment(const Texture& texture, float depthValue = 0.0f);
+        void setDepthStencilAttachment(const Texture& texture, 
+            float depthValue = 0.0f,
+            wgpu::LoadOp loadOp = wgpu::LoadOp::Clear,
+            wgpu::StoreOp storeOp = wgpu::StoreOp::Store            
+        );
 
     private:
 
         std::vector<wgpu::RenderPassColorAttachment> mColorAttachments;
+        std::vector<wgpu::TextureFormat> mColorFormats;
         wgpu::RenderPassDepthStencilAttachment mDepthStencilAttachment;
-        bool mHasDepthStencilAttachment{ false };
+        wgpu::TextureFormat mDepthFormat{ wgpu::TextureFormat::Undefined };
     };
 }

@@ -4,6 +4,7 @@
 #include <string>
 #include <unordered_map>
 #include <glm/glm.hpp>
+#include "webgpu/webgpu_cpp.h"
 
 namespace Trinity
 {
@@ -20,6 +21,7 @@ namespace Trinity
 	class VertexLayout;
 	class VertexBuffer;
 	class IndexBuffer;
+	class RenderTarget;
 
 	class TextRenderer
 	{
@@ -87,9 +89,8 @@ namespace Trinity
 		TextRenderer(TextRenderer&&) = default;
 		TextRenderer& operator = (TextRenderer&&) = default;
 
-		virtual bool create(const std::string& shaderFile = kDefaultShader);
+		virtual bool create(const std::string& shaderFile, RenderTarget& renderTarget);
 		virtual void destroy();
-
 		virtual void begin(const glm::mat4& viewProj);
 		virtual void end();
 
@@ -115,6 +116,7 @@ namespace Trinity
 		StagingContext mStagingContext;
 		std::unique_ptr<ResourceCache> mResourceCache{ nullptr };
 		std::unique_ptr<RenderPass> mRenderPass{ nullptr };
+		RenderTarget* mRenderTarget{ nullptr };
 		Texture* mCurrentTexture{ nullptr };
 		std::vector<DrawCommand> mCommands;
 	};

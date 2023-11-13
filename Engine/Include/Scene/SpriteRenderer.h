@@ -4,11 +4,13 @@
 #include <string>
 #include <unordered_map>
 #include <glm/glm.hpp>
+#include "webgpu/webgpu_cpp.h"
 
 namespace Trinity
 {
 	class BatchRenderer;
 	class Scene;
+	class RenderTarget;
 
 	class SpriteRenderer
 	{
@@ -25,7 +27,7 @@ namespace Trinity
 		SpriteRenderer(SpriteRenderer&&) = default;
 		SpriteRenderer& operator = (SpriteRenderer&&) = default;
 
-		virtual bool prepare(Scene& scene);
+		virtual bool create(Scene& scene, RenderTarget& renderTarget);
 		virtual void destroy();
 		virtual void draw(float deltaTime);
 

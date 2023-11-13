@@ -218,8 +218,7 @@ namespace Trinity
 
 	void Application::onResize()
 	{
-		if (!mGraphicsDevice->setupSwapChain(*mWindow, wgpu::PresentMode::Fifo,
-			wgpu::TextureFormat::Depth32Float))
+		if (!mGraphicsDevice->setupSwapChain(*mWindow))
 		{
 			LogError("GraphicsDevice::setupSwapChain() failed!!");
 		}

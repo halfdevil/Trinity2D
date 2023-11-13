@@ -44,6 +44,11 @@ namespace Trinity
             return mSwapChain;
         }
 
+        SwapChain& getSwapChain()
+        {
+            return mSwapChain;
+        }
+
         operator const wgpu::Device& () const
         {
             return mDevice;
@@ -52,8 +57,11 @@ namespace Trinity
         virtual void create(const Window& window);
         virtual void destroy();
 
-        virtual bool setupSwapChain(const Window& window, wgpu::PresentMode presentMode,
-            wgpu::TextureFormat depthFormat);
+        virtual bool setupSwapChain(
+            const Window& window, 
+            wgpu::PresentMode presentMode = wgpu::PresentMode::Fifo, 
+            wgpu::TextureFormat colorFormat = wgpu::TextureFormat::BGRA8Unorm,
+            wgpu::TextureFormat depthFormat = wgpu::TextureFormat::Depth32Float);
 
         virtual void setClearColor(const wgpu::Color& clearColor);
         virtual void clearScreen();
