@@ -92,7 +92,7 @@ namespace Trinity
 		virtual bool create(const std::string& shaderFile, RenderTarget& renderTarget);
 		virtual void destroy();
 		virtual void begin(const glm::mat4& viewProj);
-		virtual void end();
+		virtual void end(const RenderPass& renderPass);
 
 		virtual bool drawText(const std::string& text, Font* font, float size, const glm::vec4& color,
 			const glm::vec2& origin, const glm::mat4& transform);
@@ -115,8 +115,6 @@ namespace Trinity
 		ImageContext mImageContext;
 		StagingContext mStagingContext;
 		std::unique_ptr<ResourceCache> mResourceCache{ nullptr };
-		std::unique_ptr<RenderPass> mRenderPass{ nullptr };
-		RenderTarget* mRenderTarget{ nullptr };
 		Texture* mCurrentTexture{ nullptr };
 		std::vector<DrawCommand> mCommands;
 	};

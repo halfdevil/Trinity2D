@@ -95,6 +95,12 @@ namespace Trinity
         return { mColorFormat };
     }
 
+    wgpu::TextureFormat SwapChain::getColorFormat(uint32_t index) const
+    {
+        Assert(index == 0, "Invalid index passed: %ld", index);
+        return mColorFormat;
+    }
+
     wgpu::TextureFormat SwapChain::getDepthFormat() const
     {
         return mDepthFormat;
@@ -109,7 +115,7 @@ namespace Trinity
     {
         return { {
             .view = mHandle.GetCurrentTextureView(),
-            .loadOp = wgpu::LoadOp::Load,
+            .loadOp = wgpu::LoadOp::Clear,
             .storeOp = wgpu::StoreOp::Store,
             .clearValue = mClearColor
         } };

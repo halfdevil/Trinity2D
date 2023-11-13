@@ -49,11 +49,6 @@ namespace Trinity
     {
         Assert(mRenderPassEncoder != nullptr, "RenderPass::begin() not called!!");
         mRenderPassEncoder.End();
-    }
-
-    void RenderPass::submit()
-    {
-        Assert(mRenderPassEncoder != nullptr, "RenderPass::begin() not called!!");
 
         auto commands = mCommandEncoder.Finish();
         auto& graphicsDevice = GraphicsDevice::get();

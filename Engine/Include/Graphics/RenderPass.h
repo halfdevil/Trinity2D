@@ -26,7 +26,6 @@ namespace Trinity
 
         virtual bool begin(const RenderTarget& renderTarget);
         virtual void end();
-        virtual void submit();
 
         virtual void draw(uint32_t vertexCount, uint32_t instanceCount = 1, uint32_t firstVertex = 0,
             uint32_t firstInstance = 0) const;

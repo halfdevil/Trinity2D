@@ -28,7 +28,6 @@ namespace Trinity
 	bool BatchRenderer::create(const std::string& shaderFile, RenderTarget& renderTarget)
 	{
 		mResourceCache = std::make_unique<ResourceCache>();
-		mRenderPass = std::make_unique<RenderPass>();
 
 		if (!createBufferData())
 		{
@@ -50,14 +49,15 @@ namespace Trinity
 			return false;
 		}
 
-		auto colorFormats = renderTarget.getColorFormats();
-		auto depthFormat = renderTarget.getDepthFormat();
-
-		std::vector<ColorTargetState> colorTargetStates;
-		for (auto& colorFormat : colorFormats)
-		{
-			colorTargetStates.push_back({
-				.format = colorFormat,
+		RenderPipelineProperties renderProps = {
+			.shader = shader.get(),
+			.bindGroupLayouts = {
+				mRenderContext.bindGroupLayout,
+				mImageContext.bindGroupLayout
+			},
+			.vertexLayouts = { mRenderContext.vertexLayout },
+			.colorTargets = {{
+				.format = renderTarget.getColorFormat(),
 				.blendState = wgpu::BlendState {
 					.color = {
 						.operation = wgpu::BlendOperation::Add,
@@ -70,17 +70,7 @@ namespace Trinity
 						.dstFactor = wgpu::BlendFactor::OneMinusSrcAlpha
 					}
 				}
-			});
-		}
-
-		RenderPipelineProperties renderProps = {
-			.shader = shader.get(),
-			.bindGroupLayouts = {
-				mRenderContext.bindGroupLayout,
-				mImageContext.bindGroupLayout
-			},
-			.vertexLayouts = { mRenderContext.vertexLayout },
-			.colorTargets = std::move(colorTargetStates),
+			}},
 			.primitive = {
 				.topology = wgpu::PrimitiveTopology::TriangleList,
 				.frontFace = wgpu::FrontFace::CW,
@@ -91,7 +81,7 @@ namespace Trinity
 		if (renderTarget.hasDepthStencilAttachment())
 		{
 			renderProps.depthStencil = {
-				.format = depthFormat,
+				.format = renderTarget.getDepthFormat(),
 				.depthWriteEnabled = false,
 				.depthCompare = wgpu::CompareFunction::Less
 			};
@@ -104,7 +94,6 @@ namespace Trinity
 			return false;
 		}
 
-		mRenderTarget = &renderTarget;
 		mRenderContext.shader = shader.get();
 		mRenderContext.pipeline = pipeline.get();
 		mResourceCache->addResource(std::move(shader));
@@ -271,7 +260,7 @@ namespace Trinity
 		mRenderContext.perFrameBuffer->write(0, sizeof(PerFrameData), &perFrameData);
 	}
 
-	void BatchRenderer::end()
+	void BatchRenderer::end(const RenderPass& renderPass)
 	{
 		auto* vertexBuffer = mRenderContext.vertexBuffer;
 		if (vertexBuffer->getNumVertices() < mStagingContext.numVertices)
@@ -301,25 +290,21 @@ namespace Trinity
 		indexBuffer->write(0, sizeof(uint32_t) * mStagingContext.numIndices,
 			mStagingContext.indices.data());
 
-		mRenderPass->begin(*mRenderTarget);
-		mRenderPass->setVertexBuffer(0, *mRenderContext.vertexBuffer);
-		mRenderPass->setIndexBuffer(*mRenderContext.indexBuffer);
-		mRenderPass->setPipeline(*mRenderContext.pipeline);
-		mRenderPass->setBindGroup(kCommonBindGroupIndex, *mRenderContext.bindGroup);
+		renderPass.setVertexBuffer(0, *mRenderContext.vertexBuffer);
+		renderPass.setIndexBuffer(*mRenderContext.indexBuffer);
+		renderPass.setPipeline(*mRenderContext.pipeline);
+		renderPass.setBindGroup(kCommonBindGroupIndex, *mRenderContext.bindGroup);
 
 		for (auto& command : mCommands)
 		{
 			auto& bindGroups = mImageContext.bindGroups;
 			if (auto it = bindGroups.find(command.textureId); it != bindGroups.end())
 			{
-				mRenderPass->setBindGroup(kTextureBindGroupIndex, *it->second);
+				renderPass.setBindGroup(kTextureBindGroupIndex, *it->second);
 			}
 
-			mRenderPass->drawIndexed(command.numIndices, 1, command.baseIndex, command.baseVertex);
+			renderPass.drawIndexed(command.numIndices, 1, command.baseIndex, command.baseVertex);
 		}
-
-		mRenderPass->end();
-		mRenderPass->submit();
 
 		mStagingContext.numVertices = 0;
 		mStagingContext.numIndices = 0;

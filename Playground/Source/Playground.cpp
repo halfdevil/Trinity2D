@@ -9,6 +9,8 @@
 #include "Graphics/Texture.h"
 #include "Graphics/RenderPass.h"
 #include "Graphics/GraphicsDevice.h"
+#include "Graphics/BatchRenderer.h"
+#include "Graphics/FrameBuffer.h"
 #include "VFS/FileSystem.h"
 #include "Core/ResourceCache.h"
 #include "Core/Logger.h"
@@ -25,6 +27,27 @@ namespace Trinity
 			return false;
 		}
 
+		mRenderPass = std::make_unique<RenderPass>();
+
+		auto colorTexture = std::make_unique<Texture>();
+		if (!colorTexture->create(512, 512, wgpu::TextureFormat::RGBA8Unorm, wgpu::TextureUsage::RenderAttachment |
+			wgpu::TextureUsage::TextureBinding))
+		{
+			LogError("Texture::create() failed");
+			return false;
+		}
+
+		auto depthTexture = std::make_unique<Texture>();
+		if (!depthTexture->create(512, 512, wgpu::TextureFormat::Depth32Float, wgpu::TextureUsage::RenderAttachment))
+		{
+			LogError("Texture::create() failed");
+			return false;
+		}
+
+		auto frameBuffer = std::make_unique<FrameBuffer>();
+		frameBuffer->addColorAttachment(*colorTexture);
+		frameBuffer->setDepthStencilAttachment(*depthTexture);
+
 		auto& swapChain = mGraphicsDevice->getSwapChain();
 		mImGuiRenderer = std::make_unique<ImGuiRenderer>();
 
@@ -35,9 +58,23 @@ namespace Trinity
 		}
 
 		mTextRenderer = std::make_unique<TextRenderer>();
-		if (!mTextRenderer->create(TextRenderer::kDefaultShader, swapChain))
+		if (!mTextRenderer->create(TextRenderer::kDefaultShader, *frameBuffer))
 		{
 			LogError("TextRenderer::create() failed");
+			return false;
+		}
+
+		mBatchRenderer = std::make_unique<BatchRenderer>();
+		if (!mBatchRenderer->create("/Assets/Engine/Shaders/SpriteRenderer.wgsl", *frameBuffer))
+		{
+			LogError("BatchRenderer::create() failed");
+			return false;
+		}
+
+		auto texture = std::make_unique<Texture>();
+		if (!texture->create("/Assets/Textures/grass.png", wgpu::TextureFormat::RGBA8Unorm))
+		{
+			LogError("Texture::create() failed");
 			return false;
 		}
 
@@ -64,10 +101,18 @@ namespace Trinity
 		auto* camera = scene->addCamera("mainCamera", 0.0f, (float)mWindow->getWidth(), (float)mWindow->getHeight(), 
 			0.0f, 0.1f, 100.0f, glm::vec3(0.0f));
 
+		mColorTexture = colorTexture.get();
+		mDepthTexture = depthTexture.get();
+		mFrameBuffer = frameBuffer.get();
+		mTexture = texture.get();
 		mFont = font.get();
 		mScene = scene.get();
 		mCamera = camera;
 
+		mResourceCache->addResource(std::move(colorTexture));
+		mResourceCache->addResource(std::move(depthTexture));
+		mResourceCache->addResource(std::move(frameBuffer));
+		mResourceCache->addResource(std::move(texture));
 		mResourceCache->addResource(std::move(font));
 		mResourceCache->addResource(std::move(scene));
 
@@ -94,9 +139,29 @@ namespace Trinity
 		auto projView = mCamera->getProjection() * mCamera->getView();
 		auto transform = glm::translate(glm::mat4(1.0f), glm::vec3{ 200.0f, 200.0f, 1.0f });
 
+		mRenderPass->begin(*mFrameBuffer);
+		
+		mBatchRenderer->begin(projView);
+		mBatchRenderer->drawTexture(mTexture, glm::vec2{ 0.0f }, glm::vec2{ 512.0f }, 
+			glm::vec2{ 0.0f }, glm::vec2{ 512.0f }, glm::vec4{ 0.0f }, 1.0f);
+		mBatchRenderer->end(*mRenderPass);
+
 		mTextRenderer->begin(projView);
 		mTextRenderer->drawText("Hello World!", mFont, 64.0f, glm::vec4{ 0.0f, 0.0f, 1.0f, 1.0f }, glm::vec2{ 0.0f }, transform);
-		mTextRenderer->end();
+		mTextRenderer->end(*mRenderPass);
+
+		mRenderPass->end();
+		
+		auto& swapChain = mGraphicsDevice->getSwapChain();
+		mRenderPass->begin(swapChain);
+
+		mImGuiRenderer->newFrame(*mWindow, mClock->getDeltaTime());
+		ImGui::Begin("Demo Window");
+		ImGui::Image((ImTextureID)mColorTexture, ImVec2{ 512, 512 });
+		ImGui::End();
+		mImGuiRenderer->draw(*mRenderPass);
+
+		mRenderPass->end();
 	}
 }
 

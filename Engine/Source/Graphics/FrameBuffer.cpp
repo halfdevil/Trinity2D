@@ -9,6 +9,12 @@ namespace Trinity
         return mColorFormats;
     }
 
+    wgpu::TextureFormat FrameBuffer::getColorFormat(uint32_t index) const
+    {
+        Assert(index < (uint32_t)mColorFormats.size(), "Invalid index passed: %ld", index);
+        return mColorFormats.at(index);
+    }
+
     wgpu::TextureFormat FrameBuffer::getDepthFormat() const
     {
         return mDepthFormat;
@@ -41,15 +47,24 @@ namespace Trinity
         });
     }
 
-    void FrameBuffer::setDepthStencilAttachment(const Texture& texture, float depthValue, 
-        wgpu::LoadOp loadOp, wgpu::StoreOp storeOp)
+    void FrameBuffer::setDepthStencilAttachment(
+        const Texture& texture, 
+        float depthValue, 
+        wgpu::LoadOp depthLoadOp, 
+        wgpu::StoreOp depthStoreOp, 
+        uint32_t stencilValue, 
+        wgpu::LoadOp stencilLoadOp, 
+        wgpu::StoreOp stencilStoreOp)
     {
         mDepthFormat = texture.getFormat();
         mDepthStencilAttachment = {
             .view = texture.getView(),
-            .depthLoadOp = loadOp,
-            .depthStoreOp = storeOp,
-            .depthClearValue = depthValue
+            .depthLoadOp = depthLoadOp,
+            .depthStoreOp = depthStoreOp,
+            .depthClearValue = depthValue,
+            .stencilLoadOp = stencilLoadOp,
+            .stencilStoreOp = stencilStoreOp,
+            .stencilClearValue = stencilValue
         };
     }
 }

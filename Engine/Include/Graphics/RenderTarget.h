@@ -19,6 +19,7 @@ namespace Trinity
 		RenderTarget& operator = (RenderTarget&&) = default;
 
 		virtual std::vector<wgpu::TextureFormat> getColorFormats() const = 0;
+		virtual wgpu::TextureFormat getColorFormat(uint32_t index = 0) const = 0;
 		virtual wgpu::TextureFormat getDepthFormat() const = 0;
 
 		virtual bool hasDepthStencilAttachment() const = 0;

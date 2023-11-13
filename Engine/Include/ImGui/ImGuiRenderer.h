@@ -57,7 +57,7 @@ namespace Trinity
 			ImGuiFont* font{ nullptr };
 			Sampler* sampler{ nullptr };
 			BindGroupLayout* bindGroupLayout{ nullptr };
-			std::unordered_map<ImGuiID, BindGroup*> bindGroups;
+			std::unordered_map<size_t, BindGroup*> bindGroups;
 		};
 
 		struct StagingContext
@@ -80,14 +80,14 @@ namespace Trinity
 		virtual bool create(Window& window, const std::string& defaultFontPath, RenderTarget& renderTarget);
 		virtual void destroy();
 		virtual void newFrame(Window& window, float deltaTime);
-		virtual void draw();
+		virtual void draw(const RenderPass& renderPass);
 
 	protected:
 
 		void setupCallbacks(Window& window);
 		void updateMouseCursor(Window& window);
 		bool createDeviceObjects(RenderTarget& renderTarget);
-		void setupRenderStates(ImDrawData* drawData);
+		void setupRenderStates(const RenderPass& renderPass, ImDrawData* drawData);
 
 		bool createCommonBindGroup();
 		bool createImageBindGroup(const Texture& texture);
@@ -99,8 +99,6 @@ namespace Trinity
 		ImageContext mImageContext;
 		StagingContext mStagingContext;
 		std::unique_ptr<ResourceCache> mResourceCache{ nullptr };
-		std::unique_ptr<RenderPass> mRenderPass{ nullptr };
 		glm::vec2 mLastValidMousePos{ 0.0f };
-		RenderTarget* mRenderTarget{ nullptr };
 	};
 }

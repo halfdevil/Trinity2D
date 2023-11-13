@@ -114,7 +114,7 @@ namespace Trinity
 		);
 
 		virtual void begin(const glm::mat4& viewProj);
-		virtual void end();
+		virtual void end(const RenderPass& renderPass);
 
 	protected:
 
@@ -134,8 +134,6 @@ namespace Trinity
 		ImageContext mImageContext;
 		StagingContext mStagingContext;
 		std::unique_ptr<ResourceCache> mResourceCache{ nullptr };
-		std::unique_ptr<RenderPass> mRenderPass{ nullptr };
-		RenderTarget* mRenderTarget{ nullptr };
 		Texture* mCurrentTexture{ nullptr };
 		glm::vec2 mInvTextureSize{ 0.0f };
 		std::vector<DrawCommand> mCommands;

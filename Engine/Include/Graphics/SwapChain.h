@@ -77,6 +77,7 @@ namespace Trinity
         virtual void present();
 
         virtual std::vector<wgpu::TextureFormat> getColorFormats() const override;
+        virtual wgpu::TextureFormat getColorFormat(uint32_t index) const override;
         virtual wgpu::TextureFormat getDepthFormat() const override;
 
         virtual bool hasDepthStencilAttachment() const override;

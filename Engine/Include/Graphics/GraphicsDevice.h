@@ -64,7 +64,6 @@ namespace Trinity
             wgpu::TextureFormat depthFormat = wgpu::TextureFormat::Depth32Float);
 
         virtual void setClearColor(const wgpu::Color& clearColor);
-        virtual void clearScreen();
         virtual void present();
 
     protected:

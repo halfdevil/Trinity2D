@@ -87,54 +87,6 @@ namespace Trinity
         mSwapChain.setClearColor(clearColor);
     }
 
-    void GraphicsDevice::clearScreen()
-    {
-        wgpu::RenderPassColorAttachment colorAttachment = {
-            .view = mSwapChain.getCurrentView(),
-            .loadOp = wgpu::LoadOp::Clear,
-            .storeOp = wgpu::StoreOp::Store,
-            .clearValue = mSwapChain.getClearColor()
-        };
-
-        wgpu::RenderPassDescriptor renderPassDesc = {
-            .colorAttachmentCount = 1,
-            .colorAttachments = &colorAttachment
-        };
-
-        if (mSwapChain.hasDepthStencilAttachment())
-        {
-            wgpu::RenderPassDepthStencilAttachment depthStencilAttachment = {
-                .view = mSwapChain.getDepthStencilView(),
-                .depthLoadOp = wgpu::LoadOp::Clear,
-                .depthStoreOp = wgpu::StoreOp::Store,
-                .depthClearValue = 1.0f
-            };
-
-            renderPassDesc.depthStencilAttachment = &depthStencilAttachment;
-        }
-
-        auto& graphicsDevice = GraphicsDevice::get();
-        auto commandEncoder = graphicsDevice.getDevice().CreateCommandEncoder();
-
-        if (!commandEncoder)
-        {
-            LogError("Device::CreateCommandEncoder() failed");
-            return;
-        }
-
-        auto renderPassEncoder = commandEncoder.BeginRenderPass(&renderPassDesc);
-        if (!renderPassEncoder)
-        {
-            LogError("wgpu::CommandEncoder::BeginRenderPass() failed!!");
-            return;
-        }
-
-        renderPassEncoder.End();
-
-        auto commands = commandEncoder.Finish();
-        graphicsDevice.getQueue().Submit(1, &commands);
-    }
-
     void GraphicsDevice::present()
     {
         mSwapChain.present();
