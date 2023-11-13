@@ -43,6 +43,8 @@ namespace Trinity
 	void Application::run(const ApplicationOptions& options)
 	{
 		mOptions = options;
+		mFrameTime = 1.0f / options.fps;
+		mMPF = 1000.0f * mFrameTime;
 
 		mLogger = std::make_unique<Logger>();
 		mLogger->setMaxLogLevel(options.logLevel);
@@ -176,6 +178,10 @@ namespace Trinity
 	{		
 	}
 
+	void Application::fixedUpdate(float deltaTime)
+	{
+	}
+
 	void Application::draw(float deltaTime)
 	{
 	}
@@ -184,6 +190,14 @@ namespace Trinity
 	{
 		mClock->update();
 		mInput->update();
+
+		mLagTime += mClock->getDeltaTime();
+		while (mLagTime >= mMPF)
+		{
+			mLagTime -= mMPF;
+			fixedUpdate(mMPF);
+		}
+
 		mGraphicsDevice->clearScreen();
 
 		update(mClock->getDeltaTime());

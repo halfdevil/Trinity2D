@@ -25,6 +25,7 @@ namespace Trinity
         uint32_t width{ 1024 };
         uint32_t height{ 768 };
         DisplayMode displayMode{ DisplayMode::Windowed };
+        uint32_t fps{ 60 };
         std::string configFile;
     };
 
@@ -106,8 +107,9 @@ namespace Trinity
     protected:
 
         virtual bool init();
-        virtual void update(float deltaTime);
-        virtual void draw(float deltaTime);
+		virtual void update(float deltaTime);
+		virtual void fixedUpdate(float deltaTime);
+		virtual void draw(float deltaTime);
         virtual void frame();
 		virtual void exit();
 
@@ -129,5 +131,8 @@ namespace Trinity
         std::unique_ptr<GraphicsDevice> mGraphicsDevice{ nullptr };
 		std::unique_ptr<RenderPass> mMainPass{ nullptr };
 		std::unique_ptr<ImGuiRenderer> mImGuiRenderer{ nullptr };
+        float mFrameTime{ 0.0f };
+        float mMPF{ 0.0f };
+        float mLagTime{ 0.0f };
     };
 }

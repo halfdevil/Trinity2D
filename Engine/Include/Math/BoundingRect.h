@@ -23,6 +23,9 @@ namespace Trinity
 		glm::vec2 getSize() const;
 		glm::vec2 getCenter() const;
 
+		void transform(const glm::mat4& m);
+		BoundingRect getTransformed(const glm::mat4& m) const;
+
 		void fromPoints(const std::vector<glm::vec2>& points);
 		void combinePoint(const glm::vec2& p);
 		void combineRect(const BoundingRect& other);
