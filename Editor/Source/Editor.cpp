@@ -1,4 +1,5 @@
 #include "Editor.h"
+#include "Widgets/EditorMenu.h"
 #include "Input/Input.h"
 #include "ImGui/ImGuiRenderer.h"
 #include "Gui/Font.h"
@@ -26,38 +27,43 @@ namespace Trinity
 		}
 
 		auto& swapChain = mGraphicsDevice->getSwapChain();
-		mImGuiRenderer = std::make_unique<ImGuiRenderer>();
+		mRenderPass = std::make_unique<RenderPass>();
 
+		mImGuiRenderer = std::make_unique<ImGuiRenderer>();
 		if (!mImGuiRenderer->create(*mWindow, "/Assets/Fonts/CascadiaCode.ttf", swapChain))
 		{
 			LogError("Gui::create() failed!!");
 			return false;
 		}
 
-		mTextRenderer = std::make_unique<TextRenderer>();
-		if (!mTextRenderer->create(TextRenderer::kDefaultShader, swapChain))
-		{
-			LogError("TextRenderer::create() failed");
-			return false;
-		}
+		mMainMenu = std::make_unique<EditorMenu>();
+		mMainMenu->setMainMenu(true);
+		mMainMenu->onMenuItemClick.subscribe([this](const auto& menuItem) {
+			onMainMenuClick(menuItem.title);
+		});
 
-		auto font = std::make_unique<Font>();
-		if (!font->create("/Assets/Fonts/CascadiaCode.ttf", { 16.0f, 32.0f, 64.0f }))
-		{
-			LogError("Font::create() failed for: 'CascadiaCode.ttf'");
-			return false;
-		}
+		auto* fileMenu = mMainMenu->addMenuItem("File");
+		auto* toolsMenu = mMainMenu->addMenuItem("Tools");
 
-		mFont = font.get();
-		mResourceCache->addResource(std::move(font));
+		mMainMenu->addMenuItem("New Project", "CTRL+N", fileMenu);
+		mMainMenu->addMenuItem("Open Project", "CTRL+O", fileMenu);
+		mMainMenu->addMenuItem("Sprite Editor", "CTRL+T", toolsMenu);
 
+		mGraphicsDevice->setClearColor({ 0.5f, 0.5f, 0.5f, 1.0f });
 		return true;
 	}
 
 	void Editor::draw(float deltaTime)
 	{
 		Application::draw(deltaTime);
+
+		auto& swapChain = mGraphicsDevice->getSwapChain();
+		mRenderPass->begin(swapChain);
+
+		mImGuiRenderer->newFrame(*mWindow, mClock->getDeltaTime());
 		onGui();
+		mImGuiRenderer->draw(*mRenderPass);
+		mRenderPass->end();
 	}
 
 	void Editor::setupInput()
@@ -71,6 +77,16 @@ namespace Trinity
 
 	void Editor::onGui()
 	{
+		ImGui::DockSpaceOverViewport();
+		if (mMainMenu != nullptr)
+		{
+			mMainMenu->draw();
+		}
+	}
+
+	void Editor::onMainMenuClick(const std::string& title)
+	{
+		LogInfo("MainMenuItem clicked: %s", title.c_str());
 	}
 }
 
@@ -80,6 +96,7 @@ int main(int argc, char* argv[])
 {
 	static Editor app;
 	app.run({
+		.logLevel = LogLevel::Info,
 		.title = "Trinity2D - Editor",
 #ifdef __EMSCRIPTEN__
 		.configFile = "/Assets/EditorConfig.json",

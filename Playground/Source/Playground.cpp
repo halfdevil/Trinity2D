@@ -147,7 +147,8 @@ namespace Trinity
 		mBatchRenderer->end(*mRenderPass);
 
 		mTextRenderer->begin(projView);
-		mTextRenderer->drawText("Hello World!", mFont, 64.0f, glm::vec4{ 0.0f, 0.0f, 1.0f, 1.0f }, glm::vec2{ 0.0f }, transform);
+		mTextRenderer->drawText("Hello World!", mFont, 64.0f, glm::vec4{ 1.0f }, 
+			glm::vec2{ 0.0f }, transform);
 		mTextRenderer->end(*mRenderPass);
 
 		mRenderPass->end();

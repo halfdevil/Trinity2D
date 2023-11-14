@@ -4,9 +4,9 @@
 
 namespace Trinity
 {
-	class Font;
 	class ImGuiRenderer;
-	class TextRenderer;
+	class RenderPass;
+	class EditorMenu;
 
 	class Editor : public Application
 	{
@@ -27,11 +27,12 @@ namespace Trinity
 		virtual void draw(float deltaTime) override;
 		virtual void setupInput() override;
 		virtual void onGui();
+		virtual void onMainMenuClick(const std::string& title);
 
 	protected:
 
 		std::unique_ptr<ImGuiRenderer> mImGuiRenderer{ nullptr };
-		std::unique_ptr<TextRenderer> mTextRenderer{ nullptr };
-		Font* mFont{ nullptr };
+		std::unique_ptr<RenderPass> mRenderPass{ nullptr };
+		std::unique_ptr<EditorMenu> mMainMenu{ nullptr };
 	};
 }

@@ -180,6 +180,7 @@ namespace Trinity
 		auto fbSize = window.getFramebufferSize();
 		ImGuiIO& io = ImGui::GetIO();
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 		io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;
 		io.DisplaySize.x = (float)fbSize.x;
 		io.DisplaySize.y = (float)fbSize.y;
@@ -228,7 +229,7 @@ namespace Trinity
 		const glm::uvec2 size = window.getSize();
 		const glm::uvec2 displaySize = window.getFramebufferSize();
 
-		io.DeltaTime = deltaTime;
+		io.DeltaTime = deltaTime / 1000.0f;
 		io.DisplaySize = { (float)size.x, (float)size.y };
 
 		if (displaySize.x > 0 && displaySize.y > 0)
