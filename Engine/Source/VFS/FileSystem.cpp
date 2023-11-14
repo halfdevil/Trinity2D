@@ -48,6 +48,11 @@ namespace Trinity
 		return fs::weakly_canonical(path).string();
 	}
 
+	std::string FileSystem::subtractPath(const std::string& pathA, const std::string& pathB)
+	{
+		return fs::path(pathA).lexically_relative(pathB).string();
+	}
+
 	bool FileSystem::isExist(const std::string& filePath) const
 	{
 		for (auto& it : mStorages)

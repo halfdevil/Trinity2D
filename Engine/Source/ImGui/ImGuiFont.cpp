@@ -74,15 +74,13 @@ namespace Trinity
 
 		ImGuiIO& io = ImGui::GetIO();
 		ImFontConfig cfg;
+		cfg.MergeMode = true;
 		cfg.FontDataOwnedByAtlas = false;
-		cfg.RasterizerMultiply = 1.5f;
-		cfg.SizePixels = fontSize;
+		cfg.GlyphMinAdvanceX = fontSize;
 		cfg.PixelSnapH = true;
-		cfg.OversampleH = 4;
-		cfg.OversampleV = 4;
 
 		ImFont* iconsFont = io.Fonts->AddFontFromMemoryTTF(buffer.data(), (int)reader.getSize(),
-			cfg.SizePixels, &cfg, glyphRanges);
+			fontSize, &cfg, glyphRanges);
 
 		if (!iconsFont)
 		{

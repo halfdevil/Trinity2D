@@ -141,6 +141,7 @@ namespace Trinity
 			return false;
 		}
 
+		mFileName = fileName;
 		return create(image.get(), format, mipmaps);
 	}
 

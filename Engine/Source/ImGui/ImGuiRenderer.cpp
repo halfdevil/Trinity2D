@@ -202,7 +202,7 @@ namespace Trinity
 			return false;
 		}
 
-		mImageContext.font = font.get();
+		mDefaultFont = font.get();
 		mResourceCache = std::make_unique<ResourceCache>();
 		mResourceCache->addResource(std::move(font));
 
@@ -456,9 +456,9 @@ namespace Trinity
 			return false;
 		}
 
-		if (mImageContext.font != nullptr)
+		if (mDefaultFont != nullptr)
 		{
-			createImageBindGroup(*mImageContext.font->getTexture());
+			createImageBindGroup(*mDefaultFont->getTexture());
 		}
 
 		ShaderPreProcessor processor;

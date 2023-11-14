@@ -44,6 +44,7 @@ include_directories("ThirdParty/stb")
 include_directories("ThirdParty/glm")
 include_directories("ThirdParty/json/include")
 include_directories("ThirdParty/imgui")
+include_directories("ThirdParty/IconFontCppHeaders")
 
 # Include sub-projects.
 add_subdirectory("Engine")

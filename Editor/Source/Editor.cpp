@@ -1,9 +1,10 @@
 #include "Editor.h"
+#include "EditorCache.h"
 #include "Widgets/EditorMenu.h"
+#include "Widgets/AssetBrowser.h"
 #include "Input/Input.h"
 #include "ImGui/ImGuiRenderer.h"
-#include "Gui/Font.h"
-#include "Gui/TextRenderer.h"
+#include "ImGui/ImGuiFont.h"
 #include "Scene/Scene.h"
 #include "Scene/Components/Camera.h"
 #include "Scene/ComponentFactory.h"
@@ -29,6 +30,13 @@ namespace Trinity
 		auto& swapChain = mGraphicsDevice->getSwapChain();
 		mRenderPass = std::make_unique<RenderPass>();
 
+		mEditorCache = std::make_unique<EditorCache>();
+		if (!mEditorCache->create())
+		{
+			LogError("EditorCache::create() failed");
+			return false;
+		}
+
 		mImGuiRenderer = std::make_unique<ImGuiRenderer>();
 		if (!mImGuiRenderer->create(*mWindow, "/Assets/Fonts/CascadiaCode.ttf", swapChain))
 		{
@@ -36,8 +44,22 @@ namespace Trinity
 			return false;
 		}
 
+		auto* defaultFont = mImGuiRenderer->getDefaultFont();
+		if (!defaultFont->addIconsFont(kEditorIconFont, defaultFont->getSize(), kIconRanges))
+		{
+			LogError("ImGuiFont::addIconsFont() failed for: '%s'", kEditorIconFont);
+			return false;
+		}
+
+		if (!defaultFont->build())
+		{
+			LogError("ImGuiFont::build() failed for: '%s'", kEditorFont);
+			return false;
+		}
+
 		mMainMenu = std::make_unique<EditorMenu>();
 		mMainMenu->setMainMenu(true);
+
 		mMainMenu->onMenuItemClick.subscribe([this](const auto& menuItem) {
 			onMainMenuClick(menuItem.title);
 		});
@@ -49,7 +71,16 @@ namespace Trinity
 		mMainMenu->addMenuItem("Open Project", "CTRL+O", fileMenu);
 		mMainMenu->addMenuItem("Sprite Editor", "CTRL+T", toolsMenu);
 
+		mAssetBrowser = std::make_unique<AssetBrowser>();
+		if (!mAssetBrowser->create("/Assets", *mEditorCache))
+		{
+			LogError("AssetBrowser::create() failed");
+			return false;
+		}
+
+		mAssetBrowser->setTitle("Asset Browser");
 		mGraphicsDevice->setClearColor({ 0.5f, 0.5f, 0.5f, 1.0f });
+
 		return true;
 	}
 
@@ -78,9 +109,15 @@ namespace Trinity
 	void Editor::onGui()
 	{
 		ImGui::DockSpaceOverViewport();
+		
 		if (mMainMenu != nullptr)
 		{
 			mMainMenu->draw();
+		}
+
+		if (mAssetBrowser != nullptr)
+		{
+			mAssetBrowser->draw();
 		}
 	}
 

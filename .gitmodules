@@ -23,3 +23,6 @@
 [submodule "ThirdParty/imguibuild"]
 	path = ThirdParty/imguibuild
 	url = https://github.com/halfdevil/imguibuild.git
+[submodule "ThirdParty/IconFontCppHeaders"]
+	path = ThirdParty/IconFontCppHeaders
+	url = https://github.com/juliettef/IconFontCppHeaders.git

@@ -34,6 +34,7 @@ namespace Trinity
 		std::string relativePath(const std::string& path, const std::string& basePath) const;
 		std::string sanitizePath(const std::string& path) const;
 		std::string canonicalPath(const std::string& path) const;
+		std::string subtractPath(const std::string& pathA, const std::string& pathB);
 
 		bool isExist(const std::string& filePath) const;
 		bool isDirectory(const std::string& filePath) const;

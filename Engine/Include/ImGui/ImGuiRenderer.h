@@ -54,7 +54,6 @@ namespace Trinity
 
 		struct ImageContext
 		{
-			ImGuiFont* font{ nullptr };
 			Sampler* sampler{ nullptr };
 			BindGroupLayout* bindGroupLayout{ nullptr };
 			std::unordered_map<size_t, BindGroup*> bindGroups;
@@ -76,6 +75,11 @@ namespace Trinity
 
 		ImGuiRenderer(ImGuiRenderer&&) = default;
 		ImGuiRenderer& operator = (ImGuiRenderer&&) = default;
+
+		ImGuiFont* getDefaultFont() const
+		{
+			return mDefaultFont;
+		}
 
 		virtual bool create(Window& window, const std::string& defaultFontPath, RenderTarget& renderTarget);
 		virtual void destroy();
@@ -100,5 +104,6 @@ namespace Trinity
 		StagingContext mStagingContext;
 		std::unique_ptr<ResourceCache> mResourceCache{ nullptr };
 		glm::vec2 mLastValidMousePos{ 0.0f };
+		ImGuiFont* mDefaultFont{ nullptr };
 	};
 }
