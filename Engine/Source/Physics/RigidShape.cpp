@@ -46,7 +46,7 @@ namespace Trinity
 		else
 		{
 			mInverseMass = 0.0f;
-			mAcceleration = { 0.0f };
+			mAcceleration = glm::vec2{ 0.0f };
 		}
 
 		mMass = mass;

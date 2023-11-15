@@ -41,6 +41,7 @@ namespace Trinity
 		for (std::string line; std::getline(input, line);)
 		{
 			output.append(processLine(input, dir.string(), line));
+			output.append("\n");
 		}
 
 		return output;
@@ -196,6 +197,7 @@ namespace Trinity
 			if (!mExcludeLine)
 			{
 				output.append(processDefines(line));
+				output.append("\n");
 			}
 		}
 

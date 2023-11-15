@@ -5,6 +5,9 @@
 #ifndef __EMSCRIPTEN__
 #ifdef _WIN32
 #define GLFW_EXPOSE_NATIVE_WIN32
+#elif __APPLE__
+#define GLFW_EXPOSE_NATIVE_COCOA
+#include "Utils/MacOSHelper.h"
 #endif
 #include <GLFW/glfw3native.h>
 #endif
@@ -243,6 +246,9 @@ namespace Trinity
         surfaceDesc->hwnd = glfwGetWin32Window(mHandle);
         surfaceDesc->hinstance = GetModuleHandle(nullptr);
         return surfaceDesc;
+#endif
+#ifdef __APPLE__
+        return MacOSHelper::getMetalSurface(mHandle);
 #endif
 #endif
     }

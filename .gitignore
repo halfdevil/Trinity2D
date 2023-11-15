@@ -37,3 +37,6 @@ Build/
 *.exe
 *.out
 *.app
+
+# macOS specific files
+*.DS_Store

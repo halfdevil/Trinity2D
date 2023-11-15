@@ -18,6 +18,23 @@
       }
     },
     {
+      "name": "macOS-base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/Build/${presetName}",
+      "installDir": "${sourceDir}/Install/${presetName}",
+      "cacheVariables": {
+          "CMAKE_C_COMPILER": "/usr/bin/clang",
+          "CMAKE_CXX_COMPILER": "/usr/bin/clang++",
+          "CMAKE_OSX_ARCHITECTURES": "x86_64"
+      },
+      "condition": {
+          "type": "equals",
+          "lhs": "${hostSystemName}",
+          "rhs": "Darwin"
+      }
+    },
+    {
       "name": "win64-debug",
       "displayName": "Win64 Debug",
       "inherits": "windows-base",
@@ -36,6 +53,22 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
+    },
+    {
+        "name": "macOS-debug",
+        "displayName": "macOS Debug",
+        "inherits": "macOS-base",
+        "cacheVariables": {
+            "CMAKE_BUILD_TYPE": "Debug"
+        }
+    },
+    {
+        "name": "macOS-release",
+        "displayName": "macOS Release",
+        "inherits": "macOS-base",
+        "cacheVariables": {
+            "CMAKE_BUILD_TYPE": "Release"
+        }
     },
     {
       "name": "emscripten-debug",

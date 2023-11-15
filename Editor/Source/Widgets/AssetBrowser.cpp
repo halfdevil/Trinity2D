@@ -120,7 +120,7 @@ namespace Trinity
 						}
 
 						ImGui::SetCursorPosX(ImGui::GetCursorPosX() + mTextPadding);
-						ImGui::TextWrapped(fileEntry.name.c_str());
+						ImGui::TextWrapped("%s", fileEntry.name.c_str());
 						ImGui::NextColumn();
 					}
 				}
@@ -212,7 +212,7 @@ namespace Trinity
 				std::string label = entry->isOpen ? ICON_FA_FOLDER_OPEN " " : ICON_FA_FOLDER_CLOSED "  ";
 				label.append(entry->name);
 
-				ImGui::TreeNodeEx(&entry, flags, label.c_str());
+				ImGui::TreeNodeEx(&entry, flags, "%s", label.c_str());
 
 				if (ImGui::IsItemClicked())
 				{
@@ -229,7 +229,7 @@ namespace Trinity
 				std::string label = entry->isOpen ? ICON_FA_FOLDER_OPEN " " : ICON_FA_FOLDER_CLOSED "  ";
 				label.append(entry->name);
 
-				if (ImGui::TreeNodeEx(&entry, flags, label.c_str()))
+				if (ImGui::TreeNodeEx(&entry, flags, "%s", label.c_str()))
 				{
 					entry->isOpen = true;
 
