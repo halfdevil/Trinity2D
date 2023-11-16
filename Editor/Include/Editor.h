@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core/Singleton.h"
 #include "Core/Application.h"
 #include "IconsFontAwesome6.h"
 #include "imgui.h"
@@ -7,18 +8,17 @@
 namespace Trinity
 {
 	class ImGuiRenderer;
+	class ImGuiFont;
 	class RenderPass;
-	class EditorCache;
-	class EditorMenu;
-	class AssetBrowser;
+	class EditorResources;
+	class EditorWidget;
 
-	class Editor : public Application
+	class Editor : public Application, public Singleton<Editor>
 	{
 	public:
 
-		static constexpr const char* kEditorFont = "/Assets/Fonts/CascadiaCode.ttf";
-		static constexpr const char* kEditorIconFont = "/Assets/Fonts/Icons/" FONT_ICON_FILE_NAME_FAR;
-		static constexpr ImWchar kIconRanges[] = { ICON_MIN_FA, ICON_MAX_16_FA, 0 };
+		static constexpr ImWchar kIconFontRanges[] = { ICON_MIN_FA, ICON_MAX_16_FA, 0 };
+		static constexpr float kIconFontSizes[] = { 64.0f };
 
 		Editor() = default;
 		virtual ~Editor() = default;
@@ -29,11 +29,23 @@ namespace Trinity
 		Editor(Editor&&) = default;
 		Editor& operator = (Editor&&) = default;
 
+		ImGuiRenderer* getImGuiRenderer() const
+		{
+			return mImGuiRenderer.get();
+		}
+
+		EditorResources* getEditorResource() const
+		{
+			return mEditorResources.get();
+		}
+
 	protected:
 
 		virtual bool init() override;
 		virtual void draw(float deltaTime) override;
 		virtual void setupInput() override;
+		virtual bool loadFonts();
+
 		virtual void onGui();
 		virtual void onMainMenuClick(const std::string& title);
 
@@ -41,8 +53,8 @@ namespace Trinity
 
 		std::unique_ptr<ImGuiRenderer> mImGuiRenderer{ nullptr };
 		std::unique_ptr<RenderPass> mRenderPass{ nullptr };
-		std::unique_ptr<EditorCache> mEditorCache{ nullptr };
-		std::unique_ptr<EditorMenu> mMainMenu{ nullptr };
-		std::unique_ptr<AssetBrowser> mAssetBrowser{ nullptr };
+		std::unique_ptr<EditorResources> mEditorResources{ nullptr };
+		std::vector<std::unique_ptr<EditorWidget>> mWidgets;
+		ImGuiFont* mFont{ nullptr };
 	};
 }

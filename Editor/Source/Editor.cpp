@@ -1,5 +1,5 @@
 #include "Editor.h"
-#include "EditorCache.h"
+#include "EditorResources.h"
 #include "Widgets/EditorMenu.h"
 #include "Widgets/AssetBrowser.h"
 #include "Input/Input.h"
@@ -28,58 +28,54 @@ namespace Trinity
 		}
 
 		auto& swapChain = mGraphicsDevice->getSwapChain();
-		mRenderPass = std::make_unique<RenderPass>();
 
-		mEditorCache = std::make_unique<EditorCache>();
-		if (!mEditorCache->create())
+		mRenderPass = std::make_unique<RenderPass>();
+		mGraphicsDevice->setClearColor({ 0.5f, 0.5f, 0.5f, 1.0f });
+
+		mEditorResources = std::make_unique<EditorResources>();
+		if (!mEditorResources->create())
 		{
 			LogError("EditorCache::create() failed");
 			return false;
 		}
 
 		mImGuiRenderer = std::make_unique<ImGuiRenderer>();
-		if (!mImGuiRenderer->create(*mWindow, "/Assets/Fonts/CascadiaCode.ttf", swapChain))
+		if (!mImGuiRenderer->create(*mWindow, swapChain))
 		{
-			LogError("Gui::create() failed!!");
+			LogError("ImGuiRenderer::create() failed!!");
 			return false;
 		}
 
-		auto* defaultFont = mImGuiRenderer->getDefaultFont();
-		if (!defaultFont->addIconsFont(kEditorIconFont, defaultFont->getSize(), kIconRanges))
+		if (!loadFonts())
 		{
-			LogError("ImGuiFont::addIconsFont() failed for: '%s'", kEditorIconFont);
+			LogError("Editor::loadFonts() failed");
 			return false;
 		}
 
-		if (!defaultFont->build())
-		{
-			LogError("ImGuiFont::build() failed for: '%s'", kEditorFont);
-			return false;
-		}
+		auto mainMenu = std::make_unique<EditorMenu>();
+		mainMenu->setMainMenu(true);
 
-		mMainMenu = std::make_unique<EditorMenu>();
-		mMainMenu->setMainMenu(true);
-
-		mMainMenu->onMenuItemClick.subscribe([this](const auto& menuItem) {
+		mainMenu->onMenuItemClick.subscribe([this](const auto& menuItem) {
 			onMainMenuClick(menuItem.title);
 		});
 
-		auto* fileMenu = mMainMenu->addMenuItem("File");
-		auto* toolsMenu = mMainMenu->addMenuItem("Tools");
+		auto* fileMenu = mainMenu->addMenuItem("file", "File");
+		auto* toolsMenu = mainMenu->addMenuItem("tools", "Tools");
 
-		mMainMenu->addMenuItem("New Project", "CTRL+N", fileMenu);
-		mMainMenu->addMenuItem("Open Project", "CTRL+O", fileMenu);
-		mMainMenu->addMenuItem("Sprite Editor", "CTRL+T", toolsMenu);
+		mainMenu->addMenuItem("newProject", "New Project", "CTRL+N", fileMenu);
+		mainMenu->addMenuItem("openProject", "Open Project", "CTRL+O", fileMenu);
+		mainMenu->addMenuItem("spriteEditor", "Sprite Editor", "CTRL+T", toolsMenu);
 
-		mAssetBrowser = std::make_unique<AssetBrowser>();
-		if (!mAssetBrowser->create("/Assets", *mEditorCache))
+		auto assetBrowser = std::make_unique<AssetBrowser>();
+		if (!assetBrowser->create("/Assets", *mEditorResources))
 		{
 			LogError("AssetBrowser::create() failed");
 			return false;
 		}
 
-		mAssetBrowser->setTitle("Asset Browser");
-		mGraphicsDevice->setClearColor({ 0.5f, 0.5f, 0.5f, 1.0f });
+		assetBrowser->setTitle("Asset Browser");
+		mWidgets.push_back(std::move(mainMenu));
+		mWidgets.push_back(std::move(assetBrowser));
 
 		return true;
 	}
@@ -91,7 +87,7 @@ namespace Trinity
 		auto& swapChain = mGraphicsDevice->getSwapChain();
 		mRenderPass->begin(swapChain);
 
-		mImGuiRenderer->newFrame(*mWindow, mClock->getDeltaTime());
+		mImGuiRenderer->newFrame(*mWindow, deltaTime);
 		onGui();
 		mImGuiRenderer->draw(*mRenderPass);
 		mRenderPass->end();
@@ -106,18 +102,56 @@ namespace Trinity
 		});
 	}
 
+	bool Editor::loadFonts()
+	{
+		if (!mConfig.contains("font"))
+		{
+			return false;
+		}
+
+		auto fontConfig = mConfig["font"];
+		auto fontFile = fontConfig["file"].get<std::string>();
+		auto fontSizes = fontConfig["sizes"].get<std::vector<float>>();
+
+		for (uint32_t idx = 0; idx < (uint32_t)fontSizes.size(); idx++)
+		{
+			auto fontSize = fontSizes[idx];
+			auto fontName = "font-" + std::to_string((uint32_t)fontSize);
+
+			auto font = mEditorResources->loadFont(fontName, fontFile, fontSize, false);
+			if (!font)
+			{
+				LogError("EditorResource::loadFont() failed for: '%s'", fontFile.c_str());
+				return false;
+			}
+
+			if (fontConfig.contains("icon"))
+			{
+				auto iconFontFile = fontConfig["icon"].get<std::string>();
+				if (!font->mergeFont(iconFontFile, kIconFontRanges))
+				{
+					LogError("ImGuiFont::mergeFont() failed for: '%s'", iconFontFile.c_str());
+					return false;
+				}
+			}
+
+			if (!font->build())
+			{
+				LogError("ImGuiFont::build() failed for: '%s'", fontFile.c_str());
+				return false;
+			}
+		}
+
+		return true;
+	}
+
 	void Editor::onGui()
 	{
 		ImGui::DockSpaceOverViewport();
 		
-		if (mMainMenu != nullptr)
+		for (auto& widget : mWidgets)
 		{
-			mMainMenu->draw();
-		}
-
-		if (mAssetBrowser != nullptr)
-		{
-			mAssetBrowser->draw();
+			widget->draw();
 		}
 	}
 

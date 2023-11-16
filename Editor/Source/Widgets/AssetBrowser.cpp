@@ -1,5 +1,7 @@
 #include "Widgets/AssetBrowser.h"
-#include "EditorCache.h"
+#include "EditorResources.h"
+#include "ImGui/ImGuiFont.h"
+#include "ImGui/ImGuiRenderer.h"
 #include "Graphics/Texture.h"
 #include "VFS/FileSystem.h"
 #include "Core/Logger.h"
@@ -14,23 +16,19 @@ namespace Trinity
 		destroy();
 	}
 
-	bool AssetBrowser::create(const std::string& rootFolder, EditorCache& cache)
+	bool AssetBrowser::create(const std::string& rootFolder, EditorResources& resources)
 	{
-		if (!updateEntry(rootFolder))
+		auto* entry = updateEntry(rootFolder);
+		if (!entry)
 		{
 			LogError("AssetBrowser::updateEntry() failed for: '%s'", rootFolder.c_str());
 			return false;
 		}
 
-		mCurrentEntry = mEntries.back().get();
-		mRootEntry = mCurrentEntry;
-		mFolderIcon = cache.loadTexture(kFolderIcon);
-		mFolderOpenIcon = cache.loadTexture(kFolderOpenIcon);
-		mFileIcon = cache.loadTexture(kFileIcon);
-
+		entry->isOpen = true;
+		mIconsFont = resources.getFont("font-64");
 		mRootFolder = rootFolder;
 		mCurrentFolder = rootFolder;
-		mRootEntry->isOpen = true;
 
 		return true;
 	}
@@ -48,13 +46,17 @@ namespace Trinity
 
 	void AssetBrowser::draw()
 	{
-		if (ImGui::Begin(mTitle.c_str()))
+		auto* currentEntry = getEntry(mCurrentFolder);
+		if (!currentEntry)
 		{
-			ImGuiID dockspaceID = ImGui::GetID("##assetBrowser-dockspace");
-			
+			currentEntry = updateEntry(mCurrentFolder);
+		}
+
+		ImGui::Begin(mTitle.c_str());
+		{
+			ImGuiID dockspaceID = ImGui::GetID("##assetBrowser-dockspace");			
 			if (!ImGui::DockBuilderGetNode(dockspaceID))
 			{
-				ImGui::DockBuilderRemoveNode(dockspaceID);
 				ImGui::DockBuilderAddNode(dockspaceID, ImGuiDockNodeFlags_DockSpace);
 				ImGui::DockBuilderSetNodeSize(dockspaceID, ImGui::GetWindowSize());
 
@@ -64,7 +66,7 @@ namespace Trinity
 
 				ImGuiID bottomID;
 				ImGuiID topID = ImGui::DockBuilderSplitNode(rightID, ImGuiDir_Up,
-					0.10f, &topID, &bottomID);
+					0.15f, &topID, &bottomID);
 
 				ImGui::DockBuilderDockWindow("##assetBrowser-tree", leftID);
 				ImGui::DockBuilderDockWindow("##assetBrowser-topBar", topID);
@@ -75,26 +77,74 @@ namespace Trinity
 			ImGui::DockSpace(dockspaceID, { 0, 0 }, ImGuiDockNodeFlags_NoTabBar |
 				ImGuiDockNodeFlags_NoDocking);
 
-			if (ImGui::Begin("##assetBrowser-topBar", nullptr, ImGuiWindowFlags_HorizontalScrollbar |
-				ImGuiWindowFlags_NoMove))
+			ImGui::Begin("##assetBrowser-topBar", nullptr, ImGuiWindowFlags_HorizontalScrollbar |
+				ImGuiWindowFlags_NoMove);
 			{
-				if (ImGui::ArrowButton("##assetBrowser-previous", ImGuiDir_Left))
+				ImGui::PushStyleColor(ImGuiCol_Button, {0, 0, 0, 0});
+
+				bool disabled = mBackQueue.empty();
+				if (disabled)
 				{
+					ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+					ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+				}
+
+				if (ImGui::Button(ICON_FA_ARROW_LEFT))
+				{	
+					addToFrontQueue(mCurrentFolder);
+
+					mCurrentFolder = mBackQueue.front();
+					mBackQueue.pop_front();
+
+					currentEntry = updateEntry(mCurrentFolder);
+					currentEntry->isOpen = true;
+				}
+
+				if (disabled)
+				{
+					ImGui::PopItemFlag();
+					ImGui::PopStyleVar();
 				}
 
 				ImGui::SameLine();
 
-				if (ImGui::ArrowButton("##assetBrowser-next", ImGuiDir_Right))
+				disabled = mFrontQueue.empty();
+				if (disabled)
 				{
+					ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+					ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
 				}
 
-				ImGui::SameLine();
-				ImGui::TextUnformatted(mCurrentEntry->name.c_str());
+				if (ImGui::Button(ICON_FA_ARROW_RIGHT))
+				{
+					addToBackQueue(mCurrentFolder);
+
+					mCurrentFolder = mFrontQueue.front();
+					mFrontQueue.pop_front();
+
+					currentEntry = updateEntry(mCurrentFolder);
+					currentEntry->isOpen = true;
+				}
+
+				if (disabled)
+				{
+					ImGui::PopItemFlag();
+					ImGui::PopStyleVar();
+				}
+
+				ImGui::PopStyleColor();
+
+				if (currentEntry != nullptr)
+				{
+					ImGui::SameLine();
+					ImGui::TextUnformatted(currentEntry->name.c_str());
+				}
+
 				ImGui::End();
 			}
 
-			if (ImGui::Begin("##assetBrowser-content", nullptr, ImGuiWindowFlags_HorizontalScrollbar |
-				ImGuiWindowFlags_NoMove))
+			ImGui::Begin("##assetBrowser-content", nullptr, ImGuiWindowFlags_HorizontalScrollbar |
+				ImGuiWindowFlags_NoMove);
 			{
 				const float assetSize = mIconSize + mIconPadding;
 				float contentSize = ImGui::GetContentRegionAvail().x;
@@ -103,20 +153,22 @@ namespace Trinity
 				int32_t numColumns = std::max((int32_t)(contentSize / assetSize), 1);
 				ImGui::Columns(numColumns, nullptr, false);
 
-				if (mCurrentEntry != nullptr)
+				if (currentEntry != nullptr)
 				{
-					for (auto& fileEntry : mCurrentEntry->fileEntries)
+					for (auto& fileEntry : currentEntry->fileEntries)
 					{
-						Texture* texture = fileEntry.directory ? mFolderIcon : mFileIcon;
-
+						mIconsFont->activate();
 						ImGui::PushStyleColor(ImGuiCol_Button, { 0, 0, 0, 0 });
-						ImGui::ImageButtonEx(ImGui::GetID(&fileEntry), texture, { mIconSize, mIconSize }, { 0, 0 },
-							{ 1, 1 }, { 0, 0, 0, 0 }, { 1, 1, 1, 1 });
+
+						ImGui::ButtonEx(fileEntry.directory ? ICON_FA_FOLDER : ICON_FA_FILE_LINES, 
+							{ mIconSize + mIconPadding / 2.0f, mIconSize + mIconPadding / 2.0f });
+
 						ImGui::PopStyleColor();
+						mIconsFont->deactivate();
 
 						if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 						{
-							assetClicked(fileEntry.path, fileEntry.directory);
+							contentClicked(fileEntry.path, fileEntry.directory);
 						}
 
 						ImGui::SetCursorPosX(ImGui::GetCursorPosX() + mTextPadding);
@@ -129,21 +181,18 @@ namespace Trinity
 				ImGui::End();
 			}
 
-			if (mRootEntry != nullptr)
+			ImGui::Begin("##assetBrowser-tree", nullptr, ImGuiWindowFlags_HorizontalScrollbar |
+				ImGuiWindowFlags_NoMove);
 			{
-				if (ImGui::Begin("##assetBrowser-tree", nullptr, ImGuiWindowFlags_HorizontalScrollbar |
-					ImGuiWindowFlags_NoMove))
-				{
-					drawEntry(mRootEntry->path);
-					ImGui::End();
-				}
+				drawTree(mRootFolder);
+				ImGui::End();
 			}
 
 			ImGui::End();
 		}
 	}
 
-	bool AssetBrowser::updateEntry(const std::string& folderPath)
+	AssetEntry* AssetBrowser::updateEntry(const std::string& folderPath)
 	{
 		auto& fileSystem = FileSystem::get();
 
@@ -151,7 +200,7 @@ namespace Trinity
 		if (!fileSystem.getFiles(folderPath, false, entries))
 		{
 			LogError("FileSystem::getFiles() failed for: '%s'", folderPath.c_str());
-			return false;
+			return nullptr;
 		}
 
 		bool hasFolders{ false };
@@ -168,13 +217,9 @@ namespace Trinity
 			std::move(entries)
 		);
 
+		auto* entryPtr = entry.get();
 		if (auto it = mEntryMap.find(folderPath); it != mEntryMap.end())
 		{
-			if (mCurrentEntry->path == folderPath)
-			{
-				mCurrentEntry = entry.get();
-			}
-
 			mEntries[it->second] = std::move(entry);
 		}
 		else
@@ -183,84 +228,86 @@ namespace Trinity
 			mEntryMap.insert(std::make_pair(folderPath, (uint32_t)mEntries.size() - 1));
 		}
 
-		return true;
+		return entryPtr;
 	}
 
-	void AssetBrowser::drawEntry(const std::string& path)
+	AssetEntry* AssetBrowser::getEntry(const std::string& folderPath)
 	{
-		if (auto it = mEntryMap.find(path); it == mEntryMap.end())
+		if (auto it = mEntryMap.find(folderPath); it != mEntryMap.end())
 		{
-			updateEntry(path);
+			return mEntries[it->second].get();
 		}
 
-		if (auto it = mEntryMap.find(path); it != mEntryMap.end())
-		{
-			auto flags = ImGuiTreeNodeFlags_OpenOnArrow |
-				ImGuiTreeNodeFlags_SpanAvailWidth |
-				ImGuiTreeNodeFlags_SpanFullWidth;
-
-			auto* entry = mEntries[it->second].get();
-			if (entry->isOpen)
-			{
-				flags |= ImGuiTreeNodeFlags_DefaultOpen;
-			}
-
-			if (!entry->hasFolders)
-			{
-				flags |= ImGuiTreeNodeFlags_Leaf;
-
-				std::string label = entry->isOpen ? ICON_FA_FOLDER_OPEN " " : ICON_FA_FOLDER_CLOSED "  ";
-				label.append(entry->name);
-
-				ImGui::TreeNodeEx(&entry, flags, "%s", label.c_str());
-
-				if (ImGui::IsItemClicked())
-				{
-					entry->isOpen = true;
-					auto path(entry->path);
-
-					assetClicked(path, true);
-				}
-
-				ImGui::TreePop();
-			}
-			else
-			{
-				std::string label = entry->isOpen ? ICON_FA_FOLDER_OPEN " " : ICON_FA_FOLDER_CLOSED "  ";
-				label.append(entry->name);
-
-				if (ImGui::TreeNodeEx(&entry, flags, "%s", label.c_str()))
-				{
-					entry->isOpen = true;
-
-					for (auto& fileEntry : entry->fileEntries)
-					{
-						if (!fileEntry.directory)
-						{
-							continue;
-						}
-
-						drawEntry(fileEntry.path);
-					}
-
-					ImGui::TreePop();
-				}
-				else
-				{
-					entry->isOpen = false;
-				}
-			}
-		}
+		return nullptr;
 	}
 
-	void AssetBrowser::assetClicked(const std::string& path, bool isFolder)
+	void AssetBrowser::drawTree(const std::string& path)
 	{
-		if (isFolder && updateEntry(path))
+		AssetEntry* entry = getEntry(path);
+		if (!entry)
 		{
-			if (auto it = mEntryMap.find(path); it != mEntryMap.end())
+			entry = updateEntry(path);
+		}
+
+		auto flags = ImGuiTreeNodeFlags_OpenOnArrow |
+			ImGuiTreeNodeFlags_SpanAvailWidth |
+			ImGuiTreeNodeFlags_SpanFullWidth;
+
+		bool isOpen = entry->isOpen;
+		bool isLeaf = !entry->hasFolders;
+		bool isClicked = false;
+
+		if (isOpen)
+		{
+			flags |= ImGuiTreeNodeFlags_DefaultOpen;
+		}
+
+		if (isLeaf)
+		{
+			flags |= (ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
+		}
+
+		if (mCurrentFolder == entry->path)
+		{
+			flags |= ImGuiTreeNodeFlags_Selected;
+		}
+
+		std::string label = isOpen ? ICON_FA_FOLDER_OPEN " " : ICON_FA_FOLDER_CLOSED "  ";
+		label.append(entry->name);
+
+		bool hasOpen = ImGui::TreeNodeEx(&entry, flags, "%s", label.c_str());
+		if (ImGui::IsItemClicked())
+		{
+			if (mCurrentFolder != entry->path)
 			{
-				mCurrentEntry = mEntries[it->second].get();
-				openTree(path);
+				std::string entryPath{ entry->path };
+				treeClicked(entryPath);
+
+				entry = getEntry(entryPath);
+				entry->isOpen = true;
+			}
+		}
+
+		if (hasOpen && !isLeaf)
+		{
+			entry->isOpen = true;
+			for (auto& fileEntry : entry->fileEntries)
+			{
+				if (!fileEntry.directory)
+				{
+					continue;
+				}
+
+				drawTree(fileEntry.path);
+			}
+
+			ImGui::TreePop();
+		}
+		else
+		{
+			if (!isLeaf)
+			{
+				entry->isOpen = false;
 			}
 		}
 	}
@@ -268,23 +315,66 @@ namespace Trinity
 	void AssetBrowser::openTree(const std::string& path)
 	{
 		auto& fileSystem = FileSystem::get();
-		auto diff = fileSystem.subtractPath(mCurrentEntry->path, mRootEntry->path);
+		auto diff = fileSystem.subtractPath(mCurrentFolder, mRootFolder);
 
 		auto parts = StringHelper::split(diff, '/');
-		auto newPath(mRootEntry->path);
+		auto newPath(mRootFolder);
 
 		for (auto& part : parts)
 		{
 			newPath = fileSystem.combinePath(newPath, part);
 			newPath = fileSystem.sanitizePath(newPath);
 
-			updateEntry(newPath);
-
-			if (auto it = mEntryMap.find(newPath); it != mEntryMap.end())
+			auto* entry = updateEntry(newPath);
+			if (entry != nullptr)
 			{
-				auto& entry = *mEntries[it->second];
-				entry.isOpen = true;
+				entry->isOpen = true;
 			}
 		}
+	}
+
+	void AssetBrowser::treeClicked(const std::string& path)
+	{
+		auto* entry = updateEntry(path);
+		if (entry != nullptr)
+		{
+			addToBackQueue(mCurrentFolder);
+			mCurrentFolder = path;
+		}
+	}
+
+	void AssetBrowser::contentClicked(const std::string& path, bool isFolder)
+	{
+		if (isFolder)
+		{
+			auto* entry = updateEntry(path);
+			if (entry != nullptr)
+			{
+				addToBackQueue(mCurrentFolder);
+				mCurrentFolder = path;
+
+				openTree(path);
+			}
+		}
+	}
+
+	void AssetBrowser::addToBackQueue(const std::string& path)
+	{
+		if ((uint32_t)mBackQueue.size() >= kMaxQueueSize)
+		{
+			mBackQueue.pop_back();
+		}
+
+		mBackQueue.push_front(path);
+	}
+
+	void AssetBrowser::addToFrontQueue(const std::string& path)
+	{
+		if ((uint32_t)mFrontQueue.size() >= kMaxQueueSize)
+		{
+			mFrontQueue.pop_back();
+		}
+
+		mFrontQueue.push_front(path);
 	}
 }

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Core/Singleton.h"
 #include "Core/Window.h"
 #include "Core/Logger.h"
 #include <memory>
@@ -29,7 +28,7 @@ namespace Trinity
         std::string configFile;
     };
 
-    class Application : public Singleton<Application>
+    class Application
     {
     public:
 
@@ -97,11 +96,6 @@ namespace Trinity
             return mMainPass.get();
         }
 
-        ImGuiRenderer* getImGuiRenderer() const
-        {
-            return mImGuiRenderer.get();
-        }
-
         virtual void run(const ApplicationOptions& options);
 
     protected:
@@ -130,7 +124,6 @@ namespace Trinity
 		std::unique_ptr<ResourceCache> mResourceCache{ nullptr };
         std::unique_ptr<GraphicsDevice> mGraphicsDevice{ nullptr };
 		std::unique_ptr<RenderPass> mMainPass{ nullptr };
-		std::unique_ptr<ImGuiRenderer> mImGuiRenderer{ nullptr };
         float mFrameTime{ 0.0f };
         float mMPF{ 0.0f };
         float mLagTime{ 0.0f };

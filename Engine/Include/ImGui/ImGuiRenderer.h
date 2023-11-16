@@ -76,12 +76,7 @@ namespace Trinity
 		ImGuiRenderer(ImGuiRenderer&&) = default;
 		ImGuiRenderer& operator = (ImGuiRenderer&&) = default;
 
-		ImGuiFont* getDefaultFont() const
-		{
-			return mDefaultFont;
-		}
-
-		virtual bool create(Window& window, const std::string& defaultFontPath, RenderTarget& renderTarget);
+		virtual bool create(Window& window, RenderTarget& renderTarget);
 		virtual void destroy();
 		virtual void newFrame(Window& window, float deltaTime);
 		virtual void draw(const RenderPass& renderPass);
@@ -94,16 +89,16 @@ namespace Trinity
 		void setupRenderStates(const RenderPass& renderPass, ImDrawData* drawData);
 
 		bool createCommonBindGroup();
+		bool createImageObjects();
 		bool createImageBindGroup(const Texture& texture);
 		bool createBufferData();
 
 	protected:
 
+		glm::vec2 mLastValidMousePos{ 0.0f };
 		RenderContext mRenderContext;
 		ImageContext mImageContext;
 		StagingContext mStagingContext;
 		std::unique_ptr<ResourceCache> mResourceCache{ nullptr };
-		glm::vec2 mLastValidMousePos{ 0.0f };
-		ImGuiFont* mDefaultFont{ nullptr };
 	};
 }

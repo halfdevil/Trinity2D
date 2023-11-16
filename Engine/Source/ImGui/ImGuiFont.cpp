@@ -11,7 +11,7 @@ namespace Trinity
 		destroy();
 	}
 
-	bool ImGuiFont::create(const std::string& name, const std::string& filePath, float size)
+	bool ImGuiFont::create(const std::string& name, const std::string& filePath, float size, const ImWchar* glyphRanges)
 	{
 		auto file = FileSystem::get().openFile(filePath, FileOpenMode::OpenRead);
 		if (!file)
@@ -34,7 +34,7 @@ namespace Trinity
 		cfg.OversampleV = 4;
 
 		mHandle = io.Fonts->AddFontFromMemoryTTF(buffer.data(), (int)reader.getSize(),
-			cfg.SizePixels, &cfg);
+			cfg.SizePixels, &cfg, glyphRanges);
 
 		if (!mHandle)
 		{
@@ -54,12 +54,7 @@ namespace Trinity
 		mHandle = nullptr;
 	}
 
-	void ImGuiFont::addCustomGlyph(ImWchar glyph, const std::string& imgFilePath)
-	{
-		mCustomGlyphs.insert(std::make_pair(glyph, imgFilePath));
-	}
-
-	bool ImGuiFont::addIconsFont(const std::string& filePath, float fontSize, const ImWchar* glyphRanges)
+	bool ImGuiFont::mergeFont(const std::string& filePath, const ImWchar* glyphRanges)
 	{
 		auto file = FileSystem::get().openFile(filePath, FileOpenMode::OpenRead);
 		if (!file)
@@ -76,15 +71,21 @@ namespace Trinity
 		ImFontConfig cfg;
 		cfg.MergeMode = true;
 		cfg.FontDataOwnedByAtlas = false;
-		cfg.GlyphMinAdvanceX = fontSize;
+		cfg.GlyphMinAdvanceX = mSize;
 		cfg.PixelSnapH = true;
 
 		ImFont* iconsFont = io.Fonts->AddFontFromMemoryTTF(buffer.data(), (int)reader.getSize(),
-			fontSize, &cfg, glyphRanges);
+			mSize, &cfg, glyphRanges);
 
 		if (!iconsFont)
 		{
 			LogError("ImGui::FontAtlas::AddFontFromMemoryTTF() failed for: %s!!", filePath.c_str());
+			return false;
+		}
+
+		if (!build())
+		{
+			LogError("ImGuiFont::build() failed for: '%s'", filePath.c_str());
 			return false;
 		}
 
@@ -94,25 +95,6 @@ namespace Trinity
 	bool ImGuiFont::build()
 	{
 		ImGuiIO& io = ImGui::GetIO();
-		std::unordered_map<ImWchar, int32_t> rectIds;
-		std::unordered_map<ImWchar, std::unique_ptr<Image>> images;
-
-		for (const auto& it : mCustomGlyphs)
-		{
-			auto image = std::make_unique<Image>();
-			if (!image->create(it.second))
-			{
-				LogError("Image::load() failed!!");
-				return false;
-			}
-
-			int32_t id = io.Fonts->AddCustomRectFontGlyph(mHandle, it.first, image->getWidth(),
-				image->getHeight(), (float)image->getWidth() + 1);
-
-			rectIds.insert(std::make_pair(it.first, id));
-			images.insert(std::make_pair(it.first, std::move(image)));
-		}
-
 		if (!io.Fonts->Build())
 		{
 			LogError("ImFontAtlas::Build() failed!!");
@@ -123,24 +105,6 @@ namespace Trinity
 		int32_t width{ 0 }, height{ 0 };
 		int32_t sizePerPixel{ 0 };
 		io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height, &sizePerPixel);
-
-		for (const auto& it : rectIds)
-		{
-			if (const auto* rect = io.Fonts->GetCustomRectByIndex(it.second))
-			{
-				auto imgIt = images.find(it.first);
-				auto& image = imgIt->second;
-
-				for (int32_t y = 0; y < rect->Height; y++)
-				{
-					ImU32* ptr = (ImU32*)pixels + (rect->Y + y) * width + rect->X;
-					for (int32_t x = 0; x < rect->Width; x++)
-					{
-						*ptr++ = (ImU32)image->getPixelAsRGBA(x, y);
-					}
-				}
-			}
-		}
 
 		const wgpu::TextureUsage usage = wgpu::TextureUsage::TextureBinding |
 			wgpu::TextureUsage::CopyDst;
@@ -161,9 +125,6 @@ namespace Trinity
 	void ImGuiFont::activate()
 	{
 		ImGui::PushFont(mHandle);
-
-		ImGuiIO& io = ImGui::GetIO();
-		io.Fonts->SetTexID((ImTextureID)&mTexture);
 	}
 
 	void ImGuiFont::deactivate()

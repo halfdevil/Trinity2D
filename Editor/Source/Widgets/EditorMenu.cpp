@@ -1,11 +1,13 @@
 #include "Widgets/EditorMenu.h"
+#include "ImGui/ImGuiRenderer.h"
 #include <stack>
 
 namespace Trinity
 {
-	EditorMenuItem* EditorMenu::addMenuItem(const std::string& title, const std::string& shortcut, EditorMenuItem* parent)
+	EditorMenuItem* EditorMenu::addMenuItem(const std::string& name, const std::string& title, 
+		const std::string& shortcut, EditorMenuItem* parent)
 	{
-		auto menuItem = std::make_unique<EditorMenuItem>(title, shortcut);
+		auto menuItem = std::make_unique<EditorMenuItem>(name, title, shortcut);
 		if (parent != nullptr)
 		{
 			parent->children.push_back(menuItem.get());

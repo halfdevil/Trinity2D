@@ -3,8 +3,13 @@
     "actions": [
       {
         "name": "exit",
-        "keyboardKeys": [256]
-      }      
+        "keyboardKeys": [ 256 ]
+      }
     ]
+  },
+  "font": {
+    "file": "/Assets/Editor/Fonts/CascadiaCode.ttf",
+    "icon": "/Assets/Editor/Fonts/Icons/fa-solid-900.ttf",
+    "sizes": [ 20.0, 64.0 ]
   }
 }

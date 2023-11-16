@@ -5,11 +5,13 @@
 #include <string>
 #include <unordered_map>
 #include <memory>
+#include <deque>
 
 namespace Trinity
 {
-	class EditorCache;
+	class EditorResources;
 	class Texture;
+	class ImGuiFont;
 
 	struct AssetEntry
 	{
@@ -40,9 +42,7 @@ namespace Trinity
 	{
 	public:
 
-		static constexpr const char* kFolderIcon = "/Assets/Textures/Icons/Folder.png";
-		static constexpr const char* kFolderOpenIcon = "/Assets/Textures/Icons/FolderOpen.png";
-		static constexpr const char* kFileIcon = "/Assets/Textures/Icons/File.png";
+		static constexpr uint32_t kMaxQueueSize = 50;
 
 		AssetBrowser() = default;
 		virtual ~AssetBrowser();
@@ -63,7 +63,7 @@ namespace Trinity
 			return mRootFolder;
 		}
 
-		virtual bool create(const std::string& rootFolder, EditorCache& cache);
+		virtual bool create(const std::string& rootFolder, EditorResources& resources);
 		virtual void destroy();
 
 		virtual void setTitle(const std::string& title);
@@ -71,25 +71,28 @@ namespace Trinity
 
 	protected:
 
-		virtual bool updateEntry(const std::string& folderPath);
-		virtual void drawEntry(const std::string& path);
-		virtual void assetClicked(const std::string& path, bool isFolder = false);
+		virtual AssetEntry* updateEntry(const std::string& folderPath);
+		virtual AssetEntry* getEntry(const std::string& folderPath);
+
+		virtual void drawTree(const std::string& path);
 		virtual void openTree(const std::string& path);
+		virtual void treeClicked(const std::string& path);
+		virtual void contentClicked(const std::string& path, bool isFolder = false);
+		virtual void addToBackQueue(const std::string& path);
+		virtual void addToFrontQueue(const std::string& path);
 
 	protected:
 
 		std::string mTitle;
-		std::string mRootFolder;
-		std::string mCurrentFolder;
-		Texture* mFolderIcon{ nullptr };
-		Texture* mFolderOpenIcon{ nullptr };
-		Texture* mFileIcon{ nullptr };
 		float mIconSize{ 64.0f };
 		float mIconPadding{ 16.0f };
 		float mTextPadding{ 4.0f };
-		AssetEntry* mRootEntry{ nullptr };
-		AssetEntry* mCurrentEntry{ nullptr };
+		std::string mRootFolder;
+		std::string mCurrentFolder;
 		std::vector<std::unique_ptr<AssetEntry>> mEntries;
 		std::unordered_map<std::string, uint32_t> mEntryMap;
+		std::deque<std::string> mFrontQueue;
+		std::deque<std::string> mBackQueue;
+		ImGuiFont* mIconsFont{ nullptr };
 	};
 }

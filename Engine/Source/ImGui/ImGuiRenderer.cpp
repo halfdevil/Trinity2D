@@ -169,7 +169,7 @@ namespace Trinity
 		destroy();
 	}
 
-	bool ImGuiRenderer::create(Window& window, const std::string& defaultFontPath, RenderTarget& renderTarget)
+	bool ImGuiRenderer::create(Window& window, RenderTarget& renderTarget)
 	{
 		ImGui::CreateContext();
 
@@ -189,23 +189,7 @@ namespace Trinity
 		io.BackendRendererName = "TrinityGui";
 		io.BackendPlatformName = "TrinityGui";
 
-		auto font = std::make_unique<ImGuiFont>();
-		if (!font->create("default_font", defaultFontPath))
-		{
-			LogError("Font::create() failed for '%s'", defaultFontPath.c_str());
-			return false;
-		}
-
-		if (!font->build())
-		{
-			LogError("Font::build() failed for '%s'", defaultFontPath.c_str());
-			return false;
-		}
-
-		mDefaultFont = font.get();
 		mResourceCache = std::make_unique<ResourceCache>();
-		mResourceCache->addResource(std::move(font));
-
 		if (!createDeviceObjects(renderTarget))
 		{
 			LogError("createDeviceObjects() failed!!");
@@ -456,9 +440,10 @@ namespace Trinity
 			return false;
 		}
 
-		if (mDefaultFont != nullptr)
+		if (!createImageObjects())
 		{
-			createImageBindGroup(*mDefaultFont->getTexture());
+			LogError("createImageObjects() failed!!");
+			return false;
 		}
 
 		ShaderPreProcessor processor;
@@ -597,58 +582,61 @@ namespace Trinity
 		return true;
 	}
 
-	bool ImGuiRenderer::createImageBindGroup(const Texture& texture)
+	bool ImGuiRenderer::createImageObjects()
 	{
-		if (mImageContext.bindGroupLayout == nullptr)
+		const std::vector<BindGroupLayoutItem> layoutItems =
 		{
-			const std::vector<BindGroupLayoutItem> layoutItems =
 			{
-				{
-					.binding = 0,
-					.shaderStages = wgpu::ShaderStage::Fragment,
-					.bindingLayout = SamplerBindingLayout {
-						.type = wgpu::SamplerBindingType::Filtering
-					}
-				},
-				{
-					.binding = 1,
-					.shaderStages = wgpu::ShaderStage::Fragment,
-					.bindingLayout = TextureBindingLayout {
-						.sampleType = wgpu::TextureSampleType::Float,
-						.viewDimension = wgpu::TextureViewDimension::e2D
-					}
+				.binding = 0,
+				.shaderStages = wgpu::ShaderStage::Fragment,
+				.bindingLayout = SamplerBindingLayout {
+					.type = wgpu::SamplerBindingType::Filtering
 				}
-			};
-
-			auto bindGroupLayout = std::make_unique<BindGroupLayout>();
-			if (!bindGroupLayout->create(layoutItems))
+			},
 			{
-				LogError("BindGroupLayout::create() failed!!");
-				return false;
+				.binding = 1,
+				.shaderStages = wgpu::ShaderStage::Fragment,
+				.bindingLayout = TextureBindingLayout {
+					.sampleType = wgpu::TextureSampleType::Float,
+					.viewDimension = wgpu::TextureViewDimension::e2D
+				}
 			}
+		};
 
-			mImageContext.bindGroupLayout = bindGroupLayout.get();
-			mResourceCache->addResource(std::move(bindGroupLayout));
+		auto bindGroupLayout = std::make_unique<BindGroupLayout>();
+		if (!bindGroupLayout->create(layoutItems))
+		{
+			LogError("BindGroupLayout::create() failed!!");
+			return false;
 		}
 
+		auto sampler = std::make_unique<Sampler>();
+		if (!sampler->create({
+			.addressModeU = wgpu::AddressMode::Repeat,
+			.addressModeV = wgpu::AddressMode::Repeat,
+			.addressModeW = wgpu::AddressMode::Repeat,
+			.magFilter = wgpu::FilterMode::Nearest,
+			.minFilter = wgpu::FilterMode::Nearest,
+			.mipmapFilter = wgpu::MipmapFilterMode::Nearest
+		}))
+		{
+			LogError("Sampler::create() failed!!");
+			return false;
+		}
+
+		mImageContext.bindGroupLayout = bindGroupLayout.get();
+		mImageContext.sampler = sampler.get();
+		mResourceCache->addResource(std::move(bindGroupLayout));
+		mResourceCache->addResource(std::move(sampler));
+
+		return true;
+	}
+
+	bool ImGuiRenderer::createImageBindGroup(const Texture& texture)
+	{
 		if (mImageContext.sampler == nullptr)
 		{
-			auto sampler = std::make_unique<Sampler>();
-			if (!sampler->create({
-				.addressModeU = wgpu::AddressMode::Repeat,
-				.addressModeV = wgpu::AddressMode::Repeat,
-				.addressModeW = wgpu::AddressMode::Repeat,
-				.magFilter = wgpu::FilterMode::Nearest,
-				.minFilter = wgpu::FilterMode::Nearest,
-				.mipmapFilter = wgpu::MipmapFilterMode::Nearest
-			}))
-			{
-				LogError("Sampler::create() failed!!");
-				return false;
-			}
-
-			mImageContext.sampler = sampler.get();
-			mResourceCache->addResource(std::move(sampler));
+			
 		}
 
 		const std::vector<BindGroupItem> bindGroupItems =

@@ -10,11 +10,13 @@ namespace Trinity
 {
 	struct EditorMenuItem
 	{
+		std::string name;
 		std::string title;
 		std::string shortcut;
 		std::vector<EditorMenuItem*> children;
 
-		EditorMenuItem(const std::string& inTitle, const std::string& inShortcut) :
+		EditorMenuItem(const std::string& inName, const std::string& inTitle, const std::string& inShortcut) :
+			name(inName),
 			title(inTitle),
 			shortcut(inShortcut)
 		{
@@ -40,6 +42,7 @@ namespace Trinity
 		}
 
 		virtual EditorMenuItem* addMenuItem(
+			const std::string& name,
 			const std::string& title, 
 			const std::string& shortcut = "",
 			EditorMenuItem* parent = nullptr

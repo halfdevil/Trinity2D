@@ -1,6 +1,7 @@
 #include "Playground.h"
 #include "Input/Input.h"
 #include "ImGui/ImGuiRenderer.h"
+#include "ImGui/ImGuiFont.h"
 #include "Gui/Font.h"
 #include "Gui/TextRenderer.h"
 #include "Scene/Scene.h"
@@ -51,7 +52,7 @@ namespace Trinity
 		auto& swapChain = mGraphicsDevice->getSwapChain();
 		mImGuiRenderer = std::make_unique<ImGuiRenderer>();
 
-		if (!mImGuiRenderer->create(*mWindow, "/Assets/Fonts/CascadiaCode.ttf", swapChain))
+		if (!mImGuiRenderer->create(*mWindow, swapChain))
 		{
 			LogError("Gui::create() failed!!");
 			return false;
@@ -68,6 +69,19 @@ namespace Trinity
 		if (!mBatchRenderer->create("/Assets/Engine/Shaders/SpriteRenderer.wgsl", *frameBuffer))
 		{
 			LogError("BatchRenderer::create() failed");
+			return false;
+		}
+
+		auto imGuiFont = std::make_unique<ImGuiFont>();
+		if (!imGuiFont->create("default", "/Assets/Fonts/CascadiaCode.ttf"))
+		{
+			LogError("ImGuiFont::create() failed");
+			return false;
+		}
+
+		if (!imGuiFont->build())
+		{
+			LogError("ImGuiFont::build() failed");
 			return false;
 		}
 
@@ -109,6 +123,7 @@ namespace Trinity
 		mScene = scene.get();
 		mCamera = camera;
 
+		mResourceCache->addResource(std::move(imGuiFont));
 		mResourceCache->addResource(std::move(colorTexture));
 		mResourceCache->addResource(std::move(depthTexture));
 		mResourceCache->addResource(std::move(frameBuffer));
