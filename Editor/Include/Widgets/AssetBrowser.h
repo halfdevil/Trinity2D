@@ -53,11 +53,6 @@ namespace Trinity
 		AssetBrowser(AssetBrowser&&) = default;
 		AssetBrowser& operator = (AssetBrowser&&) = default;
 
-		const std::string& getTitle() const
-		{
-			return mTitle;
-		}
-
 		const std::string& getRootFolder() const
 		{
 			return mRootFolder;
@@ -65,8 +60,6 @@ namespace Trinity
 
 		virtual bool create(const std::string& rootFolder, EditorResources& resources);
 		virtual void destroy();
-
-		virtual void setTitle(const std::string& title);
 		virtual void draw() override;
 
 	protected:
@@ -87,7 +80,6 @@ namespace Trinity
 
 	protected:
 
-		std::string mTitle;
 		float mIconSize{ 64.0f };
 		float mIconPadding{ 16.0f };
 		float mTextPadding{ 4.0f };

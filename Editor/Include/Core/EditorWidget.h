@@ -1,6 +1,7 @@
 #pragma once
 
 #include "imgui.h"
+#include <string>
 
 namespace Trinity
 {
@@ -17,12 +18,19 @@ namespace Trinity
 		EditorWidget(EditorWidget&&) = default;
 		EditorWidget& operator = (EditorWidget&&) = default;
 
+		const std::string& getTitle() const
+		{
+			return mTitle;
+		}
+
 		virtual bool isEnabled() const;
 		virtual void setEnabled(bool enabled);
+		virtual void setTitle(const std::string& title);
 		virtual void draw() = 0;
 
 	protected:
 
 		bool mEnabled{ true };
+		std::string mTitle;
 	};
 }

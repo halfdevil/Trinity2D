@@ -164,7 +164,11 @@ namespace Trinity
 			onResize();
 		});
 
-		onResize();
+		if (!mGraphicsDevice->setupSwapChain(*mWindow))
+		{
+			LogError("GraphicsDevice::setupSwapChain() failed!!");
+			return false;
+		}
 
 		mGraphicsDevice->setClearColor({ 0.5f, 0.5f, 0.5f, 1.0f });
 		mWindow->showMouse(true, false);
@@ -216,10 +220,8 @@ namespace Trinity
 
 	void Application::onResize()
 	{
-		if (!mGraphicsDevice->setupSwapChain(*mWindow))
-		{
-			LogError("GraphicsDevice::setupSwapChain() failed!!");
-		}
+		mGraphicsDevice->getSwapChain().resize(mWindow->getWidth(), 
+			mWindow->getHeight());
 	}
 
 	void Application::setupInput()

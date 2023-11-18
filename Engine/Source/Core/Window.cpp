@@ -2,14 +2,12 @@
 #include "Core/Logger.h"
 #include "Core/Debugger.h"
 
-#ifndef __EMSCRIPTEN__
-#ifdef _WIN32
-#define GLFW_EXPOSE_NATIVE_WIN32
+#ifdef __EMSCRIPTEN__
+#include "Utils/EmscriptenHelper.h"
+#elif _WIN32
+#include "Utils/WindowsHelper.h"
 #elif __APPLE__
-#define GLFW_EXPOSE_NATIVE_COCOA
 #include "Utils/MacOSHelper.h"
-#endif
-#include <GLFW/glfw3native.h>
 #endif
 
 namespace Trinity
@@ -236,16 +234,10 @@ namespace Trinity
     std::unique_ptr<wgpu::ChainedStruct> Window::getSurfaceDescriptor() const
     {
 #ifdef __EMSCRIPTEN__
-        static constexpr const char* selector = "#canvas";
-        auto surfaceDesc = std::make_unique<wgpu::SurfaceDescriptorFromCanvasHTMLSelector>();
-        surfaceDesc->selector = selector;
-        return surfaceDesc;
+        return EmscriptenHelper::getCanvasSurface("#canvas", mHandle);
 #else
 #ifdef _WIN32
-        auto surfaceDesc = std::make_unique<wgpu::SurfaceDescriptorFromWindowsHWND>();
-        surfaceDesc->hwnd = glfwGetWin32Window(mHandle);
-        surfaceDesc->hinstance = GetModuleHandle(nullptr);
-        return surfaceDesc;
+        return WindowsHelper::getWin32Surface(mHandle);
 #endif
 #ifdef __APPLE__
         return MacOSHelper::getMetalSurface(mHandle);

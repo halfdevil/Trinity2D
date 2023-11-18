@@ -110,7 +110,7 @@ namespace Trinity
 		{
 			std::vector<std::unique_ptr<Component>> result(components.size());
 			std::transform(components.begin(), components.end(), result.begin(),
-				[](std::unique_ptr<T>& component) -> std::unique_ptr<Component> {
+				[](auto& component) {
 					return std::unique_ptr<Component>(std::move(component));
 				}
 			);
@@ -135,7 +135,7 @@ namespace Trinity
 
 				result.resize(sceneComponents.size());
 				std::transform(sceneComponents.begin(), sceneComponents.end(), result.begin(),
-					[](const std::unique_ptr<Component>& component) -> T* {
+					[](const auto& component) -> T* {
 						return dynamic_cast<T*>(component.get());
 					}
 				);

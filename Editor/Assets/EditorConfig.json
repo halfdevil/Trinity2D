@@ -3,8 +3,16 @@
     "actions": [
       {
         "name": "exit",
-        "keyboardKeys": [256]
-      }      
+        "keyboardKeys": [ 256 ]
+      }
     ]
+  },
+  "resources": {    
+    "font": {
+      "name": "Cascadia Code",
+      "file": "CascadiaCode.ttf",
+      "icon": "fa-solid-900.ttf",
+      "size": 16.0
+    }
   }
 }

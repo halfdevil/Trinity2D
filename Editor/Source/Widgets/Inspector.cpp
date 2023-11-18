@@ -11,11 +11,6 @@ namespace Trinity
 		mLayout = std::make_unique<EditorLayout>();
 	}
 
-	void Inspector::setTitle(const std::string& title)
-	{
-		mTitle = title;
-	}
-
 	void Inspector::setSelectedNode(Node* node)
 	{
 		mSelectedNode = node;

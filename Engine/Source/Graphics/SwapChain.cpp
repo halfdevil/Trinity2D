@@ -22,9 +22,9 @@ namespace Trinity
         mHeight = height;
         mColorFormat = colorFormat;
         mDepthFormat = depthFormat;
+        mPresentMode = presentMode;
 
         const wgpu::Device& device = GraphicsDevice::get();
-
         wgpu::SwapChainDescriptor swapChainDesc = {
             .label = "SwapChain.Target",
             .usage = wgpu::TextureUsage::RenderAttachment,
@@ -129,5 +129,14 @@ namespace Trinity
             .depthStoreOp = wgpu::StoreOp::Store,
             .depthClearValue = 1.0f
         };
+    }
+
+    void SwapChain::resize(uint32_t width, uint32_t height)
+    {
+        auto& graphicsDevice = GraphicsDevice::get();
+        if (!create(width, height, graphicsDevice.getSurface(), mPresentMode, mColorFormat, mDepthFormat))
+        {
+            LogError("SwapChain::create() failed on resize %dx%d", width, height);
+        }
     }
 }

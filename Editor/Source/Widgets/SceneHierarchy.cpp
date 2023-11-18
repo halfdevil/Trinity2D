@@ -5,11 +5,6 @@
 
 namespace Trinity
 {
-	void SceneHierarchy::setTitle(const std::string& title)
-	{
-		mTitle = title;
-	}
-
 	void SceneHierarchy::setScene(Scene& scene)
 	{
 		mScene = &scene;

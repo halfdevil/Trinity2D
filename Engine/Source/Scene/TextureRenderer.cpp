@@ -1,8 +1,8 @@
-#include "Scene/SpriteRenderer.h"
+#include "Scene/TextureRenderer.h"
 #include "Scene/Scene.h"
-#include "Scene/Sprite.h"
 #include "Scene/Components/Camera.h"
-#include "Scene/Components/SpriteRenderable.h"
+#include "Scene/Components/TextureRenderable.h"
+#include "Graphics/Texture.h"
 #include "Graphics/BatchRenderer.h"
 #include "Graphics/RenderPass.h"
 #include "Graphics/RenderTarget.h"
@@ -11,7 +11,7 @@
 
 namespace Trinity
 {
-	bool SpriteRenderer::create(Scene& scene, RenderTarget& renderTarget)
+	bool TextureRenderer::create(Scene& scene, RenderTarget& renderTarget)
 	{
 		mScene = &scene;
 		mRenderer = std::make_unique<BatchRenderer>();
@@ -25,13 +25,14 @@ namespace Trinity
 		return true;
 	}
 
-	void SpriteRenderer::destroy()
+	void TextureRenderer::destroy()
 	{
 		mScene = nullptr;
+		mCamera = nullptr;
 		mRenderer = nullptr;
 	}
 
-	void SpriteRenderer::setCamera(const std::string& nodeName)
+	void TextureRenderer::setCamera(const std::string& nodeName)
 	{
 		auto cameraNode = mScene->findNode(nodeName);
 		if (!cameraNode)
@@ -46,32 +47,25 @@ namespace Trinity
 		}
 	}
 
-	void SpriteRenderer::draw(const RenderPass& renderPass)
+	void TextureRenderer::draw(const RenderPass& renderPass)
 	{
 		auto viewProj = mCamera->getProjection() * mCamera->getView();
-		auto renderables = mScene->getComponents<SpriteRenderable>();
-
-		std::sort(renderables.begin(), renderables.end(), [](const auto& a, const auto& b) {
-			return a->getLayer() > b->getLayer();
-		});
+		auto renderables = mScene->getComponents<TextureRenderable>();
 
 		mRenderer->begin(viewProj);
 
 		for (auto& renderable : renderables)
 		{
-			auto* sprite = renderable->getSprite();
+			auto* texture = renderable->getTexture();
 			auto& transform = renderable->getNode()->getTransform();
 			auto& flip = renderable->getFlip();
 
-			auto activeIndex = renderable->getActiveFrameIndex();
-			auto* frame = sprite->getFrame(activeIndex);
-
-			if (frame != nullptr)
+			if (texture != nullptr)
 			{
 				mRenderer->drawTexture(
-					sprite->getTexture(), 
-					frame->position, 
-					frame->size, 
+					texture, 
+					glm::vec2{ 0.0f, 0.0f },
+					glm::vec2{ texture->getWidth(), texture->getHeight() },
 					renderable->getOrigin(), 
 					transform.getWorldMatrix(), 
 					renderable->getColor(), 

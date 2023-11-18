@@ -58,6 +58,11 @@ namespace Trinity
             return mColorFormat;
         }
 
+        wgpu::PresentMode getPresentMode() const
+        {
+            return mPresentMode;
+        }
+
         operator const wgpu::SwapChain& () const
         {
             return mHandle;
@@ -83,6 +88,7 @@ namespace Trinity
         virtual bool hasDepthStencilAttachment() const override;
         virtual std::vector<wgpu::RenderPassColorAttachment> getColorAttachments() const override;
         virtual wgpu::RenderPassDepthStencilAttachment getDepthStencilAttachment() const override;
+        virtual void resize(uint32_t width, uint32_t height) override;
 
     private:
 
@@ -92,6 +98,7 @@ namespace Trinity
         wgpu::Texture mDepthStencilTexture;
         wgpu::TextureView mDepthStencilView;
         wgpu::Color mClearColor;
+        wgpu::PresentMode mPresentMode;
         wgpu::TextureFormat mColorFormat;
         wgpu::TextureFormat mDepthFormat;
     };

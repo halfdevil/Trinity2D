@@ -48,8 +48,6 @@ namespace Trinity
 		Camera* mCamera{ nullptr };
 		CameraController* mCameraController{ nullptr };
 		Texture* mTexture{ nullptr };
-		Texture* mColorTexture{ nullptr };
-		Texture* mDepthTexture{ nullptr };
 		FrameBuffer* mFrameBuffer{ nullptr };
 		std::vector<Script*> mScripts;
 		std::unique_ptr<ImGuiRenderer> mImGuiRenderer{ nullptr };

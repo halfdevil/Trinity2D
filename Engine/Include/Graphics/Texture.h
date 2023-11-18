@@ -35,6 +35,11 @@ namespace Trinity
             return mFormat;
         }
 
+        wgpu::TextureUsage getUsage() const
+        {
+            return mUsage;
+        }
+
         uint32_t getWidth() const
         {
             return mWidth;
@@ -64,6 +69,7 @@ namespace Trinity
     protected:
 
         wgpu::TextureFormat mFormat{ wgpu::TextureFormat::RGBA8UnormSrgb };
+        wgpu::TextureUsage mUsage{ wgpu::TextureUsage::None };
         wgpu::Texture mHandle;
 		wgpu::TextureView mView;
 		uint32_t mWidth{ 0 };

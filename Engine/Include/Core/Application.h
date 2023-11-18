@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core/Singleton.h"
 #include "Core/Window.h"
 #include "Core/Logger.h"
 #include <memory>
@@ -28,7 +29,7 @@ namespace Trinity
         std::string configFile;
     };
 
-    class Application
+    class Application : public Singleton<Application>
     {
     public:
 

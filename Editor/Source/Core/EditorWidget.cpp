@@ -11,4 +11,9 @@ namespace Trinity
 	{
 		mEnabled = enabled;
 	}
+
+	void EditorWidget::setTitle(const std::string& title)
+	{
+		mTitle = title;
+	}
 }

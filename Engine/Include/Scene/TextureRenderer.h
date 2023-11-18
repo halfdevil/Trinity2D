@@ -11,20 +11,20 @@ namespace Trinity
 	class RenderTarget;
 	class RenderPass;
 
-	class SpriteRenderer
+	class TextureRenderer
 	{
 	public:
 
-		static constexpr const char* kShader = "/Assets/Engine/Shaders/SpriteRenderer.wgsl";
+		static constexpr const char* kShader = "/Assets/Engine/Shaders/TextureRenderer.wgsl";
 
-		SpriteRenderer() = default;
-		virtual ~SpriteRenderer() = default;
+		TextureRenderer() = default;
+		virtual ~TextureRenderer() = default;
 
-		SpriteRenderer(const SpriteRenderer&) = delete;
-		SpriteRenderer& operator = (const SpriteRenderer&) = delete;
+		TextureRenderer(const TextureRenderer&) = delete;
+		TextureRenderer& operator = (const TextureRenderer&) = delete;
 
-		SpriteRenderer(SpriteRenderer&&) = default;
-		SpriteRenderer& operator = (SpriteRenderer&&) = default;
+		TextureRenderer(TextureRenderer&&) = default;
+		TextureRenderer& operator = (TextureRenderer&&) = default;
 
 		virtual bool create(Scene& scene, RenderTarget& renderTarget);
 		virtual void destroy();

@@ -41,11 +41,6 @@ namespace Trinity
 		mEntryMap.clear();
 	}
 
-	void AssetBrowser::setTitle(const std::string& title)
-	{
-		mTitle = title;
-	}
-
 	void AssetBrowser::draw()
 	{
 		auto* currentEntry = getEntry(mCurrentFolder);

@@ -17,6 +17,7 @@ namespace Trinity
 		const wgpu::Device& device = GraphicsDevice::get();
 
 		mFormat = format;
+		mUsage = usage;
 		mWidth = width;
 		mHeight = height;
 
@@ -67,6 +68,7 @@ namespace Trinity
 		const wgpu::Queue& queue = GraphicsDevice::get().getQueue();
 
 		mFormat = format;
+		mUsage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopyDst;
 		mHasMipmaps = hasMipmaps;
 		mWidth = image->getWidth();
 		mHeight = image->getHeight();
@@ -84,7 +86,7 @@ namespace Trinity
 		};
 
 		wgpu::TextureDescriptor textureDesc = {
-			.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopyDst,
+			.usage = mUsage,
 			.dimension = wgpu::TextureDimension::e2D,
 			.size = size,
 			.format = mFormat,

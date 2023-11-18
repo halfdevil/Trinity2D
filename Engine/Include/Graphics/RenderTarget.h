@@ -25,6 +25,7 @@ namespace Trinity
 		virtual bool hasDepthStencilAttachment() const = 0;
 		virtual std::vector<wgpu::RenderPassColorAttachment> getColorAttachments() const = 0;
 		virtual wgpu::RenderPassDepthStencilAttachment getDepthStencilAttachment() const = 0;
+		virtual void resize(uint32_t width, uint32_t height) = 0;
 
 		virtual std::type_index getType() const override;
     };

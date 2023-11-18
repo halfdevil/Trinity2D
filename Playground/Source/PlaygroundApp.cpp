@@ -29,30 +29,30 @@ namespace Trinity
 			return false;
 		}
 
-		mRenderPass = std::make_unique<RenderPass>();
-
-		auto colorTexture = std::make_unique<Texture>();
-		if (!colorTexture->create(512, 512, wgpu::TextureFormat::RGBA8Unorm, wgpu::TextureUsage::RenderAttachment |
-			wgpu::TextureUsage::TextureBinding))
-		{
-			LogError("Texture::create() failed");
-			return false;
-		}
-
-		auto depthTexture = std::make_unique<Texture>();
-		if (!depthTexture->create(512, 512, wgpu::TextureFormat::Depth32Float, wgpu::TextureUsage::RenderAttachment))
-		{
-			LogError("Texture::create() failed");
-			return false;
-		}
+		auto& swapChain = mGraphicsDevice->getSwapChain();
+		mRenderPass = std::make_unique<RenderPass>();		
 
 		auto frameBuffer = std::make_unique<FrameBuffer>();
-		frameBuffer->addColorAttachment(*colorTexture);
-		frameBuffer->setDepthStencilAttachment(*depthTexture);
+		if (!frameBuffer->create(512, 512))
+		{
+			LogError("FrameBuffer::create() failed");
+			return false;
+		}
 
-		auto& swapChain = mGraphicsDevice->getSwapChain();
+		if (!frameBuffer->addColorAttachment(wgpu::TextureFormat::BGRA8Unorm, wgpu::TextureUsage::RenderAttachment |
+			wgpu::TextureUsage::TextureBinding))
+		{
+			LogError("FrameBuffer::addColorAttachment() failed");
+			return false;
+		}
+
+		if (!frameBuffer->setDepthStencilAttachment(wgpu::TextureFormat::Depth32Float, wgpu::TextureUsage::RenderAttachment))
+		{
+			LogError("FrameBuffer::setDepthStencilAttachment() failed");
+			return false;
+		}
+
 		mImGuiRenderer = std::make_unique<ImGuiRenderer>();
-
 		if (!mImGuiRenderer->create(*mWindow, swapChain))
 		{
 			LogError("Gui::create() failed!!");
@@ -124,8 +124,6 @@ namespace Trinity
 		cameraController->setMoveSpeed(0.1f);
 		cameraController->setRotationSpeed(0.001f);
 
-		mColorTexture = colorTexture.get();
-		mDepthTexture = depthTexture.get();
 		mFrameBuffer = frameBuffer.get();
 		mTexture = texture.get();
 		mFont = font.get();
@@ -134,8 +132,6 @@ namespace Trinity
 		mCameraController = cameraController;
 
 		mResourceCache->addResource(std::move(imGuiFont));
-		mResourceCache->addResource(std::move(colorTexture));
-		mResourceCache->addResource(std::move(depthTexture));
 		mResourceCache->addResource(std::move(frameBuffer));
 		mResourceCache->addResource(std::move(texture));
 		mResourceCache->addResource(std::move(font));
