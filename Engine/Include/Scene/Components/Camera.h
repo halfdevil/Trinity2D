@@ -18,34 +18,9 @@ namespace Trinity
 		Camera(Camera&&) = default;
 		Camera& operator = (Camera&&) = default;
 
-		float getLeft() const
+		const glm::vec2& getSize() const
 		{
-			return mLeft;
-		}
-
-		float getRight() const
-		{
-			return mRight;
-		}
-
-		float getBottom() const
-		{
-			return mBottom;
-		}
-
-		float getTop() const
-		{
-			return mTop;
-		}
-
-		float getNearPlane() const
-		{
-			return mNearPlane;
-		}
-
-		float getFarPlane() const
-		{
-			return mFarPlane;
+			return mSize;
 		}
 
 		virtual glm::mat4 getView() const;
@@ -54,10 +29,7 @@ namespace Trinity
 		virtual std::type_index getType() const override;
 		virtual std::string getTypeName() const override;
 
-		virtual void setLeft(float left);
-		virtual void setRight(float right);
-		virtual void setBottom(float bottom);
-		virtual void setTop(float top);
+		virtual void setSize(const glm::vec2& size);
 		virtual void setNearPlane(float nearPlane);
 		virtual void setFarPlane(float farPlane);
 
@@ -67,11 +39,8 @@ namespace Trinity
 
 	protected:
 
-		float mLeft{ -1.0f };
-		float mRight{ 1.0f };
-		float mBottom{ -1.0f };
-		float mTop{ 1.0f };
-		float mNearPlane{ 0.0f };
-		float mFarPlane{ 1.0f };
+		glm::vec2 mSize{ 0.0f };
+		float mNearPlane{ 0.1f };
+		float mFarPlane{ 100.0f };
 	};
 }

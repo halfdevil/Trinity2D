@@ -12,7 +12,8 @@ namespace Trinity
     {
     public:
 
-        Mouse() = default;
+        Mouse();
+        ~Mouse() = default;
 
         Mouse(const Mouse&) = delete;
         Mouse& operator = (const Mouse&) = delete;

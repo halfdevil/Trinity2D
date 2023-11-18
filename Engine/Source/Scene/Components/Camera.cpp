@@ -11,7 +11,10 @@ namespace Trinity
 
 	glm::mat4 Camera::getProjection() const
 	{
-		return glm::ortho(mLeft, mRight, mBottom, mTop, mNearPlane, mFarPlane);
+		float halfWidth = 0.5f * mSize.x;
+		float halfHeight = 0.5f * mSize.y;
+
+		return glm::ortho(-halfWidth, halfWidth, halfHeight, -halfHeight, mNearPlane, mFarPlane);
 	}
 
 	std::type_index Camera::getType() const
@@ -24,24 +27,9 @@ namespace Trinity
 		return getStaticType();
 	}
 
-	void Camera::setLeft(float left)
+	void Camera::setSize(const glm::vec2& size)
 	{
-		mLeft = left;
-	}
-
-	void Camera::setRight(float right)
-	{
-		mRight = right;
-	}
-
-	void Camera::setBottom(float bottom)
-	{
-		mBottom = bottom;
-	}
-
-	void Camera::setTop(float top)
-	{
-		mTop = top;
+		mSize = size;
 	}
 
 	void Camera::setNearPlane(float nearPlane)

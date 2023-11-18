@@ -6,6 +6,7 @@
 #include "Gui/TextRenderer.h"
 #include "Scene/Scene.h"
 #include "Scene/Components/Camera.h"
+#include "Scene/Components/Scripts/CameraController.h"
 #include "Scene/ComponentFactory.h"
 #include "Graphics/Texture.h"
 #include "Graphics/RenderPass.h"
@@ -59,14 +60,14 @@ namespace Trinity
 		}
 
 		mTextRenderer = std::make_unique<TextRenderer>();
-		if (!mTextRenderer->create(TextRenderer::kDefaultShader, *frameBuffer))
+		if (!mTextRenderer->create(TextRenderer::kDefaultShader, swapChain))
 		{
 			LogError("TextRenderer::create() failed");
 			return false;
 		}
 
 		mBatchRenderer = std::make_unique<BatchRenderer>();
-		if (!mBatchRenderer->create("/Assets/Engine/Shaders/SpriteRenderer.wgsl", *frameBuffer))
+		if (!mBatchRenderer->create("/Assets/Engine/Shaders/SpriteRenderer.wgsl", swapChain))
 		{
 			LogError("BatchRenderer::create() failed");
 			return false;
@@ -112,8 +113,16 @@ namespace Trinity
 		scene->setRoot(*rootNode);
 		scene->addNode(std::move(rootNode));
 
-		auto* camera = scene->addCamera("mainCamera", 0.0f, (float)mWindow->getWidth(), (float)mWindow->getHeight(), 
-			0.0f, 0.1f, 100.0f, glm::vec3(0.0f));
+		auto* camera = scene->addCamera(
+			"mainCamera", 
+			{ (float)mWindow->getWidth(), (float)mWindow->getHeight() },
+			0.1f, 
+			100.0f
+		);
+
+		auto* cameraController = scene->addCameraController("mainCamera");
+		cameraController->setMoveSpeed(0.1f);
+		cameraController->setRotationSpeed(0.001f);
 
 		mColorTexture = colorTexture.get();
 		mDepthTexture = depthTexture.get();
@@ -122,6 +131,7 @@ namespace Trinity
 		mFont = font.get();
 		mScene = scene.get();
 		mCamera = camera;
+		mCameraController = cameraController;
 
 		mResourceCache->addResource(std::move(imGuiFont));
 		mResourceCache->addResource(std::move(colorTexture));
@@ -131,7 +141,39 @@ namespace Trinity
 		mResourceCache->addResource(std::move(font));
 		mResourceCache->addResource(std::move(scene));
 
+		mScripts = mScene->getComponents<Script>();
+		for (auto& script : mScripts)
+		{
+			script->init();
+		}
+
 		return true;
+	}
+
+	void PlaygroundApp::update(float deltaTime)
+	{
+		Application::update(deltaTime);
+
+		if (mInput->getMouse()->isButtonDown(MOUSE_BUTTON_1))
+		{
+			if (mCameraController != nullptr)
+			{
+				auto relPos = mInput->getMouse()->getRelativePosition();
+				auto delta = glm::vec2{ -(float)relPos.x, -(float)relPos.y };
+
+				LogError("Delta: { %f, %f }", delta.x, delta.y);
+
+				mCameraController->panBy(delta);
+			}
+		}
+
+		if (mScene != nullptr)
+		{
+			for (auto& script : mScripts)
+			{
+				script->update(deltaTime);
+			}
+		}
 	}
 
 	void PlaygroundApp::draw(float deltaTime)
@@ -147,37 +189,57 @@ namespace Trinity
 		mInput->bindAction("exit", InputEvent::Pressed, [this](int32_t key) {
 			exit();
 		});
+
+		mInput->bindAxis("moveRight", [this](float scale) {
+			moveRight(scale);
+		}); 
+		
+		mInput->bindAxis("moveUp", [this](float scale) {
+			moveUp(scale);
+		});
+
+		mInput->bindAxis("turn", [this](float scale) {
+			turn(scale);
+		});
 	}
 
 	void PlaygroundApp::onGui()
 	{
 		auto projView = mCamera->getProjection() * mCamera->getView();
-		auto transform = glm::translate(glm::mat4(1.0f), glm::vec3{ 200.0f, 200.0f, 1.0f });
+		auto transform = glm::translate(glm::mat4(1.0f), glm::vec3{ -256.0f, -256.0f, 1.0f });
 
-		mRenderPass->begin(*mFrameBuffer);
-		
-		mBatchRenderer->begin(projView);
-		mBatchRenderer->drawTexture(mTexture, glm::vec2{ 0.0f }, glm::vec2{ 512.0f }, 
-			glm::vec2{ 0.0f }, glm::vec2{ 512.0f }, glm::vec4{ 0.0f }, 1.0f);
-		mBatchRenderer->end(*mRenderPass);
-
-		mTextRenderer->begin(projView);
-		mTextRenderer->drawText("Hello World!", mFont, 64.0f, glm::vec4{ 1.0f }, 
-			glm::vec2{ 0.0f }, transform);
-		mTextRenderer->end(*mRenderPass);
-
-		mRenderPass->end();
-		
 		auto& swapChain = mGraphicsDevice->getSwapChain();
 		mRenderPass->begin(swapChain);
-
-		mImGuiRenderer->newFrame(*mWindow, mClock->getDeltaTime());
-		ImGui::Begin("Demo Window");
-		ImGui::Image((ImTextureID)mColorTexture, ImVec2{ 512, 512 });
-		ImGui::End();
-		mImGuiRenderer->draw(*mRenderPass);
+		
+		mBatchRenderer->begin(projView);
+		mBatchRenderer->drawTexture(mTexture, glm::vec2{ 0.0f }, glm::vec2{ 512.0f }, glm::vec2{ 0.5f }, transform);
+		mBatchRenderer->end(*mRenderPass);
 
 		mRenderPass->end();
+	}
+
+	void PlaygroundApp::moveRight(float scale)
+	{
+		if (mCameraController != nullptr && scale != 0.0f)
+		{
+			mCameraController->moveRight(scale);
+		}
+	}
+
+	void PlaygroundApp::moveUp(float scale)
+	{
+		if (mCameraController != nullptr && scale != 0.0f)
+		{
+			mCameraController->moveUp(scale);
+		}
+	}
+
+	void PlaygroundApp::turn(float scale)
+	{
+		if (mCameraController != nullptr && scale != 0.0f)
+		{
+			mCameraController->turn(scale);
+		}
 	}
 }
 

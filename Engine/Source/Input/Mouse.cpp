@@ -2,6 +2,12 @@
 
 namespace Trinity
 {
+    Mouse::Mouse()
+    {
+        std::memset(mCurrentState, 0, sizeof(mCurrentState));
+        std::memset(mOldState, 0, sizeof(mOldState));
+    }
+
     bool Mouse::isButtonDown(int32_t button) const
     {
         if (button >= 0 && button < MOUSE_BUTTON_LAST)
@@ -51,13 +57,13 @@ namespace Trinity
     void Mouse::updatePosition(float x, float y)
     {
         mCurrentPosition = { x , y };
-        onPositionUpdated.notify(static_cast<int32_t>(x), static_cast<int32_t>(y));
+        onPositionUpdated.notify((int32_t)x, (int32_t)y);
     }
 
     void Mouse::updateScroll(float x, float y)
     {
         mScroll = { x, y };
-        onScrollUpdated.notify(static_cast<int32_t>(x), static_cast<int32_t>(y));
+        onScrollUpdated.notify((int32_t)x, (int32_t)y);
     }
 
     void Mouse::postUpdate()

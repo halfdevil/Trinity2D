@@ -4,6 +4,7 @@
 #include "Scene/Components/Light.h"
 #include "Scene/Components/ScriptContainer.h"
 #include "Scene/Components/Camera.h"
+#include "Scene/Components/Scripts/CameraController.h"
 #include "Scene/ComponentFactory.h"
 #include "VFS/FileSystem.h"
 #include "Core/ResourceCache.h"
@@ -173,8 +174,8 @@ namespace Trinity
 		return addLight(LightType::Spot, position, rotation, properties, parent);
 	}
 
-	Camera* Scene::addCamera(const std::string& nodeName, float left, float right, float bottom, float top, float nearPlane, 
-		float farPlane, const glm::vec3& position, const glm::vec3& rotation, Node* parent)
+	Camera* Scene::addCamera(const std::string& nodeName, const glm::vec2& size, float nearPlane, float farPlane, 
+		const glm::vec3& position, const glm::vec3& rotation, Node* parent)
 	{
 		auto cameraPtr = std::make_unique<Camera>();
 		auto cameraNode = std::make_unique<Node>();
@@ -188,10 +189,7 @@ namespace Trinity
 		cameraNode->setName(nodeName);
 
 		cameraPtr->setNode(*cameraNode);
-		cameraPtr->setLeft(left);
-		cameraPtr->setRight(right);
-		cameraPtr->setBottom(bottom);
-		cameraPtr->setTop(top);
+		cameraPtr->setSize(size);
 		cameraPtr->setNearPlane(nearPlane);
 		cameraPtr->setFarPlane(farPlane);
 
@@ -207,5 +205,32 @@ namespace Trinity
 		addNode(std::move(cameraNode));
 
 		return camera;
+	}
+
+	CameraController* Scene::addCameraController(const std::string& nodeName)
+	{
+		auto cameraNode = findNode(nodeName);
+		if (!cameraNode)
+		{
+			LogWarning("Camera node '%s' not found. Looking for 'default_camera' node", nodeName.c_str());
+			cameraNode = findNode("default_camera");
+		}
+
+		if (!cameraNode)
+		{
+			LogError("Default camera node 'default_camera' not found.");
+			return nullptr;
+		}
+
+		auto controller = std::make_unique<CameraController>();
+		controller->setNode(*cameraNode);
+
+		auto* controllerPtr = controller.get();
+		addComponent(std::move(controller));
+
+		auto& container = cameraNode->getScriptContainer();
+		container.setScript(*controllerPtr);
+
+		return controllerPtr;
 	}
 }

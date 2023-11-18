@@ -10,7 +10,7 @@ namespace Trinity
     {
     public:
 
-        Keyboard() = default;
+        Keyboard();
 
         Keyboard(const Keyboard&) = delete;
         Keyboard& operator = (const Keyboard&) = delete;

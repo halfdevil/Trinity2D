@@ -2,6 +2,12 @@
 
 namespace Trinity
 {
+    Keyboard::Keyboard()
+    {
+        std::memset(mCurrentState, 0, sizeof(mCurrentState));
+        std::memset(mOldState, 0, sizeof(mOldState));
+    }
+
     bool Keyboard::isKeyDown(int32_t key) const
     {
         if (key >= 0 && key < KEY_LAST)

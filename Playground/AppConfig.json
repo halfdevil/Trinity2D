@@ -3,8 +3,53 @@
     "actions": [
       {
         "name": "exit",
-        "keyboardKeys": [256]
-      }      
+        "keyboardKeys": [ 256 ]
+      },
+      {
+        "name": "panTo",
+        "keyboardKeys": [80]
+      }
+    ],
+    "axes": [
+      {
+        "name": "moveUp",
+        "keyboardKeys": [
+          {
+            "type": 87,
+            "scale": -1.0
+          },
+          {
+            "type": 83,
+            "scale": 1.0
+          }
+        ]
+      },
+      {
+        "name": "moveRight",
+        "keyboardKeys": [
+          {
+            "type": 68,
+            "scale": 1.0
+          },
+          {
+            "type": 65,
+            "scale": -1.0
+          }
+        ]
+      },
+      {
+        "name": "turn",
+        "keyboardKeys": [
+          {
+            "type": 262,
+            "scale": -1.0
+          },
+          {
+            "type": 263,
+            "scale": 1.0
+          }
+        ]
+      }
     ]
   }
 }
