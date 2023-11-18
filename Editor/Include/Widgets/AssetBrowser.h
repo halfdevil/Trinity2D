@@ -1,6 +1,6 @@
 #pragma once
 
-#include "EditorWidget.h"
+#include "Core/EditorWidget.h"
 #include "VFS/Storage.h"
 #include <string>
 #include <unordered_map>
@@ -74,7 +74,11 @@ namespace Trinity
 		virtual AssetEntry* updateEntry(const std::string& folderPath);
 		virtual AssetEntry* getEntry(const std::string& folderPath);
 
-		virtual void drawTree(const std::string& path);
+		virtual void drawTopView(AssetEntry* currentEntry);
+		virtual void drawSideView(AssetEntry* currentEntry);
+		virtual void drawMainView(AssetEntry* currentEntry);
+
+		virtual void drawTree(const std::string& path);		
 		virtual void openTree(const std::string& path);
 		virtual void treeClicked(const std::string& path);
 		virtual void contentClicked(const std::string& path, bool isFolder = false);
@@ -87,12 +91,13 @@ namespace Trinity
 		float mIconSize{ 64.0f };
 		float mIconPadding{ 16.0f };
 		float mTextPadding{ 4.0f };
+		Texture* mFolderIcon{ nullptr };
+		Texture* mFileIcon{ nullptr };
 		std::string mRootFolder;
 		std::string mCurrentFolder;
 		std::vector<std::unique_ptr<AssetEntry>> mEntries;
 		std::unordered_map<std::string, uint32_t> mEntryMap;
 		std::deque<std::string> mFrontQueue;
 		std::deque<std::string> mBackQueue;
-		ImGuiFont* mIconsFont{ nullptr };
 	};
 }

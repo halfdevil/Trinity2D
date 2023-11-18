@@ -123,7 +123,7 @@ namespace Trinity
 		mComponents[type] = std::move(components);
 	}
 
-	Light* Scene::addLight(LightType type, const glm::vec3& position, const glm::quat& rotation,
+	Light* Scene::addLight(LightType type, const glm::vec3& position, const glm::vec3& rotation,
 		const LightProperties& properties, Node* parent)
 	{
 		auto lightPtr = std::make_unique<Light>();
@@ -161,20 +161,20 @@ namespace Trinity
 		return addLight(LightType::Point, position, {}, properties, parent);
 	}
 
-	Light* Scene::addDirectionalLight(const glm::quat& rotation, const LightProperties& properties,
+	Light* Scene::addDirectionalLight(const glm::vec3& rotation, const LightProperties& properties,
 		Node* parent)
 	{
 		return addLight(LightType::Directional, {}, rotation, properties, parent);
 	}
 
-	Light* Scene::addSpotLight(const glm::vec3& position, const glm::quat& rotation,
+	Light* Scene::addSpotLight(const glm::vec3& position, const glm::vec3& rotation,
 		const LightProperties& properties, Node* parent)
 	{
 		return addLight(LightType::Spot, position, rotation, properties, parent);
 	}
 
 	Camera* Scene::addCamera(const std::string& nodeName, float left, float right, float bottom, float top, float nearPlane, 
-		float farPlane, const glm::vec3& position, const glm::quat& rotation, Node* parent)
+		float farPlane, const glm::vec3& position, const glm::vec3& rotation, Node* parent)
 	{
 		auto cameraPtr = std::make_unique<Camera>();
 		auto cameraNode = std::make_unique<Node>();

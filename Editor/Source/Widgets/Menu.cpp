@@ -1,13 +1,13 @@
-#include "Widgets/EditorMenu.h"
+#include "Widgets/Menu.h"
 #include "ImGui/ImGuiRenderer.h"
 #include <stack>
 
 namespace Trinity
 {
-	EditorMenuItem* EditorMenu::addMenuItem(const std::string& name, const std::string& title, 
-		const std::string& shortcut, EditorMenuItem* parent)
+	MenuItem* Menu::addMenuItem(const std::string& name, const std::string& title, 
+		const std::string& shortcut, MenuItem* parent)
 	{
-		auto menuItem = std::make_unique<EditorMenuItem>(name, title, shortcut);
+		auto menuItem = std::make_unique<MenuItem>(name, title, shortcut);
 		if (parent != nullptr)
 		{
 			parent->children.push_back(menuItem.get());
@@ -23,7 +23,7 @@ namespace Trinity
 		return menuItemPtr;
 	}
 
-	EditorMenuItem* EditorMenu::findMenuItem(const std::string& title)
+	MenuItem* Menu::findMenuItem(const std::string& title)
 	{
 		for (auto& menuItem : mAllItems)
 		{
@@ -36,36 +36,23 @@ namespace Trinity
 		return nullptr;
 	}
 
-	void EditorMenu::setMainMenu(bool mainMenu)
-	{
-		mMainMenu = mainMenu;
-	}
-
-	bool EditorMenu::isEnabled() const
+	bool Menu::isEnabled() const
 	{
 		return mEnabled && mAllItems.size() > 0;
 	}
 
-	void EditorMenu::draw()
+	void Menu::draw()
 	{
 		if (isEnabled())
 		{
-			if (mMainMenu ? ImGui::BeginMainMenuBar() : true)
+			for (auto* menuItem : mTopItems)
 			{
-				for (auto* menuItem : mTopItems)
-				{
-					drawMenuItem(menuItem);
-				}
-
-				if (mMainMenu)
-				{
-					ImGui::EndMainMenuBar();
-				}
+				drawMenuItem(menuItem);
 			}
 		}
 	}
 
-	void EditorMenu::drawMenuItem(EditorMenuItem* menuItem)
+	void Menu::drawMenuItem(MenuItem* menuItem)
 	{
 		auto& children = menuItem->children;
 		if (children.size() > 0)

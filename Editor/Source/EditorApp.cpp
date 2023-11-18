@@ -1,7 +1,9 @@
-#include "Editor.h"
-#include "EditorResources.h"
-#include "Widgets/EditorMenu.h"
+#include "EditorApp.h"
+#include "Core/EditorResources.h"
+#include "Widgets/MenuBar.h"
 #include "Widgets/AssetBrowser.h"
+#include "Widgets/SceneHierarchy.h"
+#include "Widgets/Inspector.h"
 #include "Input/Input.h"
 #include "ImGui/ImGuiRenderer.h"
 #include "ImGui/ImGuiFont.h"
@@ -20,7 +22,7 @@
 
 namespace Trinity
 {
-	bool Editor::init()
+	bool EditorApp::init()
 	{
 		if (!Application::init())
 		{
@@ -32,13 +34,6 @@ namespace Trinity
 		mRenderPass = std::make_unique<RenderPass>();
 		mGraphicsDevice->setClearColor({ 0.5f, 0.5f, 0.5f, 1.0f });
 
-		mEditorResources = std::make_unique<EditorResources>();
-		if (!mEditorResources->create())
-		{
-			LogError("EditorCache::create() failed");
-			return false;
-		}
-
 		mImGuiRenderer = std::make_unique<ImGuiRenderer>();
 		if (!mImGuiRenderer->create(*mWindow, swapChain))
 		{
@@ -46,15 +41,14 @@ namespace Trinity
 			return false;
 		}
 
-		if (!loadFonts())
+		mEditorResources = std::make_unique<EditorResources>();
+		if (!mEditorResources->create(mConfig["resources"]))
 		{
-			LogError("Editor::loadFonts() failed");
+			LogError("EditorCache::create() failed");
 			return false;
 		}
 
-		auto mainMenu = std::make_unique<EditorMenu>();
-		mainMenu->setMainMenu(true);
-
+		auto mainMenu = std::make_unique<MenuBar>();
 		mainMenu->onMenuItemClick.subscribe([this](const auto& menuItem) {
 			onMainMenuClick(menuItem.title);
 		});
@@ -64,23 +58,84 @@ namespace Trinity
 
 		mainMenu->addMenuItem("newProject", "New Project", "CTRL+N", fileMenu);
 		mainMenu->addMenuItem("openProject", "Open Project", "CTRL+O", fileMenu);
-		mainMenu->addMenuItem("spriteEditor", "Sprite Editor", "CTRL+T", toolsMenu);
+		mainMenu->addMenuItem("spriteEditor", "Sprite EditorApp", "CTRL+T", toolsMenu);
 
 		auto assetBrowser = std::make_unique<AssetBrowser>();
+		assetBrowser->setTitle("Asset Browser");
+
 		if (!assetBrowser->create("/Assets", *mEditorResources))
 		{
 			LogError("AssetBrowser::create() failed");
 			return false;
 		}
 
-		assetBrowser->setTitle("Asset Browser");
+		auto addNode = [this](const std::string& name, Node* parent = nullptr) {
+			auto node = std::make_unique<Node>();
+			node->setName(name);
+
+			if (parent != nullptr)
+			{
+				parent->addChild(*node);
+			}
+			else
+			{
+				mTestScene->addChild(*node);
+			}
+
+			auto* nodePtr = node.get();
+			mTestScene->addNode(std::move(node));
+
+			return nodePtr;
+		};
+
+		auto scene = std::make_unique<Scene>();
+		scene->setName("Test Scene");
+
+		mTestScene = scene.get();
+		mEditorResources->getResourceCache()->addResource(std::move(scene));
+
+		auto root = std::make_unique<Node>();
+		root->setName("Root");
+
+		mTestScene->setRoot(*root);
+		mTestScene->addNode(std::move(root));
+		
+		auto* node1 = addNode("Node1");
+		auto* node2 = addNode("Node2");
+		auto* node3 = addNode("Node3");
+
+		addNode("Node11", node1);
+		addNode("Node12", node1);
+		addNode("Node13", node1);
+
+		addNode("Node21", node2);
+		addNode("Node22", node2);
+		addNode("Node23", node2);
+
+		addNode("Node31", node3);
+		addNode("Node32", node3);
+		addNode("Node33", node3);
+
+
+		auto sceneHierarchy = std::make_unique<SceneHierarchy>();
+		sceneHierarchy->setTitle("Scene");
+		sceneHierarchy->setScene(*mTestScene);
+
+		auto inspector = std::make_unique<Inspector>();
+		inspector->setTitle("Inspector");
+
+		mSceneHierarchy = sceneHierarchy.get();
+		mInspector = inspector.get();
+
 		mWidgets.push_back(std::move(mainMenu));
 		mWidgets.push_back(std::move(assetBrowser));
+		mWidgets.push_back(std::move(sceneHierarchy));
+		mWidgets.push_back(std::move(inspector));
 
 		return true;
 	}
 
-	void Editor::draw(float deltaTime)
+	void EditorApp::draw(float deltaTime)
 	{
 		Application::draw(deltaTime);
 
@@ -93,7 +148,7 @@ namespace Trinity
 		mRenderPass->end();
 	}
 
-	void Editor::setupInput()
+	void EditorApp::setupInput()
 	{
 		Application::setupInput();
 
@@ -102,60 +157,18 @@ namespace Trinity
 		});
 	}
 
-	bool Editor::loadFonts()
-	{
-		if (!mConfig.contains("font"))
-		{
-			return false;
-		}
-
-		auto fontConfig = mConfig["font"];
-		auto fontFile = fontConfig["file"].get<std::string>();
-		auto fontSizes = fontConfig["sizes"].get<std::vector<float>>();
-
-		for (uint32_t idx = 0; idx < (uint32_t)fontSizes.size(); idx++)
-		{
-			auto fontSize = fontSizes[idx];
-			auto fontName = "font-" + std::to_string((uint32_t)fontSize);
-
-			auto font = mEditorResources->loadFont(fontName, fontFile, fontSize, false);
-			if (!font)
-			{
-				LogError("EditorResource::loadFont() failed for: '%s'", fontFile.c_str());
-				return false;
-			}
-
-			if (fontConfig.contains("icon"))
-			{
-				auto iconFontFile = fontConfig["icon"].get<std::string>();
-				if (!font->mergeFont(iconFontFile, kIconFontRanges))
-				{
-					LogError("ImGuiFont::mergeFont() failed for: '%s'", iconFontFile.c_str());
-					return false;
-				}
-			}
-
-			if (!font->build())
-			{
-				LogError("ImGuiFont::build() failed for: '%s'", fontFile.c_str());
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	void Editor::onGui()
+	void EditorApp::onGui()
 	{
 		ImGui::DockSpaceOverViewport();
 		
 		for (auto& widget : mWidgets)
 		{
+			mInspector->setSelectedNode(mSceneHierarchy->getCurrentNode());
 			widget->draw();
 		}
 	}
 
-	void Editor::onMainMenuClick(const std::string& title)
+	void EditorApp::onMainMenuClick(const std::string& title)
 	{
 		LogInfo("MainMenuItem clicked: %s", title.c_str());
 	}
@@ -165,10 +178,10 @@ using namespace Trinity;
 
 int main(int argc, char* argv[])
 {
-	static Editor app;
+	static EditorApp app;
 	app.run({
 		.logLevel = LogLevel::Info,
-		.title = "Trinity2D - Editor",
+		.title = "Trinity2D - EditorApp",
 #ifdef __EMSCRIPTEN__
 		.configFile = "/Assets/EditorConfig.json",
 #else

@@ -1,8 +1,6 @@
 #pragma once
 
-#include "Core/Singleton.h"
 #include "Core/Application.h"
-#include "IconsFontAwesome6.h"
 #include "imgui.h"
 
 namespace Trinity
@@ -12,22 +10,22 @@ namespace Trinity
 	class RenderPass;
 	class EditorResources;
 	class EditorWidget;
+	class SceneHierarchy;
+	class Inspector;
+	class Scene;
 
-	class Editor : public Application, public Singleton<Editor>
+	class EditorApp : public Application
 	{
 	public:
 
-		static constexpr ImWchar kIconFontRanges[] = { ICON_MIN_FA, ICON_MAX_16_FA, 0 };
-		static constexpr float kIconFontSizes[] = { 64.0f };
+		EditorApp() = default;
+		virtual ~EditorApp() = default;
 
-		Editor() = default;
-		virtual ~Editor() = default;
+		EditorApp(const EditorApp&) = delete;
+		EditorApp& operator = (const EditorApp&) = delete;
 
-		Editor(const Editor&) = delete;
-		Editor& operator = (const Editor&) = delete;
-
-		Editor(Editor&&) = default;
-		Editor& operator = (Editor&&) = default;
+		EditorApp(EditorApp&&) = default;
+		EditorApp& operator = (EditorApp&&) = default;
 
 		ImGuiRenderer* getImGuiRenderer() const
 		{
@@ -44,7 +42,6 @@ namespace Trinity
 		virtual bool init() override;
 		virtual void draw(float deltaTime) override;
 		virtual void setupInput() override;
-		virtual bool loadFonts();
 
 		virtual void onGui();
 		virtual void onMainMenuClick(const std::string& title);
@@ -56,5 +53,8 @@ namespace Trinity
 		std::unique_ptr<EditorResources> mEditorResources{ nullptr };
 		std::vector<std::unique_ptr<EditorWidget>> mWidgets;
 		ImGuiFont* mFont{ nullptr };
+		Scene* mTestScene{ nullptr };
+		SceneHierarchy* mSceneHierarchy{ nullptr };
+		Inspector* mInspector{ nullptr };
 	};
 }

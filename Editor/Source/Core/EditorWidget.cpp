@@ -1,4 +1,4 @@
-#include "EditorWidget.h"
+#include "Core/EditorWidget.h"
 
 namespace Trinity
 {

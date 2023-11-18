@@ -1,9 +1,15 @@
 #include "Scene/Component.h"
 #include "Scene/Node.h"
+#include "Editor/Editor.h"
 
 namespace Trinity
 {
-	void Component::setName(const std::string& name)
+    Editor* Component::getEditor()
+    {
+        return nullptr;
+    }
+
+    void Component::setName(const std::string& name)
     {
         mName = name;
     }
@@ -11,5 +17,9 @@ namespace Trinity
     void Component::setNode(Node& node)
     {
         mNode = &node;
+    }
+
+    void Component::onGui()
+    {
     }
 }

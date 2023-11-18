@@ -61,20 +61,20 @@ namespace Trinity
 		virtual void addComponent(std::unique_ptr<Component> component, Node& node);
 		virtual void setComponents(const std::type_index& type, std::vector<std::unique_ptr<Component>> components);
 
-		virtual Light* addLight(LightType type, const glm::vec3& position, const glm::quat& rotation = {},
+		virtual Light* addLight(LightType type, const glm::vec3& position, const glm::vec3& rotation = {},
 			const LightProperties& properties = {}, Node* parent = nullptr);
 
 		virtual Light* addPointLight(const glm::vec3& position, const LightProperties& properties = {}, 
 			Node* parent = nullptr);
 
-		virtual Light* addDirectionalLight(const glm::quat& rotation, const LightProperties& properties = {},
+		virtual Light* addDirectionalLight(const glm::vec3& rotation, const LightProperties& properties = {},
 			Node* parent = nullptr);
 
-		virtual Light* addSpotLight(const glm::vec3& position, const glm::quat& rotation = {},
+		virtual Light* addSpotLight(const glm::vec3& position, const glm::vec3& rotation = {},
 			const LightProperties& properties = {}, Node* parent = nullptr);
 
 		virtual Camera* addCamera(const std::string& nodeName, float left, float right, float bottom, float top,
-			float nearPlane, float farPlane, const glm::vec3& position,	const glm::quat& rotation = {}, 
+			float nearPlane, float farPlane, const glm::vec3& position,	const glm::vec3& rotation = {}, 
 			Node* parent = nullptr);
 
 	public:

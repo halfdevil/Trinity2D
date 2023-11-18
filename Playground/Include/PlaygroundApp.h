@@ -14,18 +14,18 @@ namespace Trinity
 	class FrameBuffer;
 	class RenderPass;
 
-	class Playground : public Application
+	class PlaygroundApp : public Application
 	{
 	public:
 
-		Playground() = default;
-		virtual ~Playground() = default;
+		PlaygroundApp() = default;
+		virtual ~PlaygroundApp() = default;
 
-		Playground(const Playground&) = delete;
-		Playground& operator = (const Playground&) = delete;
+		PlaygroundApp(const PlaygroundApp&) = delete;
+		PlaygroundApp& operator = (const PlaygroundApp&) = delete;
 
-		Playground(Playground&&) = default;
-		Playground& operator = (Playground&&) = default;
+		PlaygroundApp(PlaygroundApp&&) = default;
+		PlaygroundApp& operator = (PlaygroundApp&&) = default;
 
 	protected:
 

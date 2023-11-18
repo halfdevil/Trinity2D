@@ -1,4 +1,4 @@
-#include "Playground.h"
+#include "PlaygroundApp.h"
 #include "Input/Input.h"
 #include "ImGui/ImGuiRenderer.h"
 #include "ImGui/ImGuiFont.h"
@@ -21,7 +21,7 @@
 
 namespace Trinity
 {
-	bool Playground::init()
+	bool PlaygroundApp::init()
 	{
 		if (!Application::init())
 		{
@@ -134,13 +134,13 @@ namespace Trinity
 		return true;
 	}
 
-	void Playground::draw(float deltaTime)
+	void PlaygroundApp::draw(float deltaTime)
 	{
 		Application::draw(deltaTime);
 		onGui();
 	}
 
-	void Playground::setupInput()
+	void PlaygroundApp::setupInput()
 	{
 		Application::setupInput();
 
@@ -149,7 +149,7 @@ namespace Trinity
 		});
 	}
 
-	void Playground::onGui()
+	void PlaygroundApp::onGui()
 	{
 		auto projView = mCamera->getProjection() * mCamera->getView();
 		auto transform = glm::translate(glm::mat4(1.0f), glm::vec3{ 200.0f, 200.0f, 1.0f });
@@ -185,9 +185,9 @@ using namespace Trinity;
 
 int main(int argc, char* argv[])
 {
-	static Playground app;
+	static PlaygroundApp app;
 	app.run({
-		.title = "Trinity2D - Playground",
+		.title = "Trinity2D - PlaygroundApp",
 #ifdef __EMSCRIPTEN__
 		.configFile = "/Assets/AppConfig.json",
 #else

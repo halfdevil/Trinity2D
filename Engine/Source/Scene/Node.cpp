@@ -1,6 +1,7 @@
 #include "Scene/Node.h"
 #include "Scene/Components/Script.h"
 #include "Scene/Components/ScriptContainer.h"
+#include "Editor/EditorLayout.h"
 
 namespace Trinity
 {
@@ -55,6 +56,20 @@ namespace Trinity
 		else
 		{
 			mComponents.insert(std::make_pair(component.getType(), &component));
+		}
+	}
+
+	void NodeEditor::setNode(Node& node)
+	{
+		mNode = &node;
+	}
+
+	void NodeEditor::onInspectorGui(const EditorLayout& layout)
+	{
+		auto& transform = mNode->mTransform;
+		if (auto* editor = transform.getEditor(); editor != nullptr)
+		{
+			editor->onInspectorGui(layout);
 		}
 	}
 }

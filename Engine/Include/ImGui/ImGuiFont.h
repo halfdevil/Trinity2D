@@ -50,7 +50,7 @@ namespace Trinity
 			const ImWchar* glyphRanges = nullptr);
 
 		virtual void destroy();
-		virtual bool mergeFont(const std::string& filePath, const ImWchar* glyphRanges);
+		virtual bool mergeFont(const std::string& filePath, const ImWchar* glyphRanges = nullptr);
 		virtual bool build();
 
 		virtual void activate();

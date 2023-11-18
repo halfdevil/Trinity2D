@@ -7,9 +7,12 @@
       }
     ]
   },
-  "font": {
-    "file": "/Assets/Editor/Fonts/CascadiaCode.ttf",
-    "icon": "/Assets/Editor/Fonts/Icons/fa-solid-900.ttf",
-    "sizes": [ 20.0, 64.0 ]
+  "resources": {    
+    "font": {
+      "name": "Cascadia Code",
+      "file": "CascadiaCode.ttf",
+      "icon": "fa-solid-900.ttf",
+      "size": 16.0
+    }
   }
 }

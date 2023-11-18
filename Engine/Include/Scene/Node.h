@@ -2,6 +2,7 @@
 
 #include "Scene/Components/Transform.h"
 #include "Scene/Components/ScriptContainer.h"
+#include "Editor/Editor.h"
 #include <memory>
 #include <string>
 #include <typeindex>
@@ -10,9 +11,13 @@
 
 namespace Trinity
 {
+	class NodeEditor;
+
 	class Node
 	{
 	public:
+
+		friend class NodeEditor;
 
 		Node();
 		virtual ~Node() = default;
@@ -78,5 +83,20 @@ namespace Trinity
 		ScriptContainer mScriptContainer;
 		std::vector<Node*> mChildren;
 		std::unordered_map<std::type_index, Component*> mComponents;
+	};
+
+	class NodeEditor : public Editor
+	{
+	public:
+
+		NodeEditor() = default;
+		virtual ~NodeEditor() = default;
+
+		virtual void setNode(Node& node);
+		virtual void onInspectorGui(const EditorLayout& layout) override;
+
+	protected:
+
+		Node* mNode{ nullptr };
 	};
 }
