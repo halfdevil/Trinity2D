@@ -24,7 +24,7 @@ namespace Trinity
 	public:
 
 		template <typename T>
-		ImGuiDataType getDataType()
+		ImGuiDataType getDataType() const
 		{
 			if constexpr (std::is_same<T, int8_t>::value)			return ImGuiDataType_S8;
 			else if constexpr (std::is_same<T, int16_t>::value)		return ImGuiDataType_S16;
@@ -34,6 +34,8 @@ namespace Trinity
 			else if constexpr (std::is_same<T, uint16_t>::value)	return ImGuiDataType_U16;
 			else if constexpr (std::is_same<T, uint32_t>::value)	return ImGuiDataType_U32;
 			else if constexpr (std::is_same<T, uint64_t>::value)	return ImGuiDataType_U64;
+			else if constexpr (std::is_same<T, float>::value)		return ImGuiDataType_Float;
+			else if constexpr (std::is_same<T, double>::value)		return ImGuiDataType_Double;
 
 			return ImGuiDataType_U32;
 		}

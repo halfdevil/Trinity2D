@@ -71,5 +71,18 @@ namespace Trinity
 		{
 			editor->onInspectorGui(layout);
 		}
+
+		for (auto& it : mNode->mComponents)
+		{
+			if (it.first == typeid(Transform) || it.first == typeid(ScriptContainer))
+			{
+				continue;
+			}
+
+			if (auto* editor = it.second->getEditor(); editor != nullptr)
+			{
+				editor->onInspectorGui(layout);
+			}
+		}
 	}
 }

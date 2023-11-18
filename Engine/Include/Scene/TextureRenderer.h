@@ -26,10 +26,10 @@ namespace Trinity
 		TextureRenderer(TextureRenderer&&) = default;
 		TextureRenderer& operator = (TextureRenderer&&) = default;
 
-		virtual bool create(Scene& scene, RenderTarget& renderTarget);
+		virtual bool create(RenderTarget& renderTarget);
 		virtual void destroy();
 
-		virtual void setCamera(const std::string& nodeName);
+		virtual void setScene(Scene& scene, const std::string& cameraNodeName);
 		virtual void draw(const RenderPass& renderPass);
 
 	protected:

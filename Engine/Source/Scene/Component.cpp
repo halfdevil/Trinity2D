@@ -18,8 +18,4 @@ namespace Trinity
     {
         mNode = &node;
     }
-
-    void Component::onGui()
-    {
-    }
 }

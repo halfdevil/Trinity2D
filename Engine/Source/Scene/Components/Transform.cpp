@@ -104,9 +104,21 @@ namespace Trinity
 	{
 		if (layout.beginLayout("Transform"))
 		{
-			layout.inputVec3("Translation", mTransform->mTranslation);
-			layout.inputVec3("Rotation", mTransform->mRotation);
-			layout.inputVec3("Scale", mTransform->mScale);
+			if (layout.inputVec3("Translation", mTransform->mTranslation))
+			{
+				mTransform->invalidateWorldMatrix();
+			}
+
+			if (layout.inputVec3("Rotation", mTransform->mRotation))
+			{
+				mTransform->invalidateWorldMatrix();
+			}
+
+			if (layout.inputVec3("Scale", mTransform->mScale))
+			{
+				mTransform->invalidateWorldMatrix();
+			}
+
 			layout.endLayout();
 		}
 	}

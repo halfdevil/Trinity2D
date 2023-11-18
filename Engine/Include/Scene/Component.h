@@ -36,7 +36,6 @@ namespace Trinity
 		virtual Editor* getEditor();
 		virtual void setName(const std::string& name);
 		virtual void setNode(Node& node);
-		virtual void onGui();
 
 		virtual std::type_index getType() const = 0;
 		virtual std::string getTypeName() const = 0;

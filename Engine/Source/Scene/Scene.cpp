@@ -4,8 +4,10 @@
 #include "Scene/Components/Light.h"
 #include "Scene/Components/ScriptContainer.h"
 #include "Scene/Components/Camera.h"
+#include "Scene/Components/TextureRenderable.h"
 #include "Scene/Components/Scripts/CameraController.h"
 #include "Scene/ComponentFactory.h"
+#include "Graphics/Texture.h"
 #include "VFS/FileSystem.h"
 #include "Core/ResourceCache.h"
 #include "Core/Logger.h"
@@ -172,6 +174,42 @@ namespace Trinity
 		const LightProperties& properties, Node* parent)
 	{
 		return addLight(LightType::Spot, position, rotation, properties, parent);
+	}
+	
+	TextureRenderable* Scene::addTextureRenderable(
+		Texture& texture, 
+		const std::string& nodeName, 
+		const glm::vec2& origin,
+		const glm::bvec2& flip, 
+		const glm::vec4& color, 
+		const glm::vec3& position, 
+		const glm::vec3& rotation, 
+		const glm::vec3& scale
+	)
+	{
+		auto node = findNode(nodeName);
+		if (!node)
+		{
+			LogError("Node not found: '%s'", nodeName.c_str());
+			return nullptr;
+		}
+
+		auto renderable = std::make_unique<TextureRenderable>();
+		renderable->setTexture(texture);
+		renderable->setOrigin(origin);
+		renderable->setFlip(flip);
+		renderable->setNode(*node);
+
+		auto& transform = node->getTransform();
+		transform.setTranslation(position);
+		transform.setRotation(rotation);
+		transform.setScale(scale);
+
+		auto* renderablePtr = renderable.get();
+		node->setComponent(*renderable);
+		addComponent(std::move(renderable), *node);
+
+		return renderablePtr;
 	}
 
 	Camera* Scene::addCamera(const std::string& nodeName, const glm::vec2& size, float nearPlane, float farPlane, 

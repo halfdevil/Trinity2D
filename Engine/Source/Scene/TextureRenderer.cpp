@@ -11,11 +11,9 @@
 
 namespace Trinity
 {
-	bool TextureRenderer::create(Scene& scene, RenderTarget& renderTarget)
+	bool TextureRenderer::create(RenderTarget& renderTarget)
 	{
-		mScene = &scene;
 		mRenderer = std::make_unique<BatchRenderer>();
-
 		if (!mRenderer->create(kShader, renderTarget))
 		{
 			LogError("BatchRenderer::create() failed with shader: '%s'", kShader);
@@ -32,12 +30,14 @@ namespace Trinity
 		mRenderer = nullptr;
 	}
 
-	void TextureRenderer::setCamera(const std::string& nodeName)
+	void TextureRenderer::setScene(Scene& scene, const std::string& cameraNodeName)
 	{
-		auto cameraNode = mScene->findNode(nodeName);
+		mScene = &scene;
+
+		auto cameraNode = mScene->findNode(cameraNodeName);
 		if (!cameraNode)
 		{
-			LogWarning("Camera node '%s' not found. Looking for 'default_camera' node", nodeName.c_str());
+			LogWarning("Camera node '%s' not found. Looking for 'default_camera' node", cameraNodeName.c_str());
 			cameraNode = mScene->findNode("default_camera");
 		}
 

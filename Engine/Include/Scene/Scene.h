@@ -18,6 +18,8 @@ namespace Trinity
 	class ComponentFactory;
 	class Camera;
 	class CameraController;
+	class TextureRenderable;
+	class Texture;
 
 	class Scene : public Resource
 	{
@@ -87,6 +89,17 @@ namespace Trinity
 			const glm::vec3& rotation = {},
 			const LightProperties& properties = {}, 
 			Node* parent = nullptr
+		);
+
+		virtual TextureRenderable* addTextureRenderable(
+			Texture& texture,
+			const std::string& nodeName,
+			const glm::vec2& origin = glm::vec2{ 0.5f },
+			const glm::bvec2& flip = glm::bvec2{ false },
+			const glm::vec4& color = glm::vec4{ 0.0f },
+			const glm::vec3& position = glm::vec3{ 0.0f },
+			const glm::vec3& rotation = glm::vec3{ 0.0f },
+			const glm::vec3& scale = glm::vec3{ 1.0f }
 		);
 
 		virtual Camera* addCamera(

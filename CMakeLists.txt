@@ -41,6 +41,7 @@ endif()
 
 add_subdirectory("ThirdParty/json")
 add_subdirectory("ThirdParty/imguibuild")
+add_subdirectory("ThirdParty/imguizmobuild")
 
 set_property(TARGET nlohmann_json PROPERTY FOLDER "ThirdParty")
 
@@ -48,6 +49,7 @@ include_directories("ThirdParty/stb")
 include_directories("ThirdParty/glm")
 include_directories("ThirdParty/json/include")
 include_directories("ThirdParty/imgui")
+include_directories("ThirdParty/ImGuizmo")
 include_directories("ThirdParty/IconFontCppHeaders")
 
 # Include sub-projects.

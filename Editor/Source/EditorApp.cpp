@@ -3,15 +3,19 @@
 #include "Widgets/AssetBrowser.h"
 #include "Widgets/SceneHierarchy.h"
 #include "Widgets/Inspector.h"
+#include "Widgets/Viewport.h"
 #include "Input/Input.h"
 #include "ImGui/ImGuiRenderer.h"
 #include "ImGui/ImGuiFont.h"
 #include "Scene/Scene.h"
 #include "Scene/Components/Camera.h"
 #include "Scene/ComponentFactory.h"
+#include "Scene/TextureRenderer.h"
 #include "Graphics/Texture.h"
 #include "Graphics/RenderPass.h"
 #include "Graphics/GraphicsDevice.h"
+#include "Graphics/FrameBuffer.h"
+#include "Graphics/BatchRenderer.h"
 #include "VFS/FileSystem.h"
 #include "Editor/EditorLayout.h"
 #include "Core/EditorResources.h"
@@ -46,6 +50,15 @@ namespace Trinity
 		if (!mEditorResources->create(mConfig["resources"]))
 		{
 			LogError("EditorCache::create() failed");
+			return false;
+		}
+
+		auto sceneViewport = std::make_unique<Viewport>();
+		sceneViewport->setTitle("Scene Viewport");
+
+		if (!sceneViewport->create(mWindow->getWidth(), mWindow->getHeight(), *mEditorResources))
+		{
+			LogError("Viewport::create() failed");
 			return false;
 		}
 
@@ -89,6 +102,13 @@ namespace Trinity
 			return nodePtr;
 		};
 
+		auto texture = std::make_unique<Texture>();
+		if (!texture->create("/Assets/Editor/Textures/grass.png", wgpu::TextureFormat::RGBA8Unorm))
+		{
+			LogError("AssetBrowser::create() failed");
+			return false;
+		}
+
 		auto scene = std::make_unique<Scene>();
 		scene->setName("Test Scene");
 
@@ -117,6 +137,20 @@ namespace Trinity
 		addNode("Node32", node3);
 		addNode("Node33", node3);
 
+		mTestScene->addCamera(
+			"mainCamera",
+			{ (float)mWindow->getWidth(), (float)mWindow->getHeight() },
+			0.1f,
+			100.0f
+		);
+
+		mTestScene->addTextureRenderable(
+			*texture,
+			"Node1"
+		);
+
+		auto& transform = node1->getTransform();
+		transform.setTranslation({ -256.0f, -256.0f, 1.0f });
 
 		auto sceneHierarchy = std::make_unique<SceneHierarchy>();
 		sceneHierarchy->setTitle("Scene");
@@ -125,12 +159,23 @@ namespace Trinity
 		auto inspector = std::make_unique<Inspector>();
 		inspector->setTitle("Inspector");
 
+		mTextureRenderer = std::make_unique<TextureRenderer>();
+		if (!mTextureRenderer->create(*sceneViewport->getFrameBuffer()))
+		{
+			LogError("TextureRenderer::create() failed!!");
+			return false;
+		}
+		
+		mTextureRenderer->setScene(*mTestScene, "mainCamera");
+		mSceneViewport = sceneViewport.get();
 		mSceneHierarchy = sceneHierarchy.get();
 		mInspector = inspector.get();
 
+		mEditorResources->getResourceCache()->addResource(std::move(texture));
 		mWidgets.push_back(std::move(mainMenu));
 		mWidgets.push_back(std::move(assetBrowser));
 		mWidgets.push_back(std::move(sceneHierarchy));
+		mWidgets.push_back(std::move(sceneViewport));
 		mWidgets.push_back(std::move(inspector));
 
 		return true;
@@ -140,9 +185,15 @@ namespace Trinity
 	{
 		Application::draw(deltaTime);
 
+		if (mSceneViewport != nullptr)
+		{
+			mRenderPass->begin(*mSceneViewport->getFrameBuffer());
+			mTextureRenderer->draw(*mRenderPass);
+			mRenderPass->end();
+		}
+
 		auto& swapChain = mGraphicsDevice->getSwapChain();
 		mRenderPass->begin(swapChain);
-
 		mImGuiRenderer->newFrame(*mWindow, deltaTime);
 		onGui();
 		mImGuiRenderer->draw(*mRenderPass);

@@ -26,3 +26,9 @@
 [submodule "ThirdParty/IconFontCppHeaders"]
 	path = ThirdParty/IconFontCppHeaders
 	url = https://github.com/juliettef/IconFontCppHeaders.git
+[submodule "ThirdParty/ImGuizmo"]
+	path = ThirdParty/ImGuizmo
+	url = https://github.com/CedricGuillemet/ImGuizmo.git
+[submodule "ThirdParty/imguizmobuild"]
+	path = ThirdParty/imguizmobuild
+	url = https://github.com/halfdevil/imguizmobuild.git

@@ -1,5 +1,6 @@
 #include "Scene/Components/Camera.h"
 #include "Scene/Node.h"
+#include "Editor/EditorLayout.h"
 
 namespace Trinity
 {
@@ -27,6 +28,13 @@ namespace Trinity
 		return getStaticType();
 	}
 
+	Editor* Camera::getEditor()
+	{
+		static CameraEditor editor;
+		editor.setCamera(*this);
+		return &editor;
+	}
+
 	void Camera::setSize(const glm::vec2& size)
 	{
 		mSize = size;
@@ -45,5 +53,21 @@ namespace Trinity
 	std::string Camera::getStaticType()
 	{
 		return "Camera";
+	}
+
+	void CameraEditor::setCamera(Camera& camera)
+	{
+		mCamera = &camera;
+	}
+
+	void CameraEditor::onInspectorGui(const EditorLayout& layout)
+	{
+		if (layout.beginLayout("Camera"))
+		{
+			layout.inputVec2("Size", mCamera->mSize);
+			layout.inputScalar("Near Plane", mCamera->mNearPlane);
+			layout.inputScalar("Far Plane", mCamera->mFarPlane);
+			layout.endLayout();
+		}
 	}
 }

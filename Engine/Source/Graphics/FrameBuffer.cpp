@@ -127,7 +127,7 @@ namespace Trinity
     )
     {
         auto texture = std::make_unique<Texture>();
-        if (texture->create(mWidth, mHeight, colorFormat, usage))
+        if (!texture->create(mWidth, mHeight, colorFormat, usage))
         {
             LogError("Texture::create() failed for FrameBuffer");
             return false;

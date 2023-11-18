@@ -7,12 +7,15 @@ namespace Trinity
 {
 	class ImGuiRenderer;
 	class ImGuiFont;
+	class TextureRenderer;
 	class RenderPass;
 	class EditorResources;
 	class EditorWidget;
 	class SceneHierarchy;
 	class Inspector;
+	class Viewport;
 	class Scene;
+	class Texture;
 
 	class EditorApp : public Application
 	{
@@ -49,12 +52,14 @@ namespace Trinity
 	protected:
 
 		std::unique_ptr<ImGuiRenderer> mImGuiRenderer{ nullptr };
+		std::unique_ptr<TextureRenderer> mTextureRenderer{ nullptr };
 		std::unique_ptr<RenderPass> mRenderPass{ nullptr };
 		std::unique_ptr<EditorResources> mEditorResources{ nullptr };
 		std::vector<std::unique_ptr<EditorWidget>> mWidgets;
 		ImGuiFont* mFont{ nullptr };
 		Scene* mTestScene{ nullptr };
 		SceneHierarchy* mSceneHierarchy{ nullptr };
+		Viewport* mSceneViewport{ nullptr };
 		Inspector* mInspector{ nullptr };
 	};
 }

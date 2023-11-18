@@ -8,6 +8,11 @@
 
 namespace Trinity
 {
+	Viewport::~Viewport()
+	{
+		destroy();
+	}
+
 	bool Viewport::create(uint32_t width, uint32_t height, EditorResources& resources)
 	{
 		mFrameBuffer = std::make_unique<FrameBuffer>();
@@ -18,8 +23,9 @@ namespace Trinity
 		}
 
 		if (!mFrameBuffer->addColorAttachment(
-			wgpu::TextureFormat::BGRA8Unorm, 
-			wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::TextureBinding
+			wgpu::TextureFormat::RGBA8Unorm, 
+			wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::TextureBinding,
+			{ 0.5f, 0.5f, 0.5f, 1.0f }
 		))
 		{
 			LogError("FrameBuffer::addColorAttachment() failed");
