@@ -48,11 +48,10 @@ fn vs_main(in : VertexInput) -> VertexOutput
 
 @fragment
 fn fs_main(in: VertexOutput) -> FragmentOutput {
-    var color = in.color;
-    color = textureSample(diffuse_texture, diffuse_sampler, in.uv);
+    var color = textureSample(diffuse_texture, diffuse_sampler, in.uv);
 
     var out: FragmentOutput;    
-    out.frag_color = color;
+    out.frag_color = color + (in.color * in.color.a);
 
     return out;
 }

@@ -1,17 +1,20 @@
 #pragma once
 
 #include "Scene/Component.h"
+#include "Editor/Editor.h"
 #include <glm/glm.hpp>
 
 namespace Trinity
 {
 	class Texture;
+	class TextureRenderableEditor;
 	class TextureRenderableSerializer;
 
 	class TextureRenderable : public Component
 	{
 	public:
 
+		friend class TextureRenderableEditor;
 		friend class TextureRenderableSerializer;
 
 		TextureRenderable() = default;
@@ -45,6 +48,8 @@ namespace Trinity
 
 		virtual std::type_index getType() const override;
 		virtual UUIDv4::UUID getUUID() const override;
+
+		virtual Editor* getEditor() override;
 		virtual Serializer* getSerializer(Scene& scene) override;
 
 		virtual void setTexture(Texture& texture);
@@ -62,6 +67,27 @@ namespace Trinity
 		glm::vec2 mOrigin{ 0.5f };
 		glm::vec4 mColor{ 0.0f };
 		glm::bvec2 mFlip{ false };
+	};
+
+	class TextureRenderableEditor : public Editor
+	{
+	public:
+
+		TextureRenderableEditor() = default;
+		virtual ~TextureRenderableEditor() = default;
+
+		TextureRenderableEditor(const TextureRenderableEditor&) = delete;
+		TextureRenderableEditor& operator = (const TextureRenderableEditor&) = delete;
+
+		TextureRenderableEditor(TextureRenderableEditor&&) = default;
+		TextureRenderableEditor& operator = (TextureRenderableEditor&&) = default;
+
+		virtual void setTextureRenderable(TextureRenderable& renderable);
+		virtual void onInspectorGui(const EditorLayout& layout) override;
+
+	protected:
+
+		TextureRenderable* mTextureRenderable{ nullptr };
 	};
 
 	class TextureRenderableSerializer : public ComponentSerializer

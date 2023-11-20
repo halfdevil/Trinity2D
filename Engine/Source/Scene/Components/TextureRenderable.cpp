@@ -1,5 +1,6 @@
 #include "Scene/Components/TextureRenderable.h"
 #include "Scene/Scene.h"
+#include "Editor/EditorLayout.h"
 #include "Graphics/Texture.h"
 #include "VFS/FileReader.h"
 #include "VFS/FileWriter.h"
@@ -17,6 +18,14 @@ namespace Trinity
 	UUIDv4::UUID TextureRenderable::getUUID() const
 	{
 		return TextureRenderable::UUID;
+	}
+
+	Editor* TextureRenderable::getEditor()
+	{
+		static TextureRenderableEditor editor;
+		editor.setTextureRenderable(*this);
+
+		return &editor;
 	}
 
 	Serializer* TextureRenderable::getSerializer(Scene& scene)
@@ -46,6 +55,21 @@ namespace Trinity
 	void TextureRenderable::setFlip(const glm::bvec2& flip)
 	{
 		mFlip = flip;
+	}
+
+	void TextureRenderableEditor::setTextureRenderable(TextureRenderable& renderable)
+	{
+		mTextureRenderable = &renderable;
+	}
+
+	void TextureRenderableEditor::onInspectorGui(const EditorLayout& layout)
+	{
+		if (layout.beginLayout("Texture Renderable"))
+		{
+			layout.inputVec2("Origin", mTextureRenderable->mOrigin);
+			layout.inputVec4("Color", mTextureRenderable->mColor);
+			layout.endLayout();
+		}
 	}
 
 	void TextureRenderableSerializer::setTextureRenderable(TextureRenderable& renderable)
