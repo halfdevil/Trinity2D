@@ -7,9 +7,9 @@ namespace Trinity
 		return typeid(Script);
 	}
 
-	std::string Script::getTypeName() const
+	UUIDv4::UUID Script::getUUID() const
 	{
-		return getStaticType();
+		return Script::UUID;
 	}
 
 	bool Script::init()
@@ -23,10 +23,5 @@ namespace Trinity
 
 	void Script::resize(uint32_t width, uint32_t height)
 	{
-	}
-
-	std::string Script::getStaticType()
-	{
-		return "Script";
 	}
 }

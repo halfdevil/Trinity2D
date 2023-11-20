@@ -2,17 +2,20 @@
 
 #include "Scene/Component.h"
 #include "Editor/Editor.h"
+#include "VFS/Serializer.h"
 #include <glm/glm.hpp>
 
 namespace Trinity
 {
 	class CameraEditor;
+	class CameraSerializer;
 
 	class Camera : public Component
 	{
 	public:
 
 		friend class CameraEditor;
+		friend class CameraSerializer;
 
 		Camera() = default;
 		virtual ~Camera() = default;
@@ -32,8 +35,10 @@ namespace Trinity
 		virtual glm::mat4 getProjection() const;
 
 		virtual std::type_index getType() const override;
-		virtual std::string getTypeName() const override;
+		virtual UUIDv4::UUID getUUID() const override;
+
 		virtual Editor* getEditor() override;
+		virtual Serializer* getSerializer(Scene& scene) override;
 
 		virtual void setSize(const glm::vec2& size);
 		virtual void setNearPlane(float nearPlane);
@@ -41,7 +46,7 @@ namespace Trinity
 
 	public:
 
-		static std::string getStaticType();
+		inline static UUIDv4::UUID UUID = UUIDv4::UUID::fromStrFactory("ddc4737c-17aa-4928-9d60-6041eb96b562");
 
 	protected:
 
@@ -65,6 +70,31 @@ namespace Trinity
 
 		virtual void setCamera(Camera& camera);
 		virtual void onInspectorGui(const EditorLayout& layout) override;
+
+	protected:
+
+		Camera* mCamera{ nullptr };
+	};
+
+	class CameraSerializer : public ComponentSerializer
+	{
+	public:
+
+		CameraSerializer() = default;
+		virtual ~CameraSerializer() = default;
+
+		CameraSerializer(const CameraSerializer&) = delete;
+		CameraSerializer& operator = (const CameraSerializer&) = delete;
+
+		CameraSerializer(CameraSerializer&&) = default;
+		CameraSerializer& operator = (CameraSerializer&&) = default;
+
+		virtual void setCamera(Camera& camera);
+		virtual bool read(FileReader& reader, ResourceCache& cache) override;
+		virtual bool write(FileWriter& writer) override;
+
+		virtual bool read(json& object, ResourceCache& cache) override;
+		virtual bool write(json& object) override;
 
 	protected:
 

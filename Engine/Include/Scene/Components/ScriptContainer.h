@@ -21,34 +21,36 @@ namespace Trinity
 		ScriptContainer& operator = (ScriptContainer&&) = default;
 
 		virtual std::type_index getType() const override;
-		virtual std::string getTypeName() const override;
+		virtual UUIDv4::UUID getUUID() const override;
 
 		virtual void init();
 		virtual void update(float deltaTime);
 		virtual void resize(uint32_t width, uint32_t height);
 
-		virtual Script& getScript(const std::string& type);
-		virtual bool hasScript(const std::string& type);
+		virtual Script& getScript(const UUIDv4::UUID& uuid);
+		virtual bool hasScript(const UUIDv4::UUID& uuid);
 		virtual void setScript(Script& script);
 
 	public:
 
-		static std::string getStaticType();
+		inline static UUIDv4::UUID UUID = UUIDv4::UUID::fromStrFactory("c5e2d6f0-4524-4463-9b26-a0f61d9dbc6c");
+
+	public:
 
 		template <typename T>
 		inline T& getScript()
 		{
-			return dynamic_cast<T&>(getScript(T::getStaticType()));
+			return dynamic_cast<T&>(getScript(T::UUID));
 		}
 
 		template <typename T>
 		inline bool hasScript()
 		{
-			return hasScript(T::getStaticType());
+			return hasScript(T::UUID);
 		}
 
 	protected:
 
-		std::unordered_map<std::string, Script*> mScripts;
+		std::unordered_map<UUIDv4::UUID, Script*> mScripts;
 	};
 }

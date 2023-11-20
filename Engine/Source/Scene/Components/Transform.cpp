@@ -1,8 +1,14 @@
 #include "Scene/Components/Transform.h"
 #include "Scene/Node.h"
+#include "Scene/Scene.h"
 #include "Editor/EditorLayout.h"
+#include "Math/Math.h"
+#include "VFS/FileReader.h"
+#include "VFS/FileWriter.h"
+#include "Core/Logger.h"
 #include "glm/gtx/matrix_decompose.hpp"
 #include "glm/gtx/euler_angles.hpp"
+#include "glm/gtc/type_ptr.hpp"
 
 namespace Trinity
 {
@@ -11,9 +17,9 @@ namespace Trinity
 		return typeid(Transform);
 	}
 
-	std::string Transform::getTypeName() const
+	UUIDv4::UUID Transform::getUUID() const
 	{
-		return getStaticType();
+		return Transform::UUID;
 	}
 
 	Editor* Transform::getEditor()
@@ -21,6 +27,15 @@ namespace Trinity
 		static TransformEditor editor;
 		editor.setTransform(*this);
 		return &editor;
+	}
+
+	Serializer* Transform::getSerializer(Scene& scene)
+	{
+		static TransformSerializer serializer;
+		serializer.setTransform(*this);
+		serializer.setScene(scene);
+
+		return &serializer;
 	}
 
 	glm::mat4 Transform::getMatrix() const
@@ -38,14 +53,22 @@ namespace Trinity
 
 	void Transform::setMatrix(const glm::mat4& matrix)
 	{
-		glm::vec3 skew;
-		glm::vec4 perspective;
-		glm::quat rotation;
-
-		glm::decompose(matrix, mScale, rotation, mTranslation, skew, perspective);
-		mRotation = glm::eulerAngles(rotation);
-
+		Math::decomposeTransform(matrix, mTranslation, mRotation, mScale);
 		invalidateWorldMatrix();
+	}
+
+	void Transform::setWorldMatrix(const glm::mat4& matrix)
+	{
+		auto parent = mNode->getParent();
+		if (parent != nullptr)
+		{
+			auto& transform = parent->getTransform();
+			setMatrix(glm::inverse(transform.getWorldMatrix()) * matrix);
+		}
+		else
+		{
+			setMatrix(matrix);
+		}
 	}
 
 	void Transform::setTranslation(const glm::vec3& translation)
@@ -69,6 +92,13 @@ namespace Trinity
 	void Transform::invalidateWorldMatrix()
 	{
 		mUpdateMatrix = true;
+
+		auto& children = mNode->getChildren();
+		for (auto* child : children)
+		{
+			auto& transform = child->getTransform();
+			transform.invalidateWorldMatrix();
+		}
 	}
 
 	void Transform::updateWorldTransform()
@@ -88,11 +118,6 @@ namespace Trinity
 		}
 
 		mUpdateMatrix = false;
-	}
-
-	std::string Transform::getStaticType()
-	{
-		return "Transform";
 	}
 
 	void TransformEditor::setTransform(Transform& transform)
@@ -121,5 +146,145 @@ namespace Trinity
 
 			layout.endLayout();
 		}
+	}
+
+	void TransformSerializer::setTransform(Transform& camera)
+	{
+		mTransform = &camera;
+		setComponent(camera);
+	}
+
+	bool TransformSerializer::read(FileReader& reader, ResourceCache& cache)
+	{
+		if (!ComponentSerializer::read(reader, cache))
+		{
+			LogError("ComponentSerialzer::read() failed");
+			return false;
+		}
+
+		if (!reader.read(glm::value_ptr(mTransform->mTranslation)))
+		{
+			LogError("FileReader::read() failed for 'translation'");
+			return false;
+		}
+
+		if (!reader.read(glm::value_ptr(mTransform->mRotation)))
+		{
+			LogError("FileReader::read() failed for 'rotation'");
+			return false;
+		}
+
+		if (!reader.read(glm::value_ptr(mTransform->mScale)))
+		{
+			LogError("FileReader::read() failed for 'scale'");
+			return false;
+		}
+
+		return true;
+	}
+
+	bool TransformSerializer::write(FileWriter& writer)
+	{
+		if (!ComponentSerializer::write(writer))
+		{
+			LogError("ComponentSerialzer::write() failed");
+			return false;
+		}
+
+		if (!writer.write(glm::value_ptr(mTransform->mTranslation)))
+		{
+			LogError("FileWriter::write() failed for 'translation'");
+			return false;
+		}
+
+		if (!writer.write(glm::value_ptr(mTransform->mRotation)))
+		{
+			LogError("FileWriter::write() failed for 'rotation'");
+			return false;
+		}
+
+		if (!writer.write(glm::value_ptr(mTransform->mScale)))
+		{
+			LogError("FileWriter::write() failed for 'scale'");
+			return false;
+		}
+
+		return true;
+	}
+
+	bool TransformSerializer::read(json& object, ResourceCache& cache)
+	{
+		if (!ComponentSerializer::read(object, cache))
+		{
+			LogError("ComponentSerialzer::read() failed");
+			return false;
+		}
+
+		if (!object.contains("translation"))
+		{
+			LogError("JSON Transform object doesn't contain 'translation' key");
+			return false;
+		}
+
+		if (!object.contains("rotation"))
+		{
+			LogError("JSON Transform object doesn't contain 'rotation' key");
+			return false;
+		}
+
+		if (!object.contains("scale"))
+		{
+			LogError("JSON Transform object doesn't contain 'scale' key");
+			return false;
+		}
+
+		mTransform->mTranslation = {
+			object["translation"][0].get<float>(),
+			object["translation"][1].get<float>(),
+			object["translation"][2].get<float>()
+		};
+
+		mTransform->mRotation = {
+			object["rotation"][0].get<float>(),
+			object["rotation"][1].get<float>(),
+			object["rotation"][2].get<float>()
+		};
+
+		mTransform->mScale = {
+			object["scale"][0].get<float>(),
+			object["scale"][1].get<float>(),
+			object["scale"][2].get<float>()
+		};
+
+		return true;
+	}
+
+	bool TransformSerializer::write(json& object)
+	{
+		if (!ComponentSerializer::write(object))
+		{
+			LogError("ComponentSerialzer::write() failed");
+			return false;
+		}
+
+		object["translation"] = std::vector<float>{
+			mTransform->mTranslation.x,
+			mTransform->mTranslation.y,
+			mTransform->mTranslation.z
+		};
+
+		object["rotation"] = std::vector<float>{
+			mTransform->mRotation.x,
+			mTransform->mRotation.y,
+			mTransform->mRotation.z
+		};
+
+		object["scale"] = std::vector<float>{
+			mTransform->mScale.x,
+			mTransform->mScale.y,
+			mTransform->mScale.z
+		};
+
+		return true;
 	}
 }

@@ -2,22 +2,27 @@
 
 namespace Trinity
 {
-	void ComponentFactory::registerCreator(const std::string& type, ComponentCreator creator)
+	bool ComponentFactory::hasRegister(const UUIDv4::UUID& uuid)
 	{
-		mCreators.insert(std::make_pair(type, std::move(creator)));
+		return mCreators.contains(uuid);
 	}
 
-	void ComponentFactory::removeCreator(const std::string& type)
+	void ComponentFactory::registerCreator(const UUIDv4::UUID& uuid, ComponentCreator creator)
 	{
-		if (auto it = mCreators.find(type); it != mCreators.end())
+		mCreators.insert(std::make_pair(uuid, std::move(creator)));
+	}
+
+	void ComponentFactory::removeCreator(const UUIDv4::UUID& uuid)
+	{
+		if (auto it = mCreators.find(uuid); it != mCreators.end())
 		{
 			mCreators.erase(it);
 		}
 	}
 
-	std::unique_ptr<Component> ComponentFactory::createComponent(const std::string& type)
+	std::unique_ptr<Component> ComponentFactory::createComponent(const UUIDv4::UUID& uuid)
 	{
-		if (auto it = mCreators.find(type); it != mCreators.end())
+		if (auto it = mCreators.find(uuid); it != mCreators.end())
 		{
 			auto& creator = it->second;
 			return creator();

@@ -6,10 +6,13 @@
 namespace Trinity
 {
 	class Texture;
+	class TextureRenderableSerializer;
 
 	class TextureRenderable : public Component
 	{
 	public:
+
+		friend class TextureRenderableSerializer;
 
 		TextureRenderable() = default;
 		virtual ~TextureRenderable() = default;
@@ -41,7 +44,8 @@ namespace Trinity
 		}
 
 		virtual std::type_index getType() const override;
-		virtual std::string getTypeName() const override;
+		virtual UUIDv4::UUID getUUID() const override;
+		virtual Serializer* getSerializer(Scene& scene) override;
 
 		virtual void setTexture(Texture& texture);
 		virtual void setOrigin(const glm::vec2& origin);
@@ -50,7 +54,7 @@ namespace Trinity
 
 	public:
 
-		static std::string getStaticType();
+		inline static UUIDv4::UUID UUID = UUIDv4::UUID::fromStrFactory("8224636f-bf93-43f2-af4e-32c11e6ebaab");
 
 	protected:
 
@@ -58,5 +62,30 @@ namespace Trinity
 		glm::vec2 mOrigin{ 0.5f };
 		glm::vec4 mColor{ 0.0f };
 		glm::bvec2 mFlip{ false };
+	};
+
+	class TextureRenderableSerializer : public ComponentSerializer
+	{
+	public:
+
+		TextureRenderableSerializer() = default;
+		virtual ~TextureRenderableSerializer() = default;
+
+		TextureRenderableSerializer(const TextureRenderableSerializer&) = delete;
+		TextureRenderableSerializer& operator = (const TextureRenderableSerializer&) = delete;
+
+		TextureRenderableSerializer(TextureRenderableSerializer&&) = default;
+		TextureRenderableSerializer& operator = (TextureRenderableSerializer&&) = default;
+
+		virtual void setTextureRenderable(TextureRenderable& renderable);
+		virtual bool read(FileReader& reader, ResourceCache& cache) override;
+		virtual bool write(FileWriter& writer) override;
+
+		virtual bool read(json& object, ResourceCache& cache) override;
+		virtual bool write(json& object) override;
+
+	protected:
+
+		TextureRenderable* mTextureRenderable{ nullptr };
 	};
 }

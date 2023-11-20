@@ -19,6 +19,16 @@ namespace Trinity
 		return true;
 	}
 
+	bool FileWriter::writeAsString(const std::string& str)
+	{
+		if (!write(str.c_str(), (uint32_t)str.length()))
+		{
+			return false;
+		}
+
+		return true;
+	}
+
 	bool FileWriter::seek(SeekOrigin origin, uint32_t offset)
 	{
 		return mFile.seek(origin, offset);

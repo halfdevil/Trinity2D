@@ -7,9 +7,9 @@ namespace Trinity
 		return typeid(Light);
 	}
 
-	std::string Light::getTypeName() const
+	UUIDv4::UUID Light::getUUID() const
 	{
-		return getStaticType();
+		return Light::UUID;
 	}
 
 	void Light::setLightType(LightType lightType)
@@ -20,10 +20,5 @@ namespace Trinity
 	void Light::setLightProperties(const LightProperties& properties)
 	{
 		mProperties = properties;
-	}
-
-	std::string Light::getStaticType()
-	{
-		return "Light";
 	}
 }

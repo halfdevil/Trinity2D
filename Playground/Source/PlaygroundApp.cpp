@@ -101,12 +101,6 @@ namespace Trinity
 		}
 
 		auto scene = std::make_unique<Scene>();
-		if (!scene->create("newScene"))
-		{
-			LogError("Scene::create() failed");
-			return false;
-		}
-
 		auto rootNode = std::make_unique<Node>();
 		rootNode->setName("root");
 

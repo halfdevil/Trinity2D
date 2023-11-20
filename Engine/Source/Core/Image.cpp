@@ -26,6 +26,7 @@ namespace Trinity
 		std::vector<uint8_t> buffer(reader.getSize());
 		reader.read(buffer.data(), reader.getSize());
 
+		mFileName = filePath;
 		return create(buffer);
 	}
 

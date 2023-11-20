@@ -82,6 +82,7 @@ namespace Trinity
 		}
 
 		bool writeString(const std::string& str);
+		bool writeAsString(const std::string& str);
 		bool seek(SeekOrigin origin, uint32_t offset);
 
 	private:

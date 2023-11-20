@@ -72,6 +72,7 @@ namespace Trinity
 		mHasMipmaps = hasMipmaps;
 		mWidth = image->getWidth();
 		mHeight = image->getHeight();
+		mFileName = image->getFileName();
 
 		std::vector<Mipmap> mipmaps{};
 		if (hasMipmaps)
@@ -143,7 +144,6 @@ namespace Trinity
 			return false;
 		}
 
-		mFileName = fileName;
 		return create(image.get(), format, mipmaps);
 	}
 

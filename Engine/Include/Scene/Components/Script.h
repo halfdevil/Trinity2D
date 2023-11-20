@@ -18,7 +18,7 @@ namespace Trinity
 		Script& operator = (Script&&) = default;
 
 		virtual std::type_index getType() const override;
-		virtual std::string getTypeName() const override;
+		virtual UUIDv4::UUID getUUID() const override;
 
 		virtual bool init();
 		virtual void update(float deltaTime);
@@ -26,6 +26,6 @@ namespace Trinity
 
 	public:
 
-		static std::string getStaticType();
+		inline static UUIDv4::UUID UUID = UUIDv4::UUID::fromStrFactory("f79b5991-ab2e-4735-8373-7363d489641c");
 	};
 }

@@ -54,7 +54,7 @@ namespace Trinity
 		}
 
 		virtual std::type_index getType() const override;
-		virtual std::string getTypeName() const override;
+		virtual UUIDv4::UUID getUUID() const override;
 
 		virtual void setSprite(Sprite& sprite);
 		virtual void setOrigin(const glm::vec2& origin);
@@ -64,7 +64,7 @@ namespace Trinity
 
 	public:
 
-		static std::string getStaticType();
+		inline static UUIDv4::UUID UUID = UUIDv4::UUID::fromStrFactory("b7be8255-1e3b-4f4d-af94-5700579e5a6a");
 
 	protected:
 

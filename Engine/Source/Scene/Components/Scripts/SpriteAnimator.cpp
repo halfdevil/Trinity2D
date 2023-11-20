@@ -150,4 +150,9 @@ namespace Trinity
 			mCurrentFrameTime = 0.0f;
 		}
 	}
+
+	UUIDv4::UUID SpriteAnimator::getUUID() const
+	{
+		return SpriteAnimator::UUID;
+	}
 }

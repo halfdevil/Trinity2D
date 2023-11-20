@@ -48,6 +48,12 @@ namespace Trinity
 		virtual bool init() override;
 		virtual void update(float deltaTime) override;
 
+		virtual UUIDv4::UUID getUUID() const override;
+
+	public:
+
+		inline static UUIDv4::UUID UUID = UUIDv4::UUID::fromStrFactory("c72f8400-89a0-4072-9a26-fa687f740263");
+
 	protected:
 
 		Camera* mCamera{ nullptr };

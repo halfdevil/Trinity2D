@@ -58,6 +58,12 @@ namespace Trinity
 		virtual bool init() override;
 		virtual void update(float deltaTime) override;
 
+		virtual UUIDv4::UUID getUUID() const override;
+
+	public:
+
+		inline static UUIDv4::UUID UUID = UUIDv4::UUID::fromStrFactory("fe1f609a-50a5-4adb-95ee-75c38114fe32");
+
 	protected:
 
 		SpriteAnimationType mAnimationType{ SpriteAnimationType::Left };

@@ -189,4 +189,36 @@ namespace Trinity
 
 		return nullptr;
 	}
+
+	std::string FileSystem::readText(const std::string& fileName)
+	{
+		auto file = openFile(fileName, FileOpenMode::OpenRead);
+		if (!file)
+		{
+			LogError("Error opening file: %s", fileName.c_str());
+			return {};
+		}
+
+		FileReader reader{ *file };
+		return reader.readAsString();
+	}
+
+	bool FileSystem::writeText(const std::string& fileName, const std::string& text)
+	{
+		auto file = openFile(fileName, FileOpenMode::OpenWrite);
+		if (!file)
+		{
+			LogError("Error opening file: %s", fileName.c_str());
+			return false;
+		}
+
+		FileWriter writer(*file);
+		if (!writer.writeAsString(text))
+		{
+			LogError("FileWriter::writeAsString() failed for file: '%s'", fileName.c_str());
+			return false;
+		}
+
+		return true;
+	}
 }

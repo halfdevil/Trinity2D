@@ -11,6 +11,7 @@ namespace Trinity
 	class RenderPass;
 	class EditorResources;
 	class EditorWidget;
+	class EditorGizmo;
 	class SceneHierarchy;
 	class Inspector;
 	class Viewport;
@@ -55,6 +56,7 @@ namespace Trinity
 		std::unique_ptr<TextureRenderer> mTextureRenderer{ nullptr };
 		std::unique_ptr<RenderPass> mRenderPass{ nullptr };
 		std::unique_ptr<EditorResources> mEditorResources{ nullptr };
+
 		std::vector<std::unique_ptr<EditorWidget>> mWidgets;
 		ImGuiFont* mFont{ nullptr };
 		Scene* mTestScene{ nullptr };

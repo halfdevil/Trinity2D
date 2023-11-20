@@ -46,6 +46,9 @@ namespace Trinity
 		bool copyFile(const std::string& from, const std::string& to) const;
 		bool copyFiles(const std::string& from, const std::string& to) const;
 
+		std::string readText(const std::string& fileName);
+		bool writeText(const std::string& fileName, const std::string& text);
+
 	protected:
 
 		std::unordered_map<std::string, std::unique_ptr<Storage>> mStorages;

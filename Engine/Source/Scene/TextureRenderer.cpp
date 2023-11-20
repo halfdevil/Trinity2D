@@ -30,6 +30,11 @@ namespace Trinity
 		mRenderer = nullptr;
 	}
 
+	void TextureRenderer::setRotateFromOrigin(bool rotate)
+	{
+		mRotateFromOrigin = rotate;
+	}
+
 	void TextureRenderer::setScene(Scene& scene, const std::string& cameraNodeName)
 	{
 		mScene = &scene;
@@ -59,14 +64,15 @@ namespace Trinity
 			auto* texture = renderable->getTexture();
 			auto& transform = renderable->getNode()->getTransform();
 			auto& flip = renderable->getFlip();
+			auto origin = mRotateFromOrigin ? renderable->getOrigin() : glm::vec2{ 0.0f };
 
 			if (texture != nullptr)
 			{
 				mRenderer->drawTexture(
-					texture, 
+					texture,
 					glm::vec2{ 0.0f, 0.0f },
 					glm::vec2{ texture->getWidth(), texture->getHeight() },
-					renderable->getOrigin(), 
+					origin,
 					transform.getWorldMatrix(), 
 					renderable->getColor(), 
 					flip.x, 

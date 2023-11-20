@@ -2,6 +2,7 @@
 
 #include "Scene/Component.h"
 #include "Editor/Editor.h"
+#include "VFS/Serializer.h"
 #include <glm/glm.hpp>
 #include <glm/gtx/quaternion.hpp>
 
@@ -9,12 +10,14 @@ namespace Trinity
 {
 	class Node;
 	class TransformEditor;
+	class TransformSerializer;
 
 	class Transform : public Component
 	{
 	public:
 
 		friend class TransformEditor;
+		friend class TransformSerializer;
 
 		Transform() = default;
 		virtual ~Transform() = default;
@@ -41,13 +44,17 @@ namespace Trinity
 		}
 
 		virtual std::type_index getType() const override;
-		virtual std::string getTypeName() const override;
+		virtual UUIDv4::UUID getUUID() const override;
+
 		virtual Editor* getEditor() override;
+		virtual Serializer* getSerializer(Scene& scene) override;
 
 		glm::mat4 getMatrix() const;
 		glm::mat4 getWorldMatrix();
 
 		void setMatrix(const glm::mat4& matrix);
+		void setWorldMatrix(const glm::mat4& matrix);
+
 		void setTranslation(const glm::vec3& translation);
 		void setRotation(const glm::vec3& rotation);
 		void setScale(const glm::vec3& scale);
@@ -55,7 +62,7 @@ namespace Trinity
 
 	public:
 
-		static std::string getStaticType();
+		inline static UUIDv4::UUID UUID = UUIDv4::UUID::fromStrFactory("173f2ec0-93c2-4be1-bf11-f25e61ce2bdb");
 
 	protected:
 
@@ -82,6 +89,31 @@ namespace Trinity
 
 		virtual void setTransform(Transform& transform);
 		virtual void onInspectorGui(const EditorLayout& layout) override;
+
+	protected:
+
+		Transform* mTransform{ nullptr };
+	};
+
+	class TransformSerializer : public ComponentSerializer
+	{
+	public:
+
+		TransformSerializer() = default;
+		virtual ~TransformSerializer() = default;
+
+		TransformSerializer(const TransformSerializer&) = delete;
+		TransformSerializer& operator = (const TransformSerializer&) = delete;
+
+		TransformSerializer(TransformSerializer&&) = default;
+		TransformSerializer& operator = (TransformSerializer&&) = default;
+
+		virtual void setTransform(Transform& camera);
+		virtual bool read(FileReader& reader, ResourceCache& cache) override;
+		virtual bool write(FileWriter& writer) override;
+
+		virtual bool read(json& object, ResourceCache& cache) override;
+		virtual bool write(json& object) override;
 
 	protected:
 

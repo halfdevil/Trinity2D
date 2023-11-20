@@ -32,3 +32,6 @@
 [submodule "ThirdParty/imguizmobuild"]
 	path = ThirdParty/imguizmobuild
 	url = https://github.com/halfdevil/imguizmobuild.git
+[submodule "ThirdParty/uuid_v4"]
+	path = ThirdParty/uuid_v4
+	url = https://github.com/crashoz/uuid_v4.git

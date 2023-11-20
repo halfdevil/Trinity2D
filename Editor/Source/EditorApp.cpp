@@ -19,11 +19,13 @@
 #include "VFS/FileSystem.h"
 #include "Editor/EditorLayout.h"
 #include "Core/EditorResources.h"
+#include "Core/EditorGizmo.h"
 #include "Core/ResourceCache.h"
 #include "Core/Logger.h"
 #include "Core/Debugger.h"
 #include "Core/Clock.h"
 #include "Core/Window.h"
+#include "ImGuizmo.h"
 
 namespace Trinity
 {
@@ -83,7 +85,7 @@ namespace Trinity
 			return false;
 		}
 
-		auto addNode = [this](const std::string& name, Node* parent = nullptr) {
+		/*auto addNode = [this](const std::string& name, Node* parent = nullptr) {
 			auto node = std::make_unique<Node>();
 			node->setName(name);
 
@@ -107,15 +109,27 @@ namespace Trinity
 		{
 			LogError("AssetBrowser::create() failed");
 			return false;
-		}
+		}*/
 
 		auto scene = std::make_unique<Scene>();
 		scene->setName("Test Scene");
 
+		auto& fileSystem = FileSystem::get();
+		json sceneJson = json::parse(fileSystem.readText("/Assets/Editor/Scenes/TestScene.json"));
+
+		SceneSerializer serializer;
+		serializer.setScene(*scene);
+
+		if (!serializer.read(sceneJson, *mEditorResources->getResourceCache()))
+		{
+			LogError("SceneSerializer::read() failed for 'Test Scene'");
+			return false;
+		}
+
 		mTestScene = scene.get();
 		mEditorResources->getResourceCache()->addResource(std::move(scene));
 
-		auto root = std::make_unique<Node>();
+		/*auto root = std::make_unique<Node>();
 		root->setName("Root");
 
 		mTestScene->setRoot(*root);
@@ -137,7 +151,7 @@ namespace Trinity
 		addNode("Node32", node3);
 		addNode("Node33", node3);
 
-		mTestScene->addCamera(
+		auto* camera = mTestScene->addCamera(
 			"mainCamera",
 			{ (float)mWindow->getWidth(), (float)mWindow->getHeight() },
 			0.1f,
@@ -146,11 +160,17 @@ namespace Trinity
 
 		mTestScene->addTextureRenderable(
 			*texture,
-			"Node1"
-		);
+			"Node11"
+		);*/
 
-		auto& transform = node1->getTransform();
-		transform.setTranslation({ -256.0f, -256.0f, 1.0f });
+		auto cameraNode = mTestScene->findNode("mainCamera");
+		if (cameraNode != nullptr)
+		{
+			sceneViewport->setCamera(cameraNode->getComponent<Camera>());
+		}
+		
+		//auto& transform = node1->getTransform();
+		//transform.setTranslation({ -256.0f, -256.0f, 1.0f });
 
 		auto sceneHierarchy = std::make_unique<SceneHierarchy>();
 		sceneHierarchy->setTitle("Scene");
@@ -167,16 +187,35 @@ namespace Trinity
 		}
 		
 		mTextureRenderer->setScene(*mTestScene, "mainCamera");
+		mTextureRenderer->setRotateFromOrigin(false);
+
 		mSceneViewport = sceneViewport.get();
 		mSceneHierarchy = sceneHierarchy.get();
 		mInspector = inspector.get();
 
-		mEditorResources->getResourceCache()->addResource(std::move(texture));
+		//mEditorResources->getResourceCache()->addResource(std::move(texture));
 		mWidgets.push_back(std::move(mainMenu));
 		mWidgets.push_back(std::move(assetBrowser));
 		mWidgets.push_back(std::move(sceneHierarchy));
 		mWidgets.push_back(std::move(sceneViewport));
 		mWidgets.push_back(std::move(inspector));
+
+		/*SceneSerializer serializer;
+		serializer.setScene(*mTestScene);
+
+		json sceneJson;
+		if (!serializer.write(sceneJson))
+		{
+			LogError("SceneSerializer::write() failed for scene: '%s'", mTestScene->getName().c_str());
+			return false;
+		}
+
+		auto& fileSystem = FileSystem::get();
+		if (!fileSystem.writeText("/Assets/Editor/Scenes/TestScene.json", sceneJson.dump(4)))
+		{
+			LogError("FileSystem::writeText() failed for 'Test Scene'");
+			return false;
+		}*/
 
 		return true;
 	}
@@ -212,10 +251,13 @@ namespace Trinity
 	void EditorApp::onGui()
 	{
 		ImGui::DockSpaceOverViewport();
+		ImGuizmo::SetOrthographic(true);
+		ImGuizmo::BeginFrame();
 		
 		for (auto& widget : mWidgets)
 		{
 			mInspector->setSelectedNode(mSceneHierarchy->getCurrentNode());
+			mSceneViewport->setSelectedNode(mSceneHierarchy->getCurrentNode());
 			widget->draw();
 		}
 	}

@@ -8,9 +8,9 @@ namespace Trinity
 		return typeid(SpriteRenderable);
 	}
 
-	std::string SpriteRenderable::getTypeName() const
+	UUIDv4::UUID SpriteRenderable::getUUID() const
 	{
-		return getStaticType();
+		return SpriteRenderable::UUID;
 	}
 
 	void SpriteRenderable::setSprite(Sprite& sprite)
@@ -36,10 +36,5 @@ namespace Trinity
 	void SpriteRenderable::setActiveFrameIndex(uint32_t activeFrameIndex)
 	{
 		mActiveFrameIndex = activeFrameIndex;
-	}
-
-	std::string SpriteRenderable::getStaticType()
-	{
-		return "SpriteRenderable";
 	}
 }

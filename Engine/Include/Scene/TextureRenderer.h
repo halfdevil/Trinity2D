@@ -26,9 +26,15 @@ namespace Trinity
 		TextureRenderer(TextureRenderer&&) = default;
 		TextureRenderer& operator = (TextureRenderer&&) = default;
 
+		bool rotateFromOrigin() const
+		{
+			return mRotateFromOrigin;
+		}
+
 		virtual bool create(RenderTarget& renderTarget);
 		virtual void destroy();
 
+		virtual void setRotateFromOrigin(bool rotate);
 		virtual void setScene(Scene& scene, const std::string& cameraNodeName);
 		virtual void draw(const RenderPass& renderPass);
 
@@ -36,6 +42,7 @@ namespace Trinity
 
 		Scene* mScene{ nullptr };
 		Camera* mCamera{ nullptr };
+		bool mRotateFromOrigin{ true };
 		std::unique_ptr<BatchRenderer> mRenderer{ nullptr };
 	};
 }

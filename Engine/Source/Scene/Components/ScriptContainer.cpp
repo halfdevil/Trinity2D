@@ -8,9 +8,9 @@ namespace Trinity
 		return typeid(ScriptContainer);
 	}
 
-	std::string ScriptContainer::getTypeName() const
+	UUIDv4::UUID ScriptContainer::getUUID() const
 	{
-		return getStaticType();
+		return ScriptContainer::UUID;
 	}
 
 	void ScriptContainer::init()
@@ -37,31 +37,26 @@ namespace Trinity
 		}
 	}
 
-	Script& ScriptContainer::getScript(const std::string& type)
+	Script& ScriptContainer::getScript(const UUIDv4::UUID& uuid)
 	{
-		return *mScripts.at(type);
+		return *mScripts.at(uuid);
 	}
 
-	bool ScriptContainer::hasScript(const std::string& type)
+	bool ScriptContainer::hasScript(const UUIDv4::UUID& uuid)
 	{
-		return mScripts.contains(type);
+		return mScripts.contains(uuid);
 	}
 
 	void ScriptContainer::setScript(Script& script)
 	{
-		auto it = mScripts.find(script.getTypeName());
+		auto it = mScripts.find(script.getUUID());
 		if (it != mScripts.end())
 		{
 			it->second = &script;
 		}
 		else
 		{
-			mScripts.insert(std::make_pair(script.getTypeName(), &script));
+			mScripts.insert(std::make_pair(script.getUUID(), &script));
 		}
-	}
-
-	std::string ScriptContainer::getStaticType()
-	{
-		return "ScriptContainer";
 	}
 }

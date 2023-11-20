@@ -42,8 +42,12 @@ endif()
 add_subdirectory("ThirdParty/json")
 add_subdirectory("ThirdParty/imguibuild")
 add_subdirectory("ThirdParty/imguizmobuild")
+add_subdirectory("ThirdParty/uuid_v4")
 
 set_property(TARGET nlohmann_json PROPERTY FOLDER "ThirdParty")
+set_property(TARGET imguibuild PROPERTY FOLDER "ThirdParty")
+set_property(TARGET imguizmobuild PROPERTY FOLDER "ThirdParty")
+set_property(TARGET uuid_v4 PROPERTY FOLDER "ThirdParty")
 
 include_directories("ThirdParty/stb")
 include_directories("ThirdParty/glm")
@@ -51,6 +55,7 @@ include_directories("ThirdParty/json/include")
 include_directories("ThirdParty/imgui")
 include_directories("ThirdParty/ImGuizmo")
 include_directories("ThirdParty/IconFontCppHeaders")
+include_directories("ThirdParty/uuid_v4")
 
 # Include sub-projects.
 add_subdirectory("Engine")
