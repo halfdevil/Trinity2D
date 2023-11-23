@@ -18,7 +18,12 @@ namespace Trinity
 
 	void Inspector::draw()
 	{
-		if (ImGui::Begin(mTitle.c_str()))
+		if (!isEnabled())
+		{
+			return;
+		}
+
+		ImGui::Begin(mTitle.c_str(), &mEnabled);
 		{
 			if (mSelectedNode != nullptr)
 			{

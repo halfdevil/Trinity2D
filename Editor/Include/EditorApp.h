@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core/Application.h"
+#include "Widgets/AssetFileDialog.h"
 #include "imgui.h"
 
 namespace Trinity
@@ -12,10 +13,13 @@ namespace Trinity
 	class EditorResources;
 	class EditorWidget;
 	class EditorGizmo;
+	class AssetBrowser;
+	class MessageBox;
 	class SceneHierarchy;
 	class Inspector;
 	class Viewport;
 	class Scene;
+	class Camera;
 	class Texture;
 
 	class EditorApp : public Application
@@ -48,7 +52,19 @@ namespace Trinity
 		virtual void setupInput() override;
 
 		virtual void onGui();
-		virtual void onMainMenuClick(const std::string& title);
+		virtual void onMainMenuClick(const std::string& name);
+		virtual void onAssetFileDialogClick(AssetFileDialogType dialogType, 
+			AssetFileDialogResult result, const std::string& path);
+		
+		virtual Scene* createDefaultScene(
+			float width = 1024.0f, 
+			float height = 768.0f,
+			float nearPlane = 0.1f, 
+			float farPlane = 100.0f
+		);
+
+		virtual Scene* openScene(const std::string& path);
+		virtual bool saveScene(Scene* scene, const std::string& path);
 
 	protected:
 
@@ -56,12 +72,17 @@ namespace Trinity
 		std::unique_ptr<TextureRenderer> mTextureRenderer{ nullptr };
 		std::unique_ptr<RenderPass> mRenderPass{ nullptr };
 		std::unique_ptr<EditorResources> mEditorResources{ nullptr };
-
 		std::vector<std::unique_ptr<EditorWidget>> mWidgets;
+		ResourceCache* mResourceCache{ nullptr };
 		ImGuiFont* mFont{ nullptr };
-		Scene* mTestScene{ nullptr };
+		Scene* mEditorScene{ nullptr };
+		Scene* mCurrentScene{ nullptr };
+		Camera* mEditorCamera{ nullptr };
+		AssetBrowser* mAssetBrowser{ nullptr };
 		SceneHierarchy* mSceneHierarchy{ nullptr };
 		Viewport* mSceneViewport{ nullptr };
 		Inspector* mInspector{ nullptr };
+		AssetFileDialog* mFileDialog{ nullptr };
+		MessageBox* mMessageBox{ nullptr };
 	};
 }

@@ -31,5 +31,6 @@ namespace Trinity
 		Node* mSelectedNode{ nullptr };
 		std::unique_ptr<NodeEditor> mEditor{ nullptr };
 		std::unique_ptr<EditorLayout> mLayout{ nullptr };
+		bool mIsOpen{ true };
 	};
 }

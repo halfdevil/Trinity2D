@@ -69,31 +69,31 @@ namespace Trinity
 		virtual void addComponent(std::unique_ptr<Component> component, Node& node);
 		virtual void setComponents(const std::type_index& type, std::vector<std::unique_ptr<Component>> components);
 
-		virtual Light* addLight(
-			LightType type,
-			const glm::vec3& position,
-			const glm::vec3& rotation = {},
-			const LightProperties& properties = {},
+		virtual Node* addEmpty(
+			const glm::vec3& position = glm::vec3{ 0.0f },
+			const glm::vec3& rotation = glm::vec3{ 0.0f },
 			Node* parent = nullptr
+		);
+
+		virtual Light* addLight(
+			const std::string& nodeName,
+			LightType type,
+			const LightProperties& properties = {}
 		);
 
 		virtual Light* addPointLight(
-			const glm::vec3& position,
-			const LightProperties& properties = {},
-			Node* parent = nullptr
+			const std::string& nodeName,
+			const LightProperties& properties = {}
 		);
 
 		virtual Light* addDirectionalLight(
-			const glm::vec3& rotation,
-			const LightProperties& properties = {},
-			Node* parent = nullptr
+			const std::string& nodeName,
+			const LightProperties& properties = {}
 		);
 
 		virtual Light* addSpotLight(
-			const glm::vec3& position,
-			const glm::vec3& rotation = {},
-			const LightProperties& properties = {},
-			Node* parent = nullptr
+			const std::string& nodeName,
+			const LightProperties& properties = {}
 		);
 
 		virtual TextureRenderable* addTextureRenderable(
@@ -101,20 +101,14 @@ namespace Trinity
 			const std::string& nodeName,
 			const glm::vec2& origin = glm::vec2{ 0.5f },
 			const glm::bvec2& flip = glm::bvec2{ false },
-			const glm::vec4& color = glm::vec4{ 0.0f },
-			const glm::vec3& position = glm::vec3{ 0.0f },
-			const glm::vec3& rotation = glm::vec3{ 0.0f },
-			const glm::vec3& scale = glm::vec3{ 1.0f }
+			const glm::vec4& color = glm::vec4{ 0.0f }
 		);
 
 		virtual Camera* addCamera(
 			const std::string& nodeName,
 			const glm::vec2& size,
 			float nearPlane,
-			float farPlane,
-			const glm::vec3& position = glm::vec3{ 0.0f },
-			const glm::vec3& rotation = glm::vec3{ 0.0f },
-			Node* parent = nullptr
+			float farPlane
 		);
 
 		virtual CameraController* addCameraController(

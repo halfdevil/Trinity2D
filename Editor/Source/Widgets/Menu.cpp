@@ -23,6 +23,11 @@ namespace Trinity
 		return menuItemPtr;
 	}
 
+	void Menu::addSeparator(MenuItem* parent)
+	{
+		addMenuItem("", "", "", parent);
+	}
+
 	MenuItem* Menu::findMenuItem(const std::string& title)
 	{
 		for (auto& menuItem : mAllItems)
@@ -69,9 +74,16 @@ namespace Trinity
 		}
 		else
 		{
-			if (ImGui::MenuItem(menuItem->title.c_str(), menuItem->shortcut.c_str()))
+			if (menuItem->name.empty())
 			{
-				onMenuItemClick.notify(*menuItem);
+				ImGui::Separator();
+			}
+			else
+			{
+				if (ImGui::MenuItem(menuItem->title.c_str(), menuItem->shortcut.c_str()))
+				{
+					onMenuItemClick.notify(*menuItem);
+				}
 			}
 		}
 	}

@@ -31,6 +31,10 @@ namespace Trinity
 
 		virtual void addResource(std::unique_ptr<Resource> resource);
 		virtual void setResources(const std::type_index& type, std::vector<std::unique_ptr<Resource>> resources);
+		virtual void removeResource(const std::type_index& type, const std::string& fileName);
+		virtual void removeResource(Resource* resource);
+
+		virtual void clearResources(const std::type_index& type);
 		virtual void clear();
 
 	public:
@@ -61,9 +65,15 @@ namespace Trinity
 		}
 
 		template <typename T>
+		void removeResource(const std::string& fileName)
+		{
+			removeResource(typeid(T), fileName);
+		}
+
+		template <typename T>
 		void clearResources()
 		{
-			setResources(typeid(T), {});
+			clearResources(typeid(T));
 		}
 
 		template <typename T>
@@ -95,6 +105,6 @@ namespace Trinity
 	protected:
 
 		std::unordered_map<std::type_index, std::vector<std::unique_ptr<Resource>>> mResources;
-		std::unordered_map<std::type_index, std::unordered_map<std::string, Resource*>> mFileResourceMap;
+		std::unordered_map<std::type_index, std::unordered_map<std::string, uint32_t>> mFileResourceIndexMap;
 	};
 }

@@ -207,10 +207,11 @@ namespace Trinity
 
 	float Window::getScaleFactor() const
 	{
-        auto fbSize = getFramebufferSize();
-        auto size = getSize();
+        float xscale{ 1.0f };
+        float yscale{ 1.0f };
+        glfwGetWindowContentScale(mHandle, &xscale, &yscale);
 
-        return (float)fbSize.x / size.x;
+        return xscale < yscale ? xscale : yscale;
 	}
 
 	glm::uvec2 Window::getSize() const
@@ -283,6 +284,7 @@ namespace Trinity
         glfwWindowHint(GLFW_VISIBLE, false);
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+        glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
 
         return true;
     }

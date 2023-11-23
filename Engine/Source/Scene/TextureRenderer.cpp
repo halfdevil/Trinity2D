@@ -35,21 +35,23 @@ namespace Trinity
 		mRotateFromOrigin = rotate;
 	}
 
-	void TextureRenderer::setScene(Scene& scene, const std::string& cameraNodeName)
+	void TextureRenderer::setScene(Scene& scene)
 	{
 		mScene = &scene;
+	}
 
+	void TextureRenderer::setCamera(const std::string& cameraNodeName)
+	{
 		auto cameraNode = mScene->findNode(cameraNodeName);
-		if (!cameraNode)
-		{
-			LogWarning("Camera node '%s' not found. Looking for 'default_camera' node", cameraNodeName.c_str());
-			cameraNode = mScene->findNode("default_camera");
-		}
-
 		if (cameraNode != nullptr)
 		{
 			mCamera = &cameraNode->getComponent<Camera>();
-		}
+		}		
+	}
+
+	void TextureRenderer::setCamera(Camera& camera)
+	{
+		mCamera = &camera;
 	}
 
 	void TextureRenderer::draw(const RenderPass& renderPass)

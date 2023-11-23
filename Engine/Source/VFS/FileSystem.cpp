@@ -8,9 +8,15 @@ namespace Trinity
 	{
 	}
 
-	std::string FileSystem::getFileName(const std::string& filePath) const
+	std::string FileSystem::getFileName(const std::string& filePath, bool withExtension) const
 	{
-		return fs::path(filePath).filename().string();
+		fs::path fileName = fs::path(filePath).filename();
+		if (!withExtension)
+		{
+			fileName.replace_extension();
+		}
+
+		return fileName.string();
 	}
 
 	std::string FileSystem::getDirectory(const std::string& filePath) const

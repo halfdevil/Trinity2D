@@ -4,6 +4,7 @@
 #include "ImGui/ImGuiFont.h"
 #include "Core/Logger.h"
 #include "VFS/FileSystem.h"
+#include "Core/Application.h"
 #include "IconsFontAwesome6.h"
 
 namespace Trinity
@@ -78,8 +79,11 @@ namespace Trinity
 	{
 		if (auto it = mFonts.find(name); it == mFonts.end())
 		{
+			auto& application = Application::get();
+			auto* window = application.getWindow();
+
 			auto font = std::make_unique<ImGuiFont>();
-			if (!font->create(name, filePath, size, glyphRanges))
+			if (!font->create(name, filePath, size * window->getScaleFactor(), glyphRanges))
 			{
 				LogError("ImGuiFont::create() failed for: '%s'", filePath.c_str());
 				return nullptr;
@@ -140,31 +144,38 @@ namespace Trinity
 
 	std::string EditorResources::getIconPath(EditorIcon icon, uint32_t size)
 	{
-		std::string fileName;
+		std::string type;
 
 		switch(icon)
 		{
 		case EditorIcon::Folder:
-			fileName = "folder.png";
+			type = "Folder";
 			break;
 
 		case EditorIcon::File:
-			fileName = "file.png";
+			type = "File";
+			break;
+
+		case EditorIcon::Error:
+			type = "Error";
+			break;
+
+		case EditorIcon::Warning:
+			type = "Warning";
+			break;
+
+		case EditorIcon::Info:
+			type = "Info";
+			break;
 
 		default:
 			break;
 		}
 
-		if (!fileName.empty())
-		{
-			auto& fileSystem = FileSystem::get();
+		char fileName[512];
+		snprintf(fileName, 512, "%s/%s@%dx.png", type.c_str(), type.c_str(), size);
 
-			auto fullPath = fileSystem.combinePath(kIconPath, std::to_string(size));
-			fullPath = fileSystem.combinePath(fullPath, fileName);
-
-			return fullPath;
-		}
-
-		return {};
+		auto& fileSystem = FileSystem::get();
+		return fileSystem.combinePath(kIconPath, fileName);
 	}
 }

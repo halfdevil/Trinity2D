@@ -91,7 +91,12 @@ namespace Trinity
 
 	void Viewport::draw()
 	{
-		if (ImGui::Begin(mTitle.c_str(), nullptr))
+		if (!isEnabled())
+		{
+			return;
+		}
+
+		ImGui::Begin(mTitle.c_str(), &mEnabled);
 		{
 			if (mFrameBuffer != nullptr)
 			{

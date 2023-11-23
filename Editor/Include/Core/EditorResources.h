@@ -17,7 +17,10 @@ namespace Trinity
 	enum class EditorIcon
 	{
 		Folder,
-		File
+		File,
+		Error,
+		Warning,
+		Info
 	};
 
 	class EditorResources

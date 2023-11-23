@@ -33,10 +33,12 @@ namespace Trinity
 
 		virtual bool create(RenderTarget& renderTarget);
 		virtual void destroy();
+		virtual void draw(const RenderPass& renderPass);
 
 		virtual void setRotateFromOrigin(bool rotate);
-		virtual void setScene(Scene& scene, const std::string& cameraNodeName);
-		virtual void draw(const RenderPass& renderPass);
+		virtual void setScene(Scene& scene);
+		virtual void setCamera(const std::string& cameraNodeName);
+		virtual void setCamera(Camera& camera);
 
 	protected:
 

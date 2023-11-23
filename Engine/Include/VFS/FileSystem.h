@@ -28,7 +28,7 @@ namespace Trinity
 		std::unique_ptr<File> openFile(const std::string& filePath,
 			FileOpenMode openMode);
 
-		std::string getFileName(const std::string& filePath) const;
+		std::string getFileName(const std::string& filePath, bool withExtension = true) const;
 		std::string getDirectory(const std::string& filePath) const;
 		std::string combinePath(const std::string& pathA, const std::string& pathB) const;
 		std::string relativePath(const std::string& path, const std::string& basePath) const;

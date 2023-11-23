@@ -1,18 +1,21 @@
 #pragma once
 
 #include "Core/EditorWidget.h"
+#include "Widgets/Menu.h"
 #include <string>
+#include <memory>
 
 namespace Trinity
 {
 	class Scene;
 	class Node;
+	class ContextMenu;
 
 	class SceneHierarchy : public EditorWidget
 	{
 	public:
 
-		SceneHierarchy() = default;
+		SceneHierarchy();
 		virtual ~SceneHierarchy() = default;
 
 		SceneHierarchy(const SceneHierarchy&) = delete;
@@ -31,11 +34,13 @@ namespace Trinity
 
 	protected:
 
-		virtual void drawNode(Node* node);
+		virtual void drawNode(Node* node, bool menuOpened);
+		virtual void onMenuItemClicked(const MenuItem& menuItem);
 
 	protected:
 
 		Scene* mScene{ nullptr };
 		Node* mCurrentNode{ nullptr };
+		std::unique_ptr<ContextMenu> mNodeContextMenu{ nullptr };
 	};
 }

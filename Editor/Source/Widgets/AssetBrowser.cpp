@@ -5,9 +5,14 @@
 #include "Graphics/Texture.h"
 #include "VFS/FileSystem.h"
 #include "Core/Logger.h"
+#include "Core/Application.h"
 #include "Utils/StringHelper.h"
+#include "Utils/EditorHelper.h"
 #include "imgui_internal.h"
 #include "IconsFontAwesome6.h"
+#include <cmath>
+#include <regex>
+#include <format>
 
 namespace Trinity
 {
@@ -29,8 +34,18 @@ namespace Trinity
 		mRootFolder = rootFolder;
 		mCurrentFolder = rootFolder;
 
-		mFolderIcon = resources.loadIcon(EditorIcon::Folder, 64);
-		mFileIcon = resources.loadIcon(EditorIcon::File, 64);
+		auto& application = Application::get();
+		auto* window = application.getWindow();
+
+		uint32_t iconSize = (uint32_t)std::floor(window->getScaleFactor());
+		float sizeMult = (float)std::pow(2, iconSize);
+
+		mAssetIcon.size = (kBaseIconSize + kBaseIconPadding) * sizeMult;
+		mAssetIcon.textSize = (kBaseTextSize + kBaseTextPadding) * sizeMult;
+		mAssetIcon.iconPadding = kBaseIconPadding * sizeMult;
+		mAssetIcon.textPadding = kBaseTextPadding * sizeMult;
+		mFolderIcon = resources.loadIcon(EditorIcon::Folder, iconSize + 1);
+		mFileIcon = resources.loadIcon(EditorIcon::File, iconSize + 1);
 
 		return true;
 	}
@@ -41,17 +56,64 @@ namespace Trinity
 		mEntryMap.clear();
 	}
 
+	void AssetBrowser::setEmbedded(bool embedded)
+	{
+		mEmbedded = embedded;
+	}
+
+	void AssetBrowser::setEmbeddedSize(const glm::vec2& embeddedSize)
+	{
+		mEmbeddedSize = embeddedSize;
+	}
+
+	void AssetBrowser::addFileExtension(const std::string& extension)
+	{
+		mFileExtensions.push_back(std::format(".*\\{}$", extension));
+	}
+
+	void AssetBrowser::clearFileExtensions()
+	{
+		mFileExtensions.clear();
+	}
+
+	void AssetBrowser::refreshPath(const std::string& path)
+	{
+		updateEntry(path);
+	}
+
+	void AssetBrowser::setTitle(const std::string& title)
+	{
+		EditorWidget::setTitle(title);
+
+		mDockspaceID = title + "-dockspace";
+		mSideViewID = title + "-sideView";
+		mContentViewID = title + "-contentView";
+	}
+
 	void AssetBrowser::draw()
 	{
+		if (!isEnabled())
+		{
+			return;
+		}
+
 		auto* currentEntry = getEntry(mCurrentFolder);
 		if (!currentEntry)
 		{
 			currentEntry = updateEntry(mCurrentFolder);
 		}
 
-		if (ImGui::Begin(mTitle.c_str()))
+		bool windowOpen = true;
+		if (!mEmbedded)		
 		{
-			ImGuiID dockspaceID = ImGui::GetID("##assetBrowser-dockspace");
+			ImGui::Begin(mTitle.c_str(), &mEnabled);
+		}
+		else
+		{
+			ImGui::BeginChild(mTitle.c_str(), ImVec2{ mEmbeddedSize.x, mEmbeddedSize.y });
+		}
+		{
+			ImGuiID dockspaceID = ImGui::GetID(mDockspaceID.c_str());
 			if (!ImGui::DockBuilderGetNode(dockspaceID))
 			{
 				ImGui::DockBuilderAddNode(dockspaceID, ImGuiDockNodeFlags_DockSpace);
@@ -61,8 +123,8 @@ namespace Trinity
 				ImGuiID sideID = ImGui::DockBuilderSplitNode(dockspaceID, ImGuiDir_Left,
 					0.25f, &sideID, &mainID);
 
-				ImGui::DockBuilderDockWindow("##assetBrowser-side", sideID);
-				ImGui::DockBuilderDockWindow("##assetBrowser-main", mainID);
+				ImGui::DockBuilderDockWindow(mSideViewID.c_str(), sideID);
+				ImGui::DockBuilderDockWindow(mContentViewID.c_str(), mainID);
 
 				ImGui::DockBuilderFinish(dockspaceID);
 			}
@@ -70,24 +132,34 @@ namespace Trinity
 			ImGui::DockSpace(dockspaceID, { 0, 0 }, ImGuiDockNodeFlags_NoTabBar |
 				ImGuiDockNodeFlags_NoDocking);
 
-			ImGui::Begin("##assetBrowser-main", nullptr, ImGuiWindowFlags_HorizontalScrollbar |
+			ImGui::Begin(mContentViewID.c_str(), nullptr, ImGuiWindowFlags_HorizontalScrollbar |
 				ImGuiWindowFlags_NoMove);
 			{
-				drawTopView(currentEntry);
-				ImGui::Separator();
-				drawMainView(currentEntry);
+				if (!mEmbedded)
+				{
+					drawTopView(currentEntry);
+					ImGui::Separator();
+				}
 
+				drawMainView(currentEntry);
 				ImGui::End();
 			}
 
-			ImGui::Begin("##assetBrowser-side", nullptr, ImGuiWindowFlags_HorizontalScrollbar |
+			ImGui::Begin(mSideViewID.c_str(), nullptr, ImGuiWindowFlags_HorizontalScrollbar |
 				ImGuiWindowFlags_NoMove);
 			{
 				drawSideView(currentEntry);
 				ImGui::End();
 			}
 
-			ImGui::End();
+			if (!mEmbedded)
+			{
+				ImGui::End();
+			}
+			else
+			{
+				ImGui::EndChild();
+			}
 		}
 	}
 
@@ -210,42 +282,85 @@ namespace Trinity
 
 	void AssetBrowser::drawMainView(AssetEntry* currentEntry)
 	{
-		const float assetSize = mIconSize + mIconPadding;
+		auto& application = Application::get();
+		auto* window = application.getWindow();
 		float contentSize = ImGui::GetContentRegionAvail().x;
 
-		int32_t contentId = 0;
-		int32_t numColumns = std::max((int32_t)(contentSize / assetSize), 1);
-		ImGui::Columns(numColumns, nullptr, false);
+		int32_t columnCount = 0;
+		int32_t numColumns = std::max((int32_t)(contentSize / (mAssetIcon.size + mAssetIcon.textPadding)), 1);
 
-		if (currentEntry != nullptr)
+		if (ImGui::BeginTable("##contentTable", numColumns, ImGuiTableFlags_NoBordersInBody))
 		{
-			for (auto& fileEntry : currentEntry->fileEntries)
+			if (currentEntry != nullptr)
 			{
-				ImGui::PushStyleColor(ImGuiCol_Button, { 0, 0, 0, 0 });
-				ImGui::ImageButtonEx(
-					ImGui::GetID(&fileEntry),
-					fileEntry.directory ? mFolderIcon : mFileIcon,
-					{ mIconSize, mIconSize },
-					{ 0, 0 },
-					{ 1, 1 },
-					{ 0, 0, 0, 0 },
-					{ 1, 1, 1, 1 }
-				);
-
-				ImGui::PopStyleColor();
-
-				if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+				for (auto& fileEntry : currentEntry->fileEntries)
 				{
-					contentClicked(fileEntry.path, fileEntry.directory);
+					if (!fileEntry.directory)
+					{
+						bool matched{ false};
+						for (auto& extension : mFileExtensions)
+						{
+							if (std::regex_match(fileEntry.name, std::regex(extension)))
+							{
+								matched = true;
+								break;
+							}
+						}
+
+						if (!matched)
+						{
+							continue;
+						}
+					}
+
+					if (columnCount == 0)
+					{
+						ImGui::TableNextRow();
+					}
+
+					ImGui::TableSetColumnIndex(columnCount);
+
+					auto* icon = fileEntry.directory ? mFolderIcon : mFileIcon;
+					std::string name = fileEntry.name;
+					bool doubleClicked = false;
+
+					if (name.length() > mAssetIcon.maxChars)
+					{
+						name = name.substr(0, mAssetIcon.maxChars - 1);
+						name.append("...");
+					}
+
+					if (EditorHelper::assetIcon(
+						ImGui::GetID(&fileEntry), 
+						icon,
+						glm::vec2{ mAssetIcon.size, mAssetIcon.size },
+						name.c_str(), 
+						glm::vec2{ mAssetIcon.size, mAssetIcon.textSize },
+						mAssetIcon.textPadding,
+						doubleClicked
+					))
+					{
+						if (!fileEntry.directory)
+						{
+							onFileClicked.notify(fileEntry.path);
+						}
+					}
+
+					if (doubleClicked)
+					{
+						contentClicked(fileEntry.path, fileEntry.directory);
+					}
+
+					columnCount++;
+					if (columnCount == numColumns)
+					{
+						columnCount = 0;
+					}
 				}
-
-				ImGui::SetCursorPosX(ImGui::GetCursorPosX() + mTextPadding);
-				ImGui::TextWrapped("%s", fileEntry.name.c_str());
-				ImGui::NextColumn();
 			}
-		}
 
-		ImGui::Columns(1);
+			ImGui::EndTable();
+		}
 	}
 
 	void AssetBrowser::drawTree(const std::string& path)
@@ -363,6 +478,10 @@ namespace Trinity
 
 				openTree(path);
 			}
+		}
+		else
+		{
+			onFileDoubleClicked.notify(path);
 		}
 	}
 
