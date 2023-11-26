@@ -45,8 +45,7 @@ namespace Trinity
 		{
 			size_t textureId{ 0 };
 			uint32_t numIndices{ 0 };
-			uint32_t baseIndex{ 0 };
-			uint32_t baseVertex{ 0 };
+			uint32_t firstIndex{ 0 };
 		};
 
 		struct RenderContext
@@ -118,11 +117,9 @@ namespace Trinity
 
 	protected:
 
-		virtual uint32_t addVertices(const Vertex* vertices, uint32_t numVertices);
-		virtual uint32_t addIndices(const uint32_t* indices, uint32_t numIndices);
-
-		virtual bool addCommand(Texture* texture, uint32_t baseVertex, 
-			uint32_t baseIndex, uint32_t numIndices);
+		virtual void addVertices(const Vertex* vertices, uint32_t numVertices);
+		virtual void addIndices(const uint32_t* indices, uint32_t numIndices);
+		virtual bool addCommand(Texture* texture, uint32_t firstIndex, uint32_t numIndices);
 
 		virtual bool createCommonBindGroup();
 		virtual bool createImageBindGroup(const Texture& texture);

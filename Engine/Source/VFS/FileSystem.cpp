@@ -27,6 +27,11 @@ namespace Trinity
 		return dir.string();
 	}
 
+	std::string FileSystem::getExtension(const std::string& filePath) const
+	{
+		return fs::path(filePath).extension().string();
+	}
+
 	std::string FileSystem::combinePath(const std::string& pathA, const std::string& pathB) const
 	{
 		fs::path fullPath(sanitizePath(pathA));
@@ -113,6 +118,23 @@ namespace Trinity
 			if (path.starts_with(alias))
 			{
 				return it.second->getFiles(dir, recurse, files);
+			}
+		}
+
+		return false;
+	}
+
+	bool FileSystem::getFiles(const std::string& dir, bool recurse, const std::vector<std::string>& extensions, 
+		std::vector<FileEntry>& files) const
+	{
+		for (auto& it : mStorages)
+		{
+			std::string alias = it.first;
+			std::string path = dir;
+
+			if (path.starts_with(alias))
+			{
+				return it.second->getFiles(dir, recurse, extensions, files);
 			}
 		}
 

@@ -9,7 +9,7 @@ namespace Trinity
 	class FileWriter;
 	class ResourceCache;
 
-	class Serializer
+	class ISerializer
 	{
 	public:
 

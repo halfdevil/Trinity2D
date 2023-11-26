@@ -2,18 +2,20 @@
 #include "Scene/Node.h"
 #include "Scene/Scene.h"
 #include "Editor/Editor.h"
+#include "Editor/EditorLayout.h"
 #include "VFS/FileReader.h"
 #include "VFS/FileWriter.h"
+#include "Core/ResourceCache.h"
 #include "Core/Logger.h"
 
 namespace Trinity
 {
-    Editor* Component::getEditor()
+	IEditor* Component::getEditor(Scene& scene)
     {
         return nullptr;
     }
 
-    Serializer* Component::getSerializer(Scene& scene)
+    ISerializer* Component::getSerializer(Scene& scene)
     {
         return nullptr;
     }
@@ -23,12 +25,36 @@ namespace Trinity
         mName = name;
     }
 
-    void Component::setNode(Node& node)
+	void Component::setActive(bool active)
+	{
+        mActive = active;
+	}
+
+	void Component::setNode(Node& node)
     {
         mNode = &node;
-    }
+	}
 
-    void ComponentSerializer::setComponent(Component& component)
+	void ComponentEditor::setComponent(Component& component)
+	{
+        mComponent = &component;
+	}
+
+	void ComponentEditor::setScene(Scene& scene)
+	{
+        mScene = &scene;
+	}
+
+	void ComponentEditor::onInspectorGui(const IEditorLayout& layout, ResourceCache& cache)
+	{
+	}
+
+	void ComponentEditor::addCommonFields(const IEditorLayout& layout)
+	{
+        layout.checkbox("Active?", mComponent->mActive);
+	}
+
+	void ComponentSerializer::setComponent(Component& component)
     {
         mComponent = &component;
     }

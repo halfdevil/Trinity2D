@@ -46,14 +46,16 @@ namespace Trinity
 		virtual std::type_index getType() const override;
 		virtual UUIDv4::UUID getUUID() const override;
 
-		virtual Editor* getEditor() override;
-		virtual Serializer* getSerializer(Scene& scene) override;
+		virtual IEditor* getEditor(Scene& scene) override;
+		virtual ISerializer* getSerializer(Scene& scene) override;
 
 		glm::mat4 getMatrix() const;
 		glm::mat4 getWorldMatrix();
 
 		void setMatrix(const glm::mat4& matrix);
 		void setWorldMatrix(const glm::mat4& matrix);
+		void setWorldMatrix(const glm::vec3& translation, const glm::vec3& rotation,
+			const glm::vec3& scale);
 
 		void setTranslation(const glm::vec3& translation);
 		void setRotation(const glm::vec3& rotation);
@@ -70,17 +72,17 @@ namespace Trinity
 
 	protected:
 
-		glm::vec3 mTranslation{ 0.0f, 0.0f, 1.0f };
+		glm::vec3 mTranslation{ 0.0f, 0.0f, 0.0f };
 		glm::vec3 mRotation{ 0.0f };
 		glm::vec3 mScale{ 1.0f, 1.0f, 1.0f };
 		glm::mat4 mWorldMatrix{ 1.0f };
 
 	private:
 
-		bool mUpdateMatrix{ false };
+		bool mUpdateMatrix{ true };
 	};
 
-	class TransformEditor : public Editor
+	class TransformEditor : public ComponentEditor
 	{
 	public:
 
@@ -88,7 +90,7 @@ namespace Trinity
 		virtual ~TransformEditor() = default;
 
 		virtual void setTransform(Transform& transform);
-		virtual void onInspectorGui(const EditorLayout& layout) override;
+		virtual void onInspectorGui(const IEditorLayout& layout, ResourceCache& cache) override;
 
 	protected:
 
@@ -108,7 +110,7 @@ namespace Trinity
 		TransformSerializer(TransformSerializer&&) = default;
 		TransformSerializer& operator = (TransformSerializer&&) = default;
 
-		virtual void setTransform(Transform& camera);
+		virtual void setTransform(Transform& transform);
 		virtual bool read(FileReader& reader, ResourceCache& cache) override;
 		virtual bool write(FileWriter& writer) override;
 

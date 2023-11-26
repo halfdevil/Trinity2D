@@ -5,11 +5,17 @@
 
 namespace Trinity
 {
+	enum class RigidShapeType
+	{
+		Rectangle,
+		Circle
+	};
+
 	class RigidShape
 	{
 	public:
 
-		RigidShape() = default;
+		RigidShape(RigidShapeType type);
 		virtual ~RigidShape() = default;
 
 		RigidShape(const RigidShape&) = delete;
@@ -17,6 +23,11 @@ namespace Trinity
 
 		RigidShape(RigidShape&&) = default;
 		RigidShape& operator = (RigidShape&&) = default;
+
+		RigidShapeType getType() const
+		{
+			return mType;
+		}
 
 		const glm::vec2& getPosition() const
 		{
@@ -98,6 +109,7 @@ namespace Trinity
 
 	protected:
 
+		RigidShapeType mType{ RigidShapeType::Rectangle };
 		glm::vec2 mPosition{ 0.0f };
 		glm::vec2 mCenter{ 0.0f };
 		glm::vec2 mVelocity{ 0.0f };

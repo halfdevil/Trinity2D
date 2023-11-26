@@ -21,7 +21,7 @@ namespace Trinity
 		setComponent(mScriptContainer);
 	}
 
-	Serializer* Node::getSerializer(Scene& scene)
+	ISerializer* Node::getSerializer(Scene& scene)
 	{
 		static NodeSerializer serializer;
 		serializer.setNode(*this);
@@ -64,6 +64,8 @@ namespace Trinity
 
 	void Node::setComponent(Component& component)
 	{
+		component.setNode(*this);
+
 		if (component.getType() == typeid(Script))
 		{
 			mScriptContainer.setScript(dynamic_cast<Script&>(component));
@@ -81,17 +83,22 @@ namespace Trinity
 		}
 	}
 
+	void NodeEditor::setScene(Scene& scene)
+	{
+		mScene = &scene;
+	}
+
 	void NodeEditor::setNode(Node& node)
 	{
 		mNode = &node;
 	}
 
-	void NodeEditor::onInspectorGui(const EditorLayout& layout)
+	void NodeEditor::onInspectorGui(const IEditorLayout& layout, ResourceCache& cache)
 	{
 		auto& transform = mNode->mTransform;
-		if (auto* editor = transform.getEditor(); editor != nullptr)
+		if (auto* editor = transform.getEditor(*mScene); editor != nullptr)
 		{
-			editor->onInspectorGui(layout);
+			editor->onInspectorGui(layout, cache);
 		}
 
 		for (auto& it : mNode->mComponents)
@@ -101,9 +108,9 @@ namespace Trinity
 				continue;
 			}
 
-			if (auto* editor = it.second->getEditor(); editor != nullptr)
+			if (auto* editor = it.second->getEditor(*mScene); editor != nullptr)
 			{
-				editor->onInspectorGui(layout);
+				editor->onInspectorGui(layout, cache);
 			}
 		}
 	}

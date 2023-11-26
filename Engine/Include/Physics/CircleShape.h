@@ -8,7 +8,7 @@ namespace Trinity
 	{
 	public:
 
-		CircleShape() = default;
+		CircleShape();
 		virtual ~CircleShape() = default;
 
 		CircleShape(const CircleShape&) = delete;

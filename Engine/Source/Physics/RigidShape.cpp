@@ -2,6 +2,11 @@
 
 namespace Trinity
 {
+	RigidShape::RigidShape(RigidShapeType type) :
+		mType(type)
+	{
+	}
+
 	void RigidShape::setPosition(const glm::vec2& position)
 	{
 		mPosition = position;

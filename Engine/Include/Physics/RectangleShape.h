@@ -5,11 +5,19 @@
 
 namespace Trinity
 {
+	struct CollisionInfo;
+
+	struct SupportPoint
+	{
+		glm::vec2 point{ 0.0f };
+		float distance{ 0.0f };
+	};
+
 	class RectangleShape : public RigidShape
 	{
 	public:
 
-		RectangleShape() = default;
+		RectangleShape();
 		virtual ~RectangleShape() = default;
 
 		RectangleShape(const RectangleShape&) = delete;
@@ -28,6 +36,16 @@ namespace Trinity
 			return mSize;
 		}
 
+		const std::array<glm::vec2, 4>& getVertices() const
+		{
+			return mVertices;
+		}
+
+		const std::array<glm::vec2, 4>& getFaceNormals() const
+		{
+			return mFaceNormals;
+		}
+
 		virtual BoundingRect getBoundingRect() const override;
 
 		virtual void setOrigin(const glm::vec2& origin);
@@ -38,6 +56,12 @@ namespace Trinity
 		virtual void move(const glm::vec2& value) override;
 		virtual void rotate(float value) override;
 		virtual void updateInertia() override;
+
+		virtual bool findSupportPoint(const glm::vec2& dir,	const glm::vec2& pointOnEdge, 
+			SupportPoint& supportPoint);
+
+		virtual bool findAxisLeastPenetration(RectangleShape& otherRect, 
+			CollisionInfo& collisionInfo);
 
 	protected:
 

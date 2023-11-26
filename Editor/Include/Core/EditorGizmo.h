@@ -49,16 +49,14 @@ namespace Trinity
 		virtual void setMode(GizmoMode mode);
 		virtual void setOperation(GizmoOperation operation);
 		virtual void setCamera(Camera& camera);
-		virtual void setUseOrigin(bool useOrigin);
 
 		virtual void setRect(float x, float y, float width, float height);
-		virtual bool show(glm::mat4& matrix, const glm::vec2& origin, const glm::vec2& size);
+		virtual bool show(glm::mat4& matrix);
 
 	protected:
 
 		GizmoMode mMode{ GizmoMode::Local };
 		GizmoOperation mOperation{ GizmoOperation::Translate };
 		Camera* mCamera{ nullptr };
-		bool mUseOrigin{ false };
 	};
 }

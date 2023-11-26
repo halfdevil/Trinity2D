@@ -8,24 +8,26 @@ namespace Trinity
 {
 	class FrameBuffer;
 	class Texture;
+	class RenderSystem;
+	class RenderPass;
 	class EditorResources;
+	class Scene;
 	class Node;
 	class Camera;
-	class TextureRenderable;
 	class EditorGizmo;
 
-	class Viewport : public EditorWidget
+	class SceneViewport : public EditorWidget
 	{
 	public:
 
-		Viewport() = default;
-		virtual ~Viewport();
+		SceneViewport() = default;
+		virtual ~SceneViewport();
 
-		Viewport(const Viewport&) = delete;
-		Viewport& operator = (const Viewport&) = delete;
+		SceneViewport(const SceneViewport&) = delete;
+		SceneViewport& operator = (const SceneViewport&) = delete;
 
-		Viewport(Viewport&&) = default;
-		Viewport& operator = (Viewport&&) = default;
+		SceneViewport(SceneViewport&&) = default;
+		SceneViewport& operator = (SceneViewport&&) = default;
 
 		FrameBuffer* getFrameBuffer() const
 		{
@@ -35,9 +37,13 @@ namespace Trinity
 		virtual bool create(uint32_t width, uint32_t height, EditorResources& resources);
 		virtual void destroy();
 
-		virtual void setSelectedNode(Node* node);
+		virtual void setScene(Scene& scene);
 		virtual void setCamera(Camera& camera);
+		virtual void setSelectedNode(Node* node);
+
 		virtual void resize(uint32_t width, uint32_t height);
+
+		virtual void drawScene(float deltaTime);
 		virtual void draw() override;
 
 	protected:
@@ -49,9 +55,11 @@ namespace Trinity
 
 		std::unique_ptr<FrameBuffer> mFrameBuffer{ nullptr };
 		std::unique_ptr<EditorGizmo> mGizmo{ nullptr };
-		Camera* mCamera{ nullptr };
+		std::unique_ptr<RenderSystem> mRenderSystem{ nullptr };
+		std::unique_ptr<RenderPass> mRenderPass{ nullptr };
+		Scene* mScene{ nullptr };
 		Node* mSelectedNode{ nullptr };
-		TextureRenderable* mRenderable{ nullptr };
+		Camera* mCamera{ nullptr };
 		ImVec2 mPosition{ 0.0f, 0.0f };
 		ImVec2 mSize{ 0.0f, 0.0f };
 	};

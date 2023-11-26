@@ -28,7 +28,8 @@ namespace Trinity
 		virtual bool isExist(const std::string& filePath) const = 0;
 		virtual bool isDirectory(const std::string& filePath) const = 0;
 
-		virtual bool getFiles(const std::string& dir, bool recurse,
+		virtual bool getFiles(const std::string& dir, bool recurse,	std::vector<FileEntry>& files) const = 0;
+		virtual bool getFiles(const std::string& dir, bool recurse, const std::vector<std::string>& extensions,
 			std::vector<FileEntry>& files) const = 0;
 
 		virtual std::unique_ptr<File> openFile(const std::string& filePath,

@@ -2,6 +2,11 @@
 
 namespace Trinity
 {
+	CircleShape::CircleShape() :
+		RigidShape(RigidShapeType::Circle)
+	{
+	}
+
 	BoundingRect CircleShape::getBoundingRect() const
 	{
 		return {

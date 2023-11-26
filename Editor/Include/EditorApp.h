@@ -8,17 +8,20 @@ namespace Trinity
 {
 	class ImGuiRenderer;
 	class ImGuiFont;
-	class TextureRenderer;
-	class RenderPass;
+	class PhysicsSystem;
+	class EditorTheme;
 	class EditorResources;
 	class EditorWidget;
+	class EditorLayout;
 	class EditorGizmo;
+	class MenuBar;
 	class AssetBrowser;
 	class MessageBox;
 	class SceneHierarchy;
+	class SceneViewport;
 	class Inspector;
-	class Viewport;
 	class Scene;
+	class Node;
 	class Camera;
 	class Texture;
 
@@ -50,27 +53,39 @@ namespace Trinity
 		virtual bool init() override;
 		virtual void draw(float deltaTime) override;
 		virtual void setupInput() override;
-
 		virtual void onGui();
-		virtual void onMainMenuClick(const std::string& name);
-		virtual void onAssetFileDialogClick(AssetFileDialogType dialogType, 
-			AssetFileDialogResult result, const std::string& path);
 		
 		virtual Scene* createDefaultScene(
 			float width = 1024.0f, 
 			float height = 768.0f,
-			float nearPlane = 0.1f, 
+			float nearPlane = 0.0f, 
 			float farPlane = 100.0f
 		);
 
 		virtual Scene* openScene(const std::string& path);
 		virtual bool saveScene(Scene* scene, const std::string& path);
 
+		virtual MenuBar* createMainMenu();
+		virtual AssetFileDialog* createFileDialog();
+		virtual MessageBox* createMessageBox();
+		virtual AssetBrowser* createAssetBrowser(const std::string& title);
+		virtual SceneViewport* createSceneViewport(const std::string& title, Scene& scene);
+		virtual Inspector* createInspector(const std::string& title, Scene& scene);
+		virtual SceneHierarchy* createSceneHierarchy(const std::string& title, Scene& scene);
+
+		virtual void onMainMenuClick(const std::string& name);
+		virtual void onSelectNodeClick(Node* selectedNode);
+		virtual void onAssetFileDialogClick(
+			AssetFileDialogType dialogType,
+			AssetFileDialogResult result,
+			const std::string& path);
+
 	protected:
 
 		std::unique_ptr<ImGuiRenderer> mImGuiRenderer{ nullptr };
-		std::unique_ptr<TextureRenderer> mTextureRenderer{ nullptr };
 		std::unique_ptr<RenderPass> mRenderPass{ nullptr };
+		std::unique_ptr<EditorTheme> mTheme{ nullptr };
+		std::unique_ptr<EditorLayout> mLayout{ nullptr };
 		std::unique_ptr<EditorResources> mEditorResources{ nullptr };
 		std::vector<std::unique_ptr<EditorWidget>> mWidgets;
 		ResourceCache* mResourceCache{ nullptr };
@@ -78,9 +93,10 @@ namespace Trinity
 		Scene* mEditorScene{ nullptr };
 		Scene* mCurrentScene{ nullptr };
 		Camera* mEditorCamera{ nullptr };
+		MenuBar* mMainMenu{ nullptr };
 		AssetBrowser* mAssetBrowser{ nullptr };
 		SceneHierarchy* mSceneHierarchy{ nullptr };
-		Viewport* mSceneViewport{ nullptr };
+		SceneViewport* mSceneViewport{ nullptr };
 		Inspector* mInspector{ nullptr };
 		AssetFileDialog* mFileDialog{ nullptr };
 		MessageBox* mMessageBox{ nullptr };

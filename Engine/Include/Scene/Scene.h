@@ -52,7 +52,7 @@ namespace Trinity
 		virtual void registerDefaultComponents();
 		virtual void clear();
 
-		virtual Serializer* getSerializer();
+		virtual ISerializer* getSerializer();
 
 		virtual bool hasComponent(const std::type_index& type) const;
 		virtual Node* findNode(const std::string& name) const;
@@ -171,7 +171,7 @@ namespace Trinity
 		std::unordered_map<std::type_index, std::vector<std::unique_ptr<Component>>> mComponents;
 	};
 
-	class SceneSerializer : public Serializer
+	class SceneSerializer : public ISerializer
 	{
 	public:
 

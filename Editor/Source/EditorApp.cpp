@@ -1,25 +1,26 @@
 #include "EditorApp.h"
+#include "Editor/EditorLayout.h"
 #include "Widgets/AssetFileDialog.h"
 #include "Widgets/MenuBar.h"
 #include "Widgets/AssetBrowser.h"
 #include "Widgets/SceneHierarchy.h"
+#include "Widgets/SceneViewport.h"
 #include "Widgets/Inspector.h"
-#include "Widgets/Viewport.h"
 #include "Widgets/MessageBox.h"
 #include "Input/Input.h"
 #include "ImGui/ImGuiRenderer.h"
 #include "ImGui/ImGuiFont.h"
 #include "Scene/Scene.h"
+#include "Scene/RenderSystem.h"
 #include "Scene/Components/Camera.h"
 #include "Scene/ComponentFactory.h"
-#include "Scene/TextureRenderer.h"
 #include "Graphics/Texture.h"
-#include "Graphics/RenderPass.h"
 #include "Graphics/GraphicsDevice.h"
 #include "Graphics/FrameBuffer.h"
 #include "Graphics/BatchRenderer.h"
 #include "VFS/FileSystem.h"
-#include "Editor/EditorLayout.h"
+#include "Core/EditorLayout.h"
+#include "Core/EditorTheme.h"
 #include "Core/EditorResources.h"
 #include "Core/EditorGizmo.h"
 #include "Core/ResourceCache.h"
@@ -41,8 +42,9 @@ namespace Trinity
 		}
 
 		auto& swapChain = mGraphicsDevice->getSwapChain();
-		mRenderPass = std::make_unique<RenderPass>();
+
 		mGraphicsDevice->setClearColor({ 0.5f, 0.5f, 0.5f, 1.0f });
+		mRenderPass = std::make_unique<RenderPass>();
 
 		mImGuiRenderer = std::make_unique<ImGuiRenderer>();
 		if (!mImGuiRenderer->create(*mWindow, swapChain))
@@ -58,74 +60,21 @@ namespace Trinity
 			return false;
 		}
 
+		mTheme = std::make_unique<EditorTheme>();
+		if (!mTheme->create("/Assets/Editor/Themes/DefaultTheme.json"))
+		{
+			LogError("EditorTheme::create() failed");
+			return false;
+		}
+
 		mResourceCache = mEditorResources->getResourceCache();
+		mLayout = std::make_unique<EditorLayout>();
 
-		auto sceneViewport = std::make_unique<Viewport>();
-		if (!sceneViewport->create(mWindow->getWidth(), mWindow->getHeight(), *mEditorResources))
+		if (!mLayout->updateFiles("/Assets", FileType::Texture))
 		{
-			LogError("Viewport::create() failed");
+			LogError("EditorLayout::updateFiles() failed for 'texture'");
 			return false;
 		}
-
-		auto mainMenu = std::make_unique<MenuBar>();
-		mainMenu->onMenuItemClick.subscribe([this](const auto& menuItem) {
-			onMainMenuClick(menuItem.name);
-		});
-
-		auto* fileMenu = mainMenu->addMenuItem("file", "File");
-		auto* editMenu = mainMenu->addMenuItem("edit", "Edit");
-		auto* viewMenu = mainMenu->addMenuItem("view", "View");
-		auto* toolsMenu = mainMenu->addMenuItem("tools", "Tools");
-
-		mainMenu->addMenuItem("newScene", "  New Scene  ", "CTRL+N", fileMenu);
-		mainMenu->addMenuItem("openScene", "  Open Scene  ", "CTRL+O", fileMenu);
-		mainMenu->addSeparator(fileMenu);
-		mainMenu->addMenuItem("saveScene", "  Save Scene  ", "CTRL+S", fileMenu);
-		mainMenu->addMenuItem("saveAsScene", "  Save Scene As  ", "CTRL+SHIFT+S", fileMenu);
-		mainMenu->addSeparator(fileMenu);
-		mainMenu->addMenuItem("exit", "  Exit  ", "ALT+F4", fileMenu);
-
-		mainMenu->addMenuItem("cut", "  Cut  ", "CTRL+X", editMenu);
-		mainMenu->addMenuItem("copy", "  Copy  ", "CTRL+C", editMenu);
-		mainMenu->addMenuItem("paste", "  Paste  ", "CTRL+V", editMenu);
-
-		mainMenu->addMenuItem("inspector", "  Inspector  ", "CTRL+I", viewMenu);
-		mainMenu->addMenuItem("sceneHierarchy", "  Scene Hierarchy  ", "CTRL+INS+S", viewMenu);
-		mainMenu->addMenuItem("sceneViewport", "  Scene Viewport  ", "CTRL+INS+V", viewMenu);
-		mainMenu->addMenuItem("spriteEditor", "  Sprite EditorApp  ", "CTRL+T", toolsMenu);
-
-		auto assetBrowser = std::make_unique<AssetBrowser>();
-		if (!assetBrowser->create("/Assets", *mEditorResources))
-		{
-			LogError("AssetBrowser::create() failed");
-			return false;
-		}
-
-		auto fileDialog = std::make_unique<AssetFileDialog>();
-		if (!fileDialog->create("/Assets", *mEditorResources))
-		{
-			LogError("AssetFileDialog::create() failed");
-			return false;
-		}
-
-		auto messageBox = std::make_unique<MessageBox>();
-		if (!messageBox->create(500, 250, *mEditorResources))
-		{
-			LogError("MessageBox::create() failed");
-			return false;
-		}
-
-		assetBrowser->setTitle(ICON_FA_GLOBE " Asset Browser");
-		assetBrowser->addFileExtension(".*");
-
-		fileDialog->addFileType("Scene File (*.json)", { ".json" });
-		fileDialog->onClosed.subscribe([this](auto dialogType, auto result, const auto& path) {
-			onAssetFileDialogClick(dialogType, result, path);
-		});
-
-		messageBox->onClosed.subscribe([this](auto result) {
-			
-		});
 
 		mEditorScene = createDefaultScene();
 		if (!mEditorScene)
@@ -144,41 +93,13 @@ namespace Trinity
 		auto cameras = mEditorScene->getComponents<Camera>();
 		mEditorCamera = cameras[0];
 
-		sceneViewport->setTitle(mCurrentScene->getName());
-		sceneViewport->setCamera(*mEditorCamera);
-		
-		auto sceneHierarchy = std::make_unique<SceneHierarchy>();
-		sceneHierarchy->setTitle("Scene");
-		sceneHierarchy->setScene(*mCurrentScene);
-
-		auto inspector = std::make_unique<Inspector>();
-		inspector->setTitle("Inspector");
-
-		mTextureRenderer = std::make_unique<TextureRenderer>();
-		if (!mTextureRenderer->create(*sceneViewport->getFrameBuffer()))
-		{
-			LogError("TextureRenderer::create() failed!!");
-			return false;
-		}
-		
-		mTextureRenderer->setScene(*mCurrentScene);
-		mTextureRenderer->setRotateFromOrigin(false);
-		mTextureRenderer->setCamera(*mEditorCamera);
-
-		mAssetBrowser = assetBrowser.get();
-		mSceneViewport = sceneViewport.get();
-		mSceneHierarchy = sceneHierarchy.get();
-		mInspector = inspector.get();
-		mFileDialog = fileDialog.get();
-		mMessageBox = messageBox.get();
-
-		mWidgets.push_back(std::move(mainMenu));
-		mWidgets.push_back(std::move(assetBrowser));
-		mWidgets.push_back(std::move(sceneHierarchy));
-		mWidgets.push_back(std::move(sceneViewport));
-		mWidgets.push_back(std::move(inspector));
-		mWidgets.push_back(std::move(fileDialog));
-		mWidgets.push_back(std::move(messageBox));
+		mMainMenu = createMainMenu();
+		mFileDialog = createFileDialog();
+		mMessageBox = createMessageBox();
+		mAssetBrowser = createAssetBrowser(ICON_FA_GLOBE " Asset Browser");
+		mSceneViewport = createSceneViewport(mCurrentScene->getName(), *mCurrentScene);
+		mInspector = createInspector("Inspector", *mCurrentScene);
+		mSceneHierarchy = createSceneHierarchy("Scene", *mCurrentScene);
 
 		return true;
 	}
@@ -189,15 +110,15 @@ namespace Trinity
 
 		if (mSceneViewport != nullptr)
 		{
-			mRenderPass->begin(*mSceneViewport->getFrameBuffer());
-			mTextureRenderer->draw(*mRenderPass);
-			mRenderPass->end();
+			mSceneViewport->drawScene(deltaTime);
 		}
 
 		auto& swapChain = mGraphicsDevice->getSwapChain();
 		mRenderPass->begin(swapChain);
 		mImGuiRenderer->newFrame(*mWindow, deltaTime);
+
 		onGui();
+		
 		mImGuiRenderer->draw(*mRenderPass);
 		mRenderPass->end();
 	}
@@ -212,9 +133,6 @@ namespace Trinity
 		ImGui::DockSpaceOverViewport();
 		ImGuizmo::SetOrthographic(true);
 		ImGuizmo::BeginFrame();
-
-		mInspector->setSelectedNode(mSceneHierarchy->getCurrentNode());
-		mSceneViewport->setSelectedNode(mSceneHierarchy->getCurrentNode());
 		
 		for (auto& widget : mWidgets)
 		{
@@ -247,6 +165,12 @@ namespace Trinity
 		}
 	}
 
+	void EditorApp::onSelectNodeClick(Node* selectedNode)
+	{
+		mInspector->setSelectedNode(selectedNode);
+		mSceneViewport->setSelectedNode(selectedNode);		
+	}
+
 	void EditorApp::onAssetFileDialogClick(AssetFileDialogType dialogType, AssetFileDialogResult result, const std::string& path)
 	{
 		if (result == AssetFileDialogResult::Cancel)
@@ -266,7 +190,8 @@ namespace Trinity
 
 				mCurrentScene = scene;
 				mSceneHierarchy->setScene(*mCurrentScene);
-				mTextureRenderer->setScene(*mCurrentScene);
+				mSceneViewport->setScene(*mCurrentScene);
+				mInspector->setScene(*mCurrentScene);
 			}
 			else
 			{
@@ -278,7 +203,8 @@ namespace Trinity
 		{
 			if (!saveScene(mCurrentScene, path))
 			{
-				LogError("EditorApp::saveScene() failed for: '%s'", path.c_str());
+				mMessageBox->show(std::format("Unable to save scene file '{}'", path), "Error",
+					MessageBoxButtons::Ok, MessageBoxIcon::Error);
 			}
 
 			if (mAssetBrowser != nullptr)
@@ -368,6 +294,144 @@ namespace Trinity
 		}
 
 		return true;
+	}
+
+	MenuBar* EditorApp::createMainMenu()
+	{
+		auto mainMenu = std::make_unique<MenuBar>();
+		mainMenu->onMenuItemClick.subscribe([this](const auto& menuItem) {
+			onMainMenuClick(menuItem.name);
+		});
+
+		auto* fileMenu = mainMenu->addMenuItem("file", "File");
+		auto* editMenu = mainMenu->addMenuItem("edit", "Edit");
+		auto* viewMenu = mainMenu->addMenuItem("view", "View");
+		auto* toolsMenu = mainMenu->addMenuItem("tools", "Tools");
+
+		mainMenu->addMenuItem("newScene", "  New Scene  ", "CTRL+N", fileMenu);
+		mainMenu->addMenuItem("openScene", "  Open Scene  ", "CTRL+O", fileMenu);
+		mainMenu->addSeparator(fileMenu);
+		mainMenu->addMenuItem("saveScene", "  Save Scene  ", "CTRL+S", fileMenu);
+		mainMenu->addMenuItem("saveAsScene", "  Save Scene As  ", "CTRL+SHIFT+S", fileMenu);
+		mainMenu->addSeparator(fileMenu);
+		mainMenu->addMenuItem("exit", "  Exit  ", "ALT+F4", fileMenu);
+		mainMenu->addMenuItem("cut", "  Cut  ", "CTRL+X", editMenu);
+		mainMenu->addMenuItem("copy", "  Copy  ", "CTRL+C", editMenu);
+		mainMenu->addMenuItem("paste", "  Paste  ", "CTRL+V", editMenu);
+		mainMenu->addMenuItem("inspector", "  Inspector  ", "CTRL+I", viewMenu);
+		mainMenu->addMenuItem("sceneHierarchy", "  Scene Hierarchy  ", "CTRL+INS+S", viewMenu);
+		mainMenu->addMenuItem("sceneViewport", "  Scene Viewport  ", "CTRL+INS+V", viewMenu);
+		mainMenu->addMenuItem("spriteEditor", "  Sprite EditorApp  ", "CTRL+T", toolsMenu);
+
+		auto* mainMenuPtr = mainMenu.get();
+		mWidgets.push_back(std::move(mainMenu));
+
+		return mainMenuPtr;
+	}
+
+	AssetFileDialog* EditorApp::createFileDialog()
+	{
+		auto fileDialog = std::make_unique<AssetFileDialog>();
+		if (!fileDialog->create("/Assets", *mEditorResources))
+		{
+			LogError("AssetFileDialog::create() failed");
+			return nullptr;
+		}
+
+		fileDialog->addFileType("Scene File (*.json)", { ".json" });
+		fileDialog->onClosed.subscribe([this](auto dialogType, auto result, const auto& path) {
+			onAssetFileDialogClick(dialogType, result, path);
+		});
+
+		auto* fileDialogPtr = fileDialog.get();
+		mWidgets.push_back(std::move(fileDialog));
+
+		return fileDialogPtr;
+	}
+
+	MessageBox* EditorApp::createMessageBox()
+	{
+		auto messageBox = std::make_unique<MessageBox>();
+		if (!messageBox->create(500, 250, *mEditorResources))
+		{
+			LogError("MessageBox::create() failed");
+			return nullptr;
+		}
+
+		messageBox->onClosed.subscribe([this](auto result) {			
+		});
+
+		auto* messageBoxPtr = messageBox.get();
+		mWidgets.push_back(std::move(messageBox));
+
+		return messageBoxPtr;
+	}
+
+	AssetBrowser* EditorApp::createAssetBrowser(const std::string& title)
+	{
+		auto assetBrowser = std::make_unique<AssetBrowser>();
+		if (!assetBrowser->create("/Assets", *mEditorResources))
+		{
+			LogError("AssetBrowser::create() failed");
+			return nullptr;
+		}
+
+		assetBrowser->setTitle(title.c_str());
+		assetBrowser->addFileExtension(".*");
+		
+		auto* assetBrowserPtr = assetBrowser.get();
+		mWidgets.push_back(std::move(assetBrowser));
+
+		return assetBrowserPtr;
+	}
+
+	SceneViewport* EditorApp::createSceneViewport(const std::string& title, Scene& scene)
+	{
+		auto sceneViewport = std::make_unique<SceneViewport>();
+		if (!sceneViewport->create(mWindow->getWidth(), mWindow->getHeight(), *mEditorResources))
+		{
+			LogError("Viewport::create() failed");
+			return nullptr;
+		}
+
+		sceneViewport->setTitle(title);
+		sceneViewport->setScene(scene);
+		sceneViewport->setCamera(*mEditorCamera);
+
+		auto* sceneViewportPtr = sceneViewport.get();
+		mWidgets.push_back(std::move(sceneViewport));
+
+		return sceneViewportPtr;
+	}
+
+	Inspector* EditorApp::createInspector(const std::string& title, Scene& scene)
+	{
+		auto inspector = std::make_unique<Inspector>();
+		inspector->setTitle("Inspector");
+		inspector->setLayout(*mLayout);
+		inspector->setResourceCache(*mEditorResources->getResourceCache());
+		inspector->setScene(scene);
+
+		auto* inspectorPtr = inspector.get();
+		mWidgets.push_back(std::move(inspector));
+
+		return inspectorPtr;
+	}
+
+	SceneHierarchy* EditorApp::createSceneHierarchy(const std::string& title, Scene& scene)
+	{
+		auto sceneHierarchy = std::make_unique<SceneHierarchy>();
+		sceneHierarchy->setTitle(title);
+		sceneHierarchy->setScene(scene);
+
+		sceneHierarchy->onSelectNode.subscribe([this](auto* selectedNode) {
+			onSelectNodeClick(selectedNode);
+		});
+		
+		auto* sceneHierarchyPtr = sceneHierarchy.get();
+		mWidgets.push_back(std::move(sceneHierarchy));
+
+		return sceneHierarchyPtr;
 	}
 }
 

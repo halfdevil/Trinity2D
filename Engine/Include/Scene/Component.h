@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Editor/Editor.h"
 #include "VFS/Serializer.h"
 #include <memory>
 #include <string>
@@ -11,14 +12,15 @@ namespace Trinity
 {
 	class Node;
 	class Scene;
-	class Editor;
 	class ComponentSerializer;
+	class ComponentEditor;
 
 	class Component
 	{
 	public:
 
 		friend class ComponentSerializer;
+		friend class ComponentEditor;
 
 		Component() = default;
 		virtual ~Component() = default;
@@ -39,10 +41,16 @@ namespace Trinity
 			return mNode;
 		}
 
-		virtual Editor* getEditor();
-		virtual Serializer* getSerializer(Scene& scene);
+		bool isActive() const
+		{
+			return mActive;
+		}
+
+		virtual IEditor* getEditor(Scene& scene);
+		virtual ISerializer* getSerializer(Scene& scene);
 
 		virtual void setName(const std::string& name);
+		virtual void setActive(bool active);
 		virtual void setNode(Node& node);
 
 		virtual std::type_index getType() const = 0;
@@ -51,10 +59,38 @@ namespace Trinity
 	protected:
 
 		std::string mName;
+		bool mActive{ true };
 		Node* mNode{ nullptr };
 	};
 
-	class ComponentSerializer : public Serializer
+	class ComponentEditor : public IEditor
+	{
+	public:
+
+		ComponentEditor() = default;
+		virtual ~ComponentEditor() = default;
+
+		ComponentEditor(const ComponentEditor&) = delete;
+		ComponentEditor& operator = (const ComponentEditor&) = delete;
+
+		ComponentEditor(ComponentEditor&&) = default;
+		ComponentEditor& operator = (ComponentEditor&&) = default;
+
+		virtual void setComponent(Component& component);
+		virtual void setScene(Scene& scene);
+		virtual void onInspectorGui(const IEditorLayout& layout, ResourceCache& cache) override;
+
+	protected:
+
+		virtual void addCommonFields(const IEditorLayout& layout);
+
+	protected:
+
+		Component* mComponent{ nullptr };
+		Scene* mScene{ nullptr };
+	};
+
+	class ComponentSerializer : public ISerializer
 	{
 	public:
 

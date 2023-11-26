@@ -2,12 +2,13 @@
 
 namespace Trinity
 {
-	class EditorLayout;
+	class IEditorLayout;
+	class ResourceCache;
 
-	class Editor
+	class IEditor
 	{
 	public:
 
-		virtual void onInspectorGui(const EditorLayout& layout) = 0;
+		virtual void onInspectorGui(const IEditorLayout& layout, ResourceCache& cache) = 0;
 	};
 }

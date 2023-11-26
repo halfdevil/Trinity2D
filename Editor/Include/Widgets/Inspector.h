@@ -3,11 +3,14 @@
 #include "Core/EditorWidget.h"
 #include <string>
 #include <memory>
+#include <vector>
 
 namespace Trinity
 {
+	class Scene;
 	class Node;
 	class NodeEditor;
+	class ResourceCache;
 	class EditorLayout;
 
 	class Inspector : public EditorWidget
@@ -23,14 +26,26 @@ namespace Trinity
 		Inspector(Inspector&&) = default;
 		Inspector& operator = (Inspector&&) = default;
 
+		virtual void setLayout(EditorLayout& layout);
+		virtual void setResourceCache(ResourceCache& cache);
+		virtual void setScene(Scene& scene);
 		virtual void setSelectedNode(Node* node);
 		virtual void draw() override;
 
 	protected:
 
-		Node* mSelectedNode{ nullptr };
+		virtual void addComponent();
+
+	protected:
+
+		EditorLayout* mLayout{ nullptr };
+		ResourceCache* mResourceCache{ nullptr };
 		std::unique_ptr<NodeEditor> mEditor{ nullptr };
-		std::unique_ptr<EditorLayout> mLayout{ nullptr };
+		Scene* mScene{ nullptr };
+		Node* mSelectedNode{ nullptr };
+		std::string mSelectedComponentName;
+		std::vector<std::string> mComponentNames;
+		std::string mSelectedNodeName;
 		bool mIsOpen{ true };
 	};
 }

@@ -37,8 +37,8 @@ namespace Trinity
 		virtual std::type_index getType() const override;
 		virtual UUIDv4::UUID getUUID() const override;
 
-		virtual Editor* getEditor() override;
-		virtual Serializer* getSerializer(Scene& scene) override;
+		virtual IEditor* getEditor(Scene& scene) override;
+		virtual ISerializer* getSerializer(Scene& scene) override;
 
 		virtual void setSize(const glm::vec2& size);
 		virtual void setNearPlane(float nearPlane);
@@ -51,11 +51,11 @@ namespace Trinity
 	protected:
 
 		glm::vec2 mSize{ 0.0f };
-		float mNearPlane{ 0.1f };
+		float mNearPlane{ 0.0f };
 		float mFarPlane{ 100.0f };
 	};
 
-	class CameraEditor : public Editor
+	class CameraEditor : public ComponentEditor
 	{
 	public:
 
@@ -69,7 +69,7 @@ namespace Trinity
 		CameraEditor& operator = (CameraEditor&&) = default;
 
 		virtual void setCamera(Camera& camera);
-		virtual void onInspectorGui(const EditorLayout& layout) override;
+		virtual void onInspectorGui(const IEditorLayout& layout, ResourceCache& cache) override;
 
 	protected:
 

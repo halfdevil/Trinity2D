@@ -35,7 +35,7 @@ namespace Trinity
 	void SceneHierarchy::setScene(Scene& scene)
 	{
 		mScene = &scene;
-		mCurrentNode = nullptr;
+		mCurrentNode = mScene->getRoot();
 	}
 
 	void SceneHierarchy::draw()
@@ -49,18 +49,23 @@ namespace Trinity
 		{
 			if (mScene != nullptr && mScene->getRoot() != nullptr)
 			{
-				drawNode(mScene->getRoot(), false);
+				drawNode(mScene->getRoot(), false, true);
 			}
 
 			ImGui::End();
 		}
 	}
 
-	void SceneHierarchy::drawNode(Node* node, bool menuOpened)
+	void SceneHierarchy::drawNode(Node* node, bool menuOpened, bool defaultOpen)
 	{
 		auto flags = ImGuiTreeNodeFlags_OpenOnArrow |
 			ImGuiTreeNodeFlags_SpanAvailWidth |
 			ImGuiTreeNodeFlags_SpanFullWidth;
+
+		if (defaultOpen)
+		{
+			flags |= ImGuiTreeNodeFlags_DefaultOpen;
+		}
 
 		std::string label = ICON_FA_CUBE " ";
 		label.append(node->getName());
@@ -80,6 +85,7 @@ namespace Trinity
 		if (ImGui::IsItemClicked() || (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiPopupFlags_MouseButtonRight)))
 		{
 			mCurrentNode = node;
+			onSelectNode.notify(mCurrentNode);
 		}
 
 		if (!menuOpened)

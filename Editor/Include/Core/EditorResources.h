@@ -65,5 +65,6 @@ namespace Trinity
 
 		std::unique_ptr<ResourceCache> mResourceCache{ nullptr };
 		std::unordered_map<std::string, ImGuiFont*> mFonts;
+		
 	};
 }

@@ -30,13 +30,11 @@ namespace Trinity
 
 	void Scene::registerDefaultComponents()
 	{
-		mComponentFactory->registerCreator<Transform>();
-		mComponentFactory->registerCreator<ScriptContainer>();
-		mComponentFactory->registerCreator<Camera>();
-		mComponentFactory->registerCreator<Light>();
-		mComponentFactory->registerCreator<SpriteRenderable>();
-		mComponentFactory->registerCreator<SpriteAnimator>();
-		mComponentFactory->registerCreator<TextureRenderable>();
+		mComponentFactory->registerCreator<Camera>("Camera");
+		mComponentFactory->registerCreator<Light>("Light");
+		mComponentFactory->registerCreator<SpriteRenderable>("Sprite Renderable");
+		mComponentFactory->registerCreator<SpriteAnimator>("Sprite Animator");
+		mComponentFactory->registerCreator<TextureRenderable>("Texture Renderable");
 	}
 
 	void Scene::clear()
@@ -46,7 +44,7 @@ namespace Trinity
 		mRoot = nullptr;
 	}
 
-	Serializer* Scene::getSerializer()
+	ISerializer* Scene::getSerializer()
 	{
 		static SceneSerializer serializer;
 		serializer.setScene(*this);

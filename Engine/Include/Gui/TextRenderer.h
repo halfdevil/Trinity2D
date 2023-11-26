@@ -27,7 +27,7 @@ namespace Trinity
 	{
 	public:
 
-		static constexpr const char* kDefaultShader = "/Assets/Engine/Shaders/TextRenderer.wgsl";
+		static constexpr const char* kDefaultShader = "/Assets/Engine/Shaders/Text.wgsl";
 		static constexpr uint32_t kCommonBindGroupIndex = 0;
 		static constexpr uint32_t kTextureBindGroupIndex = 1;
 

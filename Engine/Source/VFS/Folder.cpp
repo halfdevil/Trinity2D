@@ -82,6 +82,64 @@ namespace Trinity
 		return true;
 	}
 
+	bool Folder::getFiles(const std::string& dir, bool recurse, const std::vector<std::string>& extensions, 
+		std::vector<FileEntry>& files) const
+	{
+		std::string actualDir = getActualPath(dir);
+		if (!fs::is_directory(actualDir))
+		{
+			LogError("Folder::getFiles() failed, not a valid directory: %s", dir.c_str());
+			return false;
+		}
+
+		if (recurse)
+		{
+			for (const auto& dirEntry : fs::recursive_directory_iterator(actualDir))
+			{
+				const fs::path& p = dirEntry.path();
+				const std::string virtualPath = getVirtualPath(p.string());
+
+				if (dirEntry.is_directory())
+				{
+					continue;
+				}
+
+				if (std::find(extensions.begin(), extensions.end(), p.extension().string()) != extensions.end())
+				{
+					files.push_back({
+						.name = fs::path(virtualPath).filename().string(),
+						.path = virtualPath,
+						.directory = false
+					});
+				}
+			}
+		}
+		else
+		{
+			for (const auto& dirEntry : fs::directory_iterator(actualDir))
+			{
+				const fs::path& p = dirEntry.path();
+				const std::string virtualPath = getVirtualPath(p.string());
+
+				if (dirEntry.is_directory())
+				{
+					continue;
+				}
+
+				if (std::find(extensions.begin(), extensions.end(), p.extension().string()) != extensions.end())
+				{
+					files.push_back({
+						.name = fs::path(virtualPath).filename().string(),
+						.path = virtualPath,
+						.directory = false
+					});
+				}
+			}
+		}
+
+		return true;
+	}
+
 	std::unique_ptr<File> Folder::openFile(const std::string& filePath, FileOpenMode openMode)
 	{
 		std::string actualPath = getActualPath(filePath);

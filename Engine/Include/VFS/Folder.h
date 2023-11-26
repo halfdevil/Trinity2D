@@ -27,6 +27,9 @@ namespace Trinity
 		virtual bool getFiles(const std::string& dir, bool recurse,
 			std::vector<FileEntry>& files) const override;
 
+		virtual bool getFiles(const std::string& dir, bool recurse, const std::vector<std::string>& extensions,
+			std::vector<FileEntry>& files) const;
+
 		virtual std::unique_ptr<File> openFile(const std::string& filePath,
 			FileOpenMode openMode) override;
 

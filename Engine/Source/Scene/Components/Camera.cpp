@@ -32,14 +32,16 @@ namespace Trinity
 		return Camera::UUID;
 	}
 
-	Editor* Camera::getEditor()
+	IEditor* Camera::getEditor(Scene& scene)
 	{
 		static CameraEditor editor;
 		editor.setCamera(*this);
+		editor.setScene(scene);
+
 		return &editor;
 	}
 
-	Serializer* Camera::getSerializer(Scene& scene)
+	ISerializer* Camera::getSerializer(Scene& scene)
 	{
 		static CameraSerializer serializer;
 		serializer.setScene(scene);
@@ -66,15 +68,18 @@ namespace Trinity
 	void CameraEditor::setCamera(Camera& camera)
 	{
 		mCamera = &camera;
+		setComponent(camera);
 	}
 
-	void CameraEditor::onInspectorGui(const EditorLayout& layout)
+	void CameraEditor::onInspectorGui(const IEditorLayout& layout, ResourceCache& cache)
 	{
 		if (layout.beginLayout("Camera"))
 		{
+			addCommonFields(layout);
+
 			layout.inputVec2("Size", mCamera->mSize);
-			layout.inputScalar("Near Plane", mCamera->mNearPlane);
-			layout.inputScalar("Far Plane", mCamera->mFarPlane);
+			layout.inputFloat("Near Plane", mCamera->mNearPlane);
+			layout.inputFloat("Far Plane", mCamera->mFarPlane);
 			layout.endLayout();
 		}
 	}

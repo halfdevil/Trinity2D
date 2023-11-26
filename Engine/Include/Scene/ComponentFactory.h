@@ -14,20 +14,20 @@ namespace Trinity
 
 		using ComponentCreator = std::function<std::unique_ptr<Component>()>;
 
-		ComponentCreator& getCreator(const UUIDv4::UUID& uuid);
-
+		void registerCreator(const UUIDv4::UUID& uuid, const std::string& name, ComponentCreator creator);
 		bool hasRegister(const UUIDv4::UUID& uuid);
-		void registerCreator(const UUIDv4::UUID& uuid, ComponentCreator creator);
 		void removeCreator(const UUIDv4::UUID& uuid);
 
 		std::unique_ptr<Component> createComponent(const UUIDv4::UUID& uuid);
+		std::unique_ptr<Component> createComponentByName(const std::string& name);
+		std::vector<std::string> getComponentNames() const;
 
 	public:
 
 		template <typename T>
-		inline void registerCreator()
+		inline void registerCreator(const std::string& name)
 		{
-			registerCreator(T::UUID, []() {
+			registerCreator(T::UUID, name, []() {
 				return std::make_unique<T>();
 			});
 		}
@@ -41,11 +41,12 @@ namespace Trinity
 		template <typename T>
 		inline T& getCreator()
 		{
-			return dynamic_cast<T&>(getCreator(T::UUID));
+			return (T&)getCreator(T::UUID);
 		}
 
 	protected:
 
 		std::unordered_map<UUIDv4::UUID, ComponentCreator> mCreators;
+		std::unordered_map<std::string, UUIDv4::UUID> mNameUUIDMap;
 	};
 }

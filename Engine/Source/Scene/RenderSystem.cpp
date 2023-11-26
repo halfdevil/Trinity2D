@@ -1,8 +1,10 @@
-#include "Scene/SpriteRenderer.h"
+#include "Scene/RenderSystem.h"
 #include "Scene/Scene.h"
 #include "Scene/Sprite.h"
 #include "Scene/Components/Camera.h"
 #include "Scene/Components/SpriteRenderable.h"
+#include "Scene/Components/TextureRenderable.h"
+#include "Graphics/Texture.h"
 #include "Graphics/BatchRenderer.h"
 #include "Graphics/RenderPass.h"
 #include "Graphics/RenderTarget.h"
@@ -11,11 +13,9 @@
 
 namespace Trinity
 {
-	bool SpriteRenderer::create(Scene& scene, RenderTarget& renderTarget)
+	bool RenderSystem::create(RenderTarget& renderTarget)
 	{
-		mScene = &scene;
 		mRenderer = std::make_unique<BatchRenderer>();
-
 		if (!mRenderer->create(kShader, renderTarget))
 		{
 			LogError("BatchRenderer::create() failed with shader: '%s'", kShader);
@@ -25,28 +25,78 @@ namespace Trinity
 		return true;
 	}
 
-	void SpriteRenderer::destroy()
+	void RenderSystem::destroy()
 	{
 		mScene = nullptr;
+		mCamera = nullptr;
 		mRenderer = nullptr;
 	}
 
-	void SpriteRenderer::setCamera(const std::string& nodeName)
+	void RenderSystem::setScene(Scene& scene)
 	{
-		auto cameraNode = mScene->findNode(nodeName);
-		if (!cameraNode)
-		{
-			LogWarning("Camera node '%s' not found. Looking for 'default_camera' node", nodeName.c_str());
-			cameraNode = mScene->findNode("default_camera");
-		}
+		mScene = &scene;
+	}
 
+	void RenderSystem::setCamera(Camera& camera)
+	{
+		mCamera = &camera;
+	}
+
+	void RenderSystem::setCamera(const std::string& cameraNodeName)
+	{
+		auto cameraNode = mScene->findNode(cameraNodeName);
 		if (cameraNode != nullptr)
 		{
 			mCamera = &cameraNode->getComponent<Camera>();
 		}
 	}
 
-	void SpriteRenderer::draw(const RenderPass& renderPass)
+	void RenderSystem::draw(const RenderPass& renderPass)
+	{
+		if (mCamera != nullptr)
+		{
+			drawTextures(renderPass);
+			drawSprites(renderPass);
+		}
+	}
+
+	void RenderSystem::drawTextures(const RenderPass& renderPass)
+	{
+		auto viewProj = mCamera->getProjection() * mCamera->getView();
+		auto renderables = mScene->getComponents<TextureRenderable>();
+
+		mRenderer->begin(viewProj);
+
+		for (auto& renderable : renderables)
+		{
+			if (!renderable->isActive())
+			{
+				continue;
+			}
+
+			auto* texture = renderable->getTexture();
+			auto& transform = renderable->getNode()->getTransform();
+			auto& flip = renderable->getFlip();
+
+			if (texture != nullptr)
+			{
+				mRenderer->drawTexture(
+					texture,
+					glm::vec2{ 0.0f, 0.0f },
+					glm::vec2{ texture->getWidth(), texture->getHeight() },
+					renderable->getOrigin(),
+					transform.getWorldMatrix(),
+					renderable->getColor(),
+					flip.x,
+					flip.y
+				);
+			}
+		}
+
+		mRenderer->end(renderPass);
+	}
+
+	void RenderSystem::drawSprites(const RenderPass& renderPass)
 	{
 		auto viewProj = mCamera->getProjection() * mCamera->getView();
 		auto renderables = mScene->getComponents<SpriteRenderable>();

@@ -22,14 +22,16 @@ namespace Trinity
 		return Transform::UUID;
 	}
 
-	Editor* Transform::getEditor()
+	IEditor* Transform::getEditor(Scene& scene)
 	{
 		static TransformEditor editor;
+		editor.setScene(scene);
 		editor.setTransform(*this);
+
 		return &editor;
 	}
 
-	Serializer* Transform::getSerializer(Scene& scene)
+	ISerializer* Transform::getSerializer(Scene& scene)
 	{
 		static TransformSerializer serializer;
 		serializer.setTransform(*this);
@@ -68,6 +70,26 @@ namespace Trinity
 		else
 		{
 			setMatrix(matrix);
+		}
+
+		mWorldMatrix = matrix;
+	}
+
+	void Transform::setWorldMatrix(const glm::vec3& translation, const glm::vec3& rotation, const glm::vec3& scale)
+	{
+		mWorldMatrix = glm::translate(glm::mat4(1.0f), translation) *
+			glm::yawPitchRoll(rotation.y, rotation.x, rotation.z) *
+			glm::scale(glm::mat4(1.0f), scale);
+
+		auto parent = mNode->getParent();
+		if (parent != nullptr)
+		{
+			auto& transform = parent->getTransform();
+			setMatrix(glm::inverse(transform.getWorldMatrix()) * mWorldMatrix);
+		}
+		else
+		{
+			setMatrix(mWorldMatrix);
 		}
 	}
 
@@ -123,9 +145,10 @@ namespace Trinity
 	void TransformEditor::setTransform(Transform& transform)
 	{
 		mTransform = &transform;
+		setComponent(transform);
 	}
 
-	void TransformEditor::onInspectorGui(const EditorLayout& layout)
+	void TransformEditor::onInspectorGui(const IEditorLayout& layout, ResourceCache& cache)
 	{
 		if (layout.beginLayout("Transform"))
 		{
@@ -148,10 +171,10 @@ namespace Trinity
 		}
 	}
 
-	void TransformSerializer::setTransform(Transform& camera)
+	void TransformSerializer::setTransform(Transform& transform)
 	{
-		mTransform = &camera;
-		setComponent(camera);
+		mTransform = &transform;
+		setComponent(transform);
 	}
 
 	bool TransformSerializer::read(FileReader& reader, ResourceCache& cache)

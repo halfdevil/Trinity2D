@@ -74,7 +74,7 @@ namespace Trinity
 			.primitive = {
 				.topology = wgpu::PrimitiveTopology::TriangleList,
 				.frontFace = wgpu::FrontFace::CW,
-				.cullMode = wgpu::CullMode::None
+				.cullMode = wgpu::CullMode::Back
 			}
 		};
 
@@ -118,6 +118,12 @@ namespace Trinity
 		bool flipY
 	)
 	{
+		if (!addCommand(texture, mStagingContext.numIndices, 6))
+		{
+			LogError("BatchRenderer::addCommand() failed");
+			return false;
+		}
+
 		glm::vec3 localOrigin = { 
 			srcSize.x * origin.x, 
 			srcSize.y * origin.y,
@@ -133,11 +139,6 @@ namespace Trinity
 		glm::vec4 p2 = transform * glm::vec4{ x1, y2, 0.0f, 1.0f };
 		glm::vec4 p3 = transform * glm::vec4{ x2, y2, 0.0f, 1.0f };
 		glm::vec4 p4 = transform * glm::vec4{ x2, y1, 0.0f, 1.0f };
-
-		glm::vec3 q1 = localOrigin + glm::vec3{ p1.x, p1.y, p1.z };
-		glm::vec3 q2 = localOrigin + glm::vec3{ p2.x, p2.y, p2.z };
-		glm::vec3 q3 = localOrigin + glm::vec3{ p3.x, p3.y, p3.z };
-		glm::vec3 q4 = localOrigin + glm::vec3{ p4.x, p4.y, p4.z };
 
 		float u1{ srcPosition.x * mInvTextureSize.x };
 		float v1{ srcPosition.y * mInvTextureSize.y };
@@ -159,10 +160,10 @@ namespace Trinity
 		}
 
 		Vertex vertices[4] = {
-			{.position = q1, .uv = { u1, v1 }, .color = color },
-			{.position = q2, .uv = { u1, v2 }, .color = color },
-			{.position = q3, .uv = { u2, v2 }, .color = color },
-			{.position = q4, .uv = { u2, v1 }, .color = color }
+			{.position = glm::vec3(p1), .uv = { u1, v2 }, .color = color },
+			{.position = glm::vec3(p2), .uv = { u1, v1 }, .color = color },
+			{.position = glm::vec3(p3), .uv = { u2, v1 }, .color = color },
+			{.position = glm::vec3(p4), .uv = { u2, v2 }, .color = color }
 		};
 
 		auto numVertices = mStagingContext.numVertices;
@@ -175,11 +176,8 @@ namespace Trinity
 			numVertices
 		};
 
-		if (!addCommand(texture, addVertices(vertices, 4), addIndices(indices, 6), 6))
-		{
-			LogError("BatchRenderer::addCommand() failed");
-			return false;
-		}
+		addVertices(vertices, 4);
+		addIndices(indices, 6);
 
 		return true;
 	}
@@ -196,6 +194,12 @@ namespace Trinity
 		bool flipY
 	)
 	{
+		if (!addCommand(texture, mStagingContext.numIndices, 6))
+		{
+			LogError("BatchRenderer::addCommand() failed");
+			return false;
+		}
+
 		mInvTextureSize = {
 			1.0f / (float)texture->getWidth(),
 			1.0f / (float)texture->getHeight()
@@ -226,10 +230,10 @@ namespace Trinity
 		}
 
 		Vertex vertices[4] = {
-			{ .position = { x1, y1, depth }, .uv = { u1, v1 }, .color = color },
-			{ .position = { x1, y2, depth }, .uv = { u1, v2 }, .color = color },
-			{ .position = { x2, y2, depth }, .uv = { u2, v2 }, .color = color },
-			{ .position = { x2, y1, depth }, .uv = { u2, v1 }, .color = color }
+			{ .position = { x1, y1, depth }, .uv = { u1, v2 }, .color = color },
+			{ .position = { x1, y2, depth }, .uv = { u1, v1 }, .color = color },
+			{ .position = { x2, y2, depth }, .uv = { u2, v1 }, .color = color },
+			{ .position = { x2, y1, depth }, .uv = { u2, v2 }, .color = color }
 		};
 
 		auto numVertices = mStagingContext.numVertices;
@@ -242,11 +246,8 @@ namespace Trinity
 			numVertices
 		};
 
-		if (!addCommand(texture, addVertices(vertices, 4), addIndices(indices, 6), 6))
-		{
-			LogError("BatchRenderer::addCommand() failed");
-			return false;
-		}
+		addVertices(vertices, 4);
+		addIndices(indices, 6);
 
 		return true;
 	}
@@ -262,6 +263,11 @@ namespace Trinity
 
 	void BatchRenderer::end(const RenderPass& renderPass)
 	{
+		if (mStagingContext.numVertices == 0)
+		{
+			return;
+		}
+
 		auto* vertexBuffer = mRenderContext.vertexBuffer;
 		if (vertexBuffer->getNumVertices() < mStagingContext.numVertices)
 		{
@@ -303,7 +309,7 @@ namespace Trinity
 				renderPass.setBindGroup(kTextureBindGroupIndex, *it->second);
 			}
 
-			renderPass.drawIndexed(command.numIndices, 1, command.baseIndex, command.baseVertex);
+			renderPass.drawIndexed(command.numIndices, 1, command.firstIndex, 0);
 		}
 
 		mStagingContext.numVertices = 0;
@@ -312,11 +318,9 @@ namespace Trinity
 		mCommands.clear();
 	}
 
-	uint32_t BatchRenderer::addVertices(const Vertex* vertices, uint32_t numVertices)
+	void BatchRenderer::addVertices(const Vertex* vertices, uint32_t numVertices)
 	{
 		auto& allVertices = mStagingContext.vertices;
-		auto baseVertex = mStagingContext.numVertices;
-
 		if (mStagingContext.numVertices + numVertices > (uint32_t)allVertices.size())
 		{
 			allVertices.resize(allVertices.size() + 5000);
@@ -324,15 +328,11 @@ namespace Trinity
 
 		std::memcpy(&allVertices[mStagingContext.numVertices], vertices, sizeof(Vertex) * numVertices);
 		mStagingContext.numVertices += numVertices;
-
-		return baseVertex;
 	}
 
-	uint32_t BatchRenderer::addIndices(const uint32_t* indices, uint32_t numIndices)
+	void BatchRenderer::addIndices(const uint32_t* indices, uint32_t numIndices)
 	{
 		auto& allIndices = mStagingContext.indices;
-		auto baseIndex = mStagingContext.numIndices;
-
 		if (mStagingContext.numIndices + numIndices > (uint32_t)allIndices.size())
 		{
 			allIndices.resize(allIndices.size() + 10000);
@@ -340,12 +340,9 @@ namespace Trinity
 
 		std::memcpy(&allIndices[mStagingContext.numIndices], indices, sizeof(uint32_t) * numIndices);
 		mStagingContext.numIndices += numIndices;
-
-		return baseIndex;
 	}
 
-	bool BatchRenderer::addCommand(Texture* texture, uint32_t baseVertex, 
-		uint32_t baseIndex, uint32_t numIndices)
+	bool BatchRenderer::addCommand(Texture* texture, uint32_t firstIndex, uint32_t numIndices)
 	{
 		if (mCurrentTexture != texture)
 		{
@@ -363,8 +360,7 @@ namespace Trinity
 			DrawCommand drawCommand = {
 				.textureId = std::hash<const Texture*>{}(texture),
 				.numIndices = numIndices,
-				.baseIndex = baseIndex,
-				.baseVertex = baseVertex
+				.firstIndex = firstIndex
 			};
 
 			mCommands.push_back(drawCommand);

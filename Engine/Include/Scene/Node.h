@@ -15,6 +15,7 @@ namespace Trinity
 {
 	class NodeEditor;
 	class NodeSerializer;
+	class Scene;
 
 	class Node
 	{
@@ -62,7 +63,7 @@ namespace Trinity
 			return mChildren;
 		}
 
-		Serializer* getSerializer(Scene& scene);
+		ISerializer* getSerializer(Scene& scene);
 
 		virtual void setName(const std::string& name);
 		virtual void setUUID(const UUIDv4::UUID& uuid);
@@ -98,22 +99,24 @@ namespace Trinity
 		std::unordered_map<std::type_index, Component*> mComponents;
 	};
 
-	class NodeEditor : public Editor
+	class NodeEditor : public IEditor
 	{
 	public:
 
 		NodeEditor() = default;
 		virtual ~NodeEditor() = default;
 
+		virtual void setScene(Scene& scene);
 		virtual void setNode(Node& node);
-		virtual void onInspectorGui(const EditorLayout& layout) override;
+		virtual void onInspectorGui(const IEditorLayout& layout, ResourceCache& cache) override;
 
 	protected:
 
+		Scene* mScene{ nullptr };
 		Node* mNode{ nullptr };
 	};
 
-	class NodeSerializer : public Serializer
+	class NodeSerializer : public ISerializer
 	{
 	public:
 

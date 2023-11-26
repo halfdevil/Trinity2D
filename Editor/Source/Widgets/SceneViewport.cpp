@@ -1,11 +1,15 @@
-#include "Widgets/Viewport.h"
+#include "Widgets/SceneViewport.h"
+#include "Scene/Scene.h"
 #include "Scene/Node.h"
+#include "Scene/RenderSystem.h"
 #include "Scene/Components/Transform.h"
 #include "Scene/Components/Camera.h"
 #include "Scene/Components/TextureRenderable.h"
 #include "Graphics/Texture.h"
+#include "Graphics/BatchRenderer.h"
 #include "Graphics/GraphicsDevice.h"
 #include "Graphics/FrameBuffer.h"
+#include "Graphics/RenderPass.h"
 #include "Core/EditorResources.h"
 #include "Core/EditorGizmo.h"
 #include "Core/ResourceCache.h"
@@ -16,12 +20,12 @@
 
 namespace Trinity
 {
-	Viewport::~Viewport()
+	SceneViewport::~SceneViewport()
 	{
 		destroy();
 	}
 
-	bool Viewport::create(uint32_t width, uint32_t height, EditorResources& resources)
+	bool SceneViewport::create(uint32_t width, uint32_t height, EditorResources& resources)
 	{
 		mFrameBuffer = std::make_unique<FrameBuffer>();
 		if (!mFrameBuffer->create(width, height))
@@ -49,39 +53,44 @@ namespace Trinity
 			return false;
 		}
 
+		mRenderSystem = std::make_unique<RenderSystem>();
+		if (!mRenderSystem->create(*mFrameBuffer))
+		{
+			LogError("RenderSystem::create() failed!!");
+			return false;
+		}
+
+		mRenderPass = std::make_unique<RenderPass>();
 		mGizmo = std::make_unique<EditorGizmo>();
+
 		return true;
 	}
 
-	void Viewport::destroy()
+	void SceneViewport::destroy()
 	{
 		mFrameBuffer = nullptr;
 	}
 
-	void Viewport::setSelectedNode(Node* node)
+	void SceneViewport::setScene(Scene& scene)
 	{
-		mSelectedNode = node;
-
-		if (mSelectedNode != nullptr)
-		{
-			if (mSelectedNode->hasComponent<TextureRenderable>())
-			{
-				mRenderable = &mSelectedNode->getComponent<TextureRenderable>();
-			}
-			else
-			{
-				mRenderable = nullptr;
-			}
-		}
+		mScene = &scene;
+		mSelectedNode = mScene->getRoot();
+		mRenderSystem->setScene(scene);
 	}
 
-	void Viewport::setCamera(Camera& camera)
+	void SceneViewport::setCamera(Camera& camera)
 	{
 		mCamera = &camera;
+		mRenderSystem->setCamera(camera);
 		mGizmo->setCamera(camera);
 	}
 
-	void Viewport::resize(uint32_t width, uint32_t height)
+	void SceneViewport::setSelectedNode(Node* node)
+	{
+		mSelectedNode = node;
+	}
+
+	void SceneViewport::resize(uint32_t width, uint32_t height)
 	{
 		if (mFrameBuffer != nullptr)
 		{
@@ -89,7 +98,14 @@ namespace Trinity
 		}
 	}
 
-	void Viewport::draw()
+	void SceneViewport::drawScene(float deltaTime)
+	{
+		mRenderPass->begin(*mFrameBuffer);
+		mRenderSystem->draw(*mRenderPass);
+		mRenderPass->end();
+	}
+
+	void SceneViewport::draw()
 	{
 		if (!isEnabled())
 		{
@@ -147,7 +163,7 @@ namespace Trinity
 		}
 	}
 
-	void Viewport::drawGizmoControls(float x, float y)
+	void SceneViewport::drawGizmoControls(float x, float y)
 	{
 		ImGui::SetCursorPos({ x, y });
 		ImGui::BeginGroup();
@@ -177,25 +193,14 @@ namespace Trinity
 		}
 	}
 
-	void Viewport::editTransform(float x, float y, float width, float height)
+	void SceneViewport::editTransform(float x, float y, float width, float height)
 	{
+		mGizmo->setRect(x, y, width, height);
+
 		auto& transform = mSelectedNode->getTransform();
 		auto matrix = transform.getWorldMatrix();
 
-		mGizmo->setRect(x, y, width, height);
-
-		glm::vec2 origin{ 0.0f };
-		glm::vec2 size{ 0.0f };
-
-		if (mRenderable != nullptr)
-		{
-			auto* texture = mRenderable->getTexture();
-			
-			origin = mRenderable->getOrigin();
-			size = { (float)texture->getWidth(), (float)texture->getHeight() };
-		}
-
-		if (mGizmo->show(matrix, origin, size))
+		if (mGizmo->show(matrix))
 		{
 			transform.setWorldMatrix(matrix);
 		}

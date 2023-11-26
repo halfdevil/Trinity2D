@@ -1,4 +1,5 @@
 #include "Scene/Components/TextureRenderable.h"
+#include "Scene/Components/Transform.h"
 #include "Scene/Scene.h"
 #include "Editor/EditorLayout.h"
 #include "Graphics/Texture.h"
@@ -20,15 +21,16 @@ namespace Trinity
 		return TextureRenderable::UUID;
 	}
 
-	Editor* TextureRenderable::getEditor()
+	IEditor* TextureRenderable::getEditor(Scene& scene)
 	{
 		static TextureRenderableEditor editor;
+		editor.setScene(scene);
 		editor.setTextureRenderable(*this);
 
 		return &editor;
 	}
 
-	Serializer* TextureRenderable::getSerializer(Scene& scene)
+	ISerializer* TextureRenderable::getSerializer(Scene& scene)
 	{
 		static TextureRenderableSerializer serializer;
 		serializer.setTextureRenderable(*this);
@@ -60,12 +62,41 @@ namespace Trinity
 	void TextureRenderableEditor::setTextureRenderable(TextureRenderable& renderable)
 	{
 		mTextureRenderable = &renderable;
+		if (mTextureRenderable->getTexture() != nullptr)
+		{
+			mSelectedTextureFile = mTextureRenderable->getTexture()->getFileName();
+		}
+
+		setComponent(renderable);
 	}
 
-	void TextureRenderableEditor::onInspectorGui(const EditorLayout& layout)
+	void TextureRenderableEditor::onInspectorGui(const IEditorLayout& layout, ResourceCache& cache)
 	{
 		if (layout.beginLayout("Texture Renderable"))
 		{
+			addCommonFields(layout);
+
+			if (layout.fileCombo("Texture", FileType::Texture, mSelectedTextureFile))
+			{
+				if (!mTextureRenderable->mTexture || mTextureRenderable->mTexture->getFileName() != mSelectedTextureFile)
+				{
+					if (!cache.isLoaded<Texture>(mSelectedTextureFile))
+					{
+						auto texture = std::make_unique<Texture>();
+						if (!texture->create(mSelectedTextureFile, wgpu::TextureFormat::RGBA8Unorm))
+						{
+							LogError("Texture::create() failed for: '%s'", mSelectedTextureFile.c_str());
+						}
+						else
+						{
+							cache.addResource(std::move(texture));
+						}
+					}
+
+					mTextureRenderable->mTexture = cache.getResource<Texture>(mSelectedTextureFile);
+				}
+			}
+
 			layout.inputVec2("Origin", mTextureRenderable->mOrigin);
 			layout.inputVec4("Color", mTextureRenderable->mColor);
 			layout.endLayout();

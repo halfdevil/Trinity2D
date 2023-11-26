@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core/EditorWidget.h"
+#include "Core/Observer.h"
 #include "Widgets/Menu.h"
 #include <string>
 #include <memory>
@@ -34,8 +35,12 @@ namespace Trinity
 
 	protected:
 
-		virtual void drawNode(Node* node, bool menuOpened);
+		virtual void drawNode(Node* node, bool menuOpened, bool defaultOpen = false);
 		virtual void onMenuItemClicked(const MenuItem& menuItem);
+
+	public:
+
+		Observer<Node*> onSelectNode;
 
 	protected:
 

@@ -49,8 +49,8 @@ namespace Trinity
 		virtual std::type_index getType() const override;
 		virtual UUIDv4::UUID getUUID() const override;
 
-		virtual Editor* getEditor() override;
-		virtual Serializer* getSerializer(Scene& scene) override;
+		virtual IEditor* getEditor(Scene& scene) override;
+		virtual ISerializer* getSerializer(Scene& scene) override;
 
 		virtual void setTexture(Texture& texture);
 		virtual void setOrigin(const glm::vec2& origin);
@@ -69,7 +69,7 @@ namespace Trinity
 		glm::bvec2 mFlip{ false };
 	};
 
-	class TextureRenderableEditor : public Editor
+	class TextureRenderableEditor : public ComponentEditor
 	{
 	public:
 
@@ -83,11 +83,12 @@ namespace Trinity
 		TextureRenderableEditor& operator = (TextureRenderableEditor&&) = default;
 
 		virtual void setTextureRenderable(TextureRenderable& renderable);
-		virtual void onInspectorGui(const EditorLayout& layout) override;
+		virtual void onInspectorGui(const IEditorLayout& layout, ResourceCache& cache) override;
 
 	protected:
 
 		TextureRenderable* mTextureRenderable{ nullptr };
+		std::string mSelectedTextureFile;
 	};
 
 	class TextureRenderableSerializer : public ComponentSerializer
