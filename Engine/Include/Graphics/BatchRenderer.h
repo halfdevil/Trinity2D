@@ -86,7 +86,7 @@ namespace Trinity
 		BatchRenderer(BatchRenderer&&) = default;
 		BatchRenderer& operator = (BatchRenderer&&) = default;
 
-		virtual bool create(const std::string& shaderFile, RenderTarget& renderTarget);
+		virtual bool create(const std::string& shaderFile, RenderTarget& renderTarget, ResourceCache& cache);
 		virtual void destroy();
 
 		virtual bool drawTexture(
@@ -130,7 +130,7 @@ namespace Trinity
 		RenderContext mRenderContext;
 		ImageContext mImageContext;
 		StagingContext mStagingContext;
-		std::unique_ptr<ResourceCache> mResourceCache{ nullptr };
+		ResourceCache* mResourceCache{ nullptr };
 		Texture* mCurrentTexture{ nullptr };
 		glm::vec2 mInvTextureSize{ 0.0f };
 		std::vector<DrawCommand> mCommands;

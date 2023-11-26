@@ -25,9 +25,9 @@ namespace Trinity
 		destroy();
 	}
 
-	bool BatchRenderer::create(const std::string& shaderFile, RenderTarget& renderTarget)
+	bool BatchRenderer::create(const std::string& shaderFile, RenderTarget& renderTarget, ResourceCache& cache)
 	{
-		mResourceCache = std::make_unique<ResourceCache>();
+		mResourceCache = &cache;
 
 		if (!createBufferData())
 		{

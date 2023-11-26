@@ -13,9 +13,10 @@ namespace Trinity
 	{
 		auto& application = Application::get();
 		auto* window = application.getWindow();
-		auto scaleFactor = window->getScaleFactor();
 
-		buttonSize = { kBaseButtonSize.x * scaleFactor, kBaseButtonSize.y * scaleFactor };
+		mScaleFactor = window->getScaleFactor();
+		buttonSize = { kBaseButtonSize.x * mScaleFactor, kBaseButtonSize.y * mScaleFactor };
+
 		return true;
 	}
 

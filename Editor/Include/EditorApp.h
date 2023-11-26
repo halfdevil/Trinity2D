@@ -88,7 +88,6 @@ namespace Trinity
 		std::unique_ptr<EditorLayout> mLayout{ nullptr };
 		std::unique_ptr<EditorResources> mEditorResources{ nullptr };
 		std::vector<std::unique_ptr<EditorWidget>> mWidgets;
-		ResourceCache* mResourceCache{ nullptr };
 		ImGuiFont* mFont{ nullptr };
 		Scene* mEditorScene{ nullptr };
 		Scene* mCurrentScene{ nullptr };

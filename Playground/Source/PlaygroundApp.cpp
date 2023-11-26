@@ -67,7 +67,7 @@ namespace Trinity
 		}
 
 		mBatchRenderer = std::make_unique<BatchRenderer>();
-		if (!mBatchRenderer->create("/Assets/Engine/Shaders/SpriteRenderer.wgsl", swapChain))
+		if (!mBatchRenderer->create("/Assets/Engine/Shaders/SpriteRenderer.wgsl", swapChain, *mResourceCache))
 		{
 			LogError("BatchRenderer::create() failed");
 			return false;

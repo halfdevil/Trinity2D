@@ -10,6 +10,7 @@
 #include "Graphics/GraphicsDevice.h"
 #include "Graphics/FrameBuffer.h"
 #include "Graphics/RenderPass.h"
+#include "Core/EditorTheme.h"
 #include "Core/EditorResources.h"
 #include "Core/EditorGizmo.h"
 #include "Core/ResourceCache.h"
@@ -25,12 +26,22 @@ namespace Trinity
 		destroy();
 	}
 
-	bool SceneViewport::create(uint32_t width, uint32_t height, EditorResources& resources)
+	bool SceneViewport::create(EditorResources& resources)
 	{
+		mResolutions = {
+			{ "1920 x 1080", 1920, 1080 },
+			{ "1280 x 720", 1280, 720 },
+			{ "1024 x 768", 1024, 768 },
+			{ "720 x 480", 720, 480 },
+			{ "640 x 480", 640, 480 },
+		};
+
+		mSelectedResolution = &mResolutions[0];
 		mFrameBuffer = std::make_unique<FrameBuffer>();
-		if (!mFrameBuffer->create(width, height))
+
+		if (!mFrameBuffer->create(mSelectedResolution->width, mSelectedResolution->height))
 		{
-			LogError("FrameBuffer::create() failed (%dx%d)", width, height);
+			LogError("FrameBuffer::create() failed (%dx%d)", mSelectedResolution->width, mSelectedResolution->height);
 			return false;
 		}
 
@@ -54,7 +65,7 @@ namespace Trinity
 		}
 
 		mRenderSystem = std::make_unique<RenderSystem>();
-		if (!mRenderSystem->create(*mFrameBuffer))
+		if (!mRenderSystem->create(*mFrameBuffer, *resources.getResourceCache()))
 		{
 			LogError("RenderSystem::create() failed!!");
 			return false;
@@ -94,7 +105,9 @@ namespace Trinity
 	{
 		if (mFrameBuffer != nullptr)
 		{
-			mFrameBuffer->resize(width, height);
+			auto& theme = EditorTheme::get();
+			mFrameBuffer->resize(width * (uint32_t)std::floor(theme.getScaleFactor()), 
+				height * (uint32_t)std::floor(theme.getScaleFactor()));
 		}
 	}
 
@@ -157,13 +170,13 @@ namespace Trinity
 
 			auto windowPos = ImGui::GetWindowPos();
 			auto contentMin = ImGui::GetWindowContentRegionMin();
-			drawGizmoControls(contentMin.x, contentMin.y);
+			drawControls(contentMin.x, contentMin.y);
 
 			ImGui::End();
 		}
 	}
 
-	void SceneViewport::drawGizmoControls(float x, float y)
+	void SceneViewport::drawControls(float x, float y)
 	{
 		ImGui::SetCursorPos({ x, y });
 		ImGui::BeginGroup();
@@ -187,6 +200,28 @@ namespace Trinity
 			if (EditorHelper::toggleButton(ICON_FA_MAXIMIZE, operation == GizmoOperation::Scale))
 			{
 				mGizmo->setOperation(GizmoOperation::Scale);
+			}
+
+			ImGui::SameLine();
+
+			if (ImGui::BeginCombo("##resolution", mSelectedResolution->name.c_str(), ImGuiComboFlags_WidthFitPreview))
+			{
+				for (auto& resolution : mResolutions)
+				{
+					bool isSelected = mSelectedResolution == &resolution;
+					if (ImGui::Selectable(resolution.name.c_str(), isSelected))
+					{
+						mSelectedResolution = &resolution;
+						resize(mSelectedResolution->width, mSelectedResolution->height);
+					}
+
+					if (isSelected)
+					{
+						ImGui::SetItemDefaultFocus();
+					}
+				}
+
+				ImGui::EndCombo();
 			}
 
 			ImGui::EndGroup();

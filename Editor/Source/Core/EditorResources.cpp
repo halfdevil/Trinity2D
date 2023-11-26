@@ -16,9 +16,9 @@ namespace Trinity
 		destroy();
 	}
 
-	bool EditorResources::create(json resourcesConfig)
+	bool EditorResources::create(json resourcesConfig, ResourceCache& cache)
 	{
-		mResourceCache = std::make_unique<ResourceCache>();
+		mResourceCache = &cache;
 		if (resourcesConfig.contains("font"))
 		{
 			if (!loadFont(resourcesConfig["font"]))
@@ -33,7 +33,7 @@ namespace Trinity
 
 	void EditorResources::destroy()
 	{
-		mResourceCache->clear();
+		mResourceCache = nullptr;
 		mResourceCache = nullptr;
 	}
 

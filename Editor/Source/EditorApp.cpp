@@ -54,7 +54,7 @@ namespace Trinity
 		}
 
 		mEditorResources = std::make_unique<EditorResources>();
-		if (!mEditorResources->create(mConfig["resources"]))
+		if (!mEditorResources->create(mConfig["resources"], *mResourceCache))
 		{
 			LogError("EditorCache::create() failed");
 			return false;
@@ -67,9 +67,7 @@ namespace Trinity
 			return false;
 		}
 
-		mResourceCache = mEditorResources->getResourceCache();
 		mLayout = std::make_unique<EditorLayout>();
-
 		if (!mLayout->updateFiles("/Assets", FileType::Texture))
 		{
 			LogError("EditorLayout::updateFiles() failed for 'texture'");
@@ -388,7 +386,7 @@ namespace Trinity
 	SceneViewport* EditorApp::createSceneViewport(const std::string& title, Scene& scene)
 	{
 		auto sceneViewport = std::make_unique<SceneViewport>();
-		if (!sceneViewport->create(mWindow->getWidth(), mWindow->getHeight(), *mEditorResources))
+		if (!sceneViewport->create(*mEditorResources))
 		{
 			LogError("Viewport::create() failed");
 			return nullptr;
@@ -409,7 +407,7 @@ namespace Trinity
 		auto inspector = std::make_unique<Inspector>();
 		inspector->setTitle("Inspector");
 		inspector->setLayout(*mLayout);
-		inspector->setResourceCache(*mEditorResources->getResourceCache());
+		inspector->setResourceCache(*mResourceCache);
 		inspector->setScene(scene);
 
 		auto* inspectorPtr = inspector.get();

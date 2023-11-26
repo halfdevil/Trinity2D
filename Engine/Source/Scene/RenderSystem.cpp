@@ -13,10 +13,10 @@
 
 namespace Trinity
 {
-	bool RenderSystem::create(RenderTarget& renderTarget)
+	bool RenderSystem::create(RenderTarget& renderTarget, ResourceCache& cache)
 	{
 		mRenderer = std::make_unique<BatchRenderer>();
-		if (!mRenderer->create(kShader, renderTarget))
+		if (!mRenderer->create(kShader, renderTarget, cache))
 		{
 			LogError("BatchRenderer::create() failed with shader: '%s'", kShader);
 			return true;

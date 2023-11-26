@@ -12,6 +12,7 @@ namespace Trinity
 	class BatchRenderer;
 	class RenderTarget;
 	class RenderPass;
+	class ResourceCache;
 
 	class RenderSystem : public Singleton<RenderSystem>
 	{
@@ -33,7 +34,7 @@ namespace Trinity
 			return mRenderer.get();
 		}
 
-		virtual bool create(RenderTarget& renderTarget);
+		virtual bool create(RenderTarget& renderTarget, ResourceCache& cache);
 		virtual void destroy();
 
 		virtual void setScene(Scene& scene);

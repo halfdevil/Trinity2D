@@ -1,8 +1,10 @@
 #pragma once
 
 #include "Core/EditorWidget.h"
+#include "glm/glm.hpp"
 #include <stdint.h>
 #include <memory>
+#include <vector>
 
 namespace Trinity
 {
@@ -20,6 +22,13 @@ namespace Trinity
 	{
 	public:
 
+		struct Resolution
+		{
+			std::string name;
+			uint32_t width{ 0 };
+			uint32_t height{ 0 };
+		};
+
 		SceneViewport() = default;
 		virtual ~SceneViewport();
 
@@ -34,7 +43,7 @@ namespace Trinity
 			return mFrameBuffer.get();
 		}
 
-		virtual bool create(uint32_t width, uint32_t height, EditorResources& resources);
+		virtual bool create(EditorResources& resources);
 		virtual void destroy();
 
 		virtual void setScene(Scene& scene);
@@ -42,13 +51,12 @@ namespace Trinity
 		virtual void setSelectedNode(Node* node);
 
 		virtual void resize(uint32_t width, uint32_t height);
-
 		virtual void drawScene(float deltaTime);
 		virtual void draw() override;
 
 	protected:
 
-		virtual void drawGizmoControls(float x, float y);
+		virtual void drawControls(float x, float y);
 		virtual void editTransform(float x, float y, float width, float height);
 
 	protected:
@@ -57,6 +65,8 @@ namespace Trinity
 		std::unique_ptr<EditorGizmo> mGizmo{ nullptr };
 		std::unique_ptr<RenderSystem> mRenderSystem{ nullptr };
 		std::unique_ptr<RenderPass> mRenderPass{ nullptr };
+		std::vector<Resolution> mResolutions;
+		Resolution* mSelectedResolution{ nullptr };
 		Scene* mScene{ nullptr };
 		Node* mSelectedNode{ nullptr };
 		Camera* mCamera{ nullptr };

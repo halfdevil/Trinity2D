@@ -41,10 +41,10 @@ namespace Trinity
 
 		ResourceCache* getResourceCache() const
 		{
-			return mResourceCache.get();
+			return mResourceCache;
 		}
 
-		virtual bool create(json resourcesConfig);
+		virtual bool create(json resourcesConfig, ResourceCache& cache);
 		virtual void destroy();
 
 		virtual Texture* getTexture(const std::string& fileName);
@@ -63,8 +63,7 @@ namespace Trinity
 			 
 	protected:
 
-		std::unique_ptr<ResourceCache> mResourceCache{ nullptr };
-		std::unordered_map<std::string, ImGuiFont*> mFonts;
-		
+		ResourceCache* mResourceCache{ nullptr };
+		std::unordered_map<std::string, ImGuiFont*> mFonts;		
 	};
 }

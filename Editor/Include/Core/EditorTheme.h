@@ -22,11 +22,17 @@ namespace Trinity
 		EditorTheme(EditorTheme&&) = default;
 		EditorTheme& operator = (EditorTheme&&) = default;
 
+		float getScaleFactor() const
+		{
+			return mScaleFactor;
+		}
+
 		virtual bool create(const std::string& fileName);
 		virtual void destroy();
 
 	public:
 
 		ImVec2 buttonSize{ 0.0f, 0.0f };
+		float mScaleFactor{ 1.0f };
 	};
 }
