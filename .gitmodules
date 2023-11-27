@@ -35,3 +35,6 @@
 [submodule "ThirdParty/uuid_v4"]
 	path = ThirdParty/uuid_v4
 	url = https://github.com/crashoz/uuid_v4.git
+[submodule "ThirdParty/fmodbuild"]
+	path = ThirdParty/fmodbuild
+	url = https://github.com/halfdevil/fmodbuild.git
