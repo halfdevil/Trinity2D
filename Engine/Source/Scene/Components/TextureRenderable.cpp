@@ -16,7 +16,7 @@ namespace Trinity
 		return typeid(TextureRenderable);
 	}
 
-	UUIDv4::UUID TextureRenderable::getUUID() const
+	UUIDv4::UUID TextureRenderable::getTypeUUID() const
 	{
 		return TextureRenderable::UUID;
 	}
@@ -247,8 +247,8 @@ namespace Trinity
 		mTextureRenderable->mColor = {
 			object["color"][0].get<float>(),
 			object["color"][1].get<float>(),
-			object["color"][1].get<float>(),
-			object["color"][1].get<float>()
+			object["color"][2].get<float>(),
+			object["color"][3].get<float>()
 		};
 
 		mTextureRenderable->mFlip = {

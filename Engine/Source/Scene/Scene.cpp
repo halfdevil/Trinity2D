@@ -18,8 +18,8 @@
 namespace Trinity
 {
 	Scene::Scene()
-		: mComponentFactory(std::make_unique<ComponentFactory>())
 	{
+		mComponentFactory = std::make_unique<ComponentFactory>();
 		registerDefaultComponents();
 	}
 
@@ -60,25 +60,22 @@ namespace Trinity
 
 	Node* Scene::findNode(const std::string& name) const
 	{
-		for (auto rootNode : mRoot->getChildren())
+		std::queue<Node*> traverseNodes;
+		traverseNodes.push(mRoot);
+
+		while (!traverseNodes.empty())
 		{
-			std::queue<Node*> traverseNodes;
-			traverseNodes.push(rootNode);
+			auto node = traverseNodes.front();
+			traverseNodes.pop();
 
-			while (!traverseNodes.empty())
+			if (node->getName() == name)
 			{
-				auto node = traverseNodes.front();
-				traverseNodes.pop();
+				return node;
+			}
 
-				if (node->getName() == name)
-				{
-					return node;
-				}
-
-				for (auto childNode : node->getChildren())
-				{
-					traverseNodes.push(childNode);
-				}
+			for (auto childNode : node->getChildren())
+			{
+				traverseNodes.push(childNode);
 			}
 		}
 
@@ -332,7 +329,10 @@ namespace Trinity
 			auto component = mScene->mComponentFactory->createComponent(uuid);
 			if (component != nullptr)
 			{
-				if (auto* serializer = component->getSerializer(*mScene); serializer != nullptr)
+				auto* componentPtr = component.get();
+				mScene->addComponent(std::move(component));
+
+				if (auto* serializer = componentPtr->getSerializer(*mScene); serializer != nullptr)
 				{
 					if (!serializer->read(reader, cache))
 					{
@@ -340,8 +340,6 @@ namespace Trinity
 						return false;
 					}
 				}
-
-				mScene->addComponent(std::move(component));
 			}
 		}
 
@@ -384,6 +382,8 @@ namespace Trinity
 			auto& components = it.second;
 			for (auto& component : components)
 			{
+				writer.writeString(component->getTypeUUID().str());
+
 				if (auto* serializer = component->getSerializer(*mScene); serializer != nullptr)
 				{
 					if (!serializer->write(writer))
@@ -463,12 +463,11 @@ namespace Trinity
 			}
 
 			auto component = mScene->mComponentFactory->createComponent(uuid);
-			auto* componentPtr = component.get();
-
-			mScene->addComponent(std::move(component));
-
-			if (componentPtr != nullptr)
+			if (component != nullptr)
 			{
+				auto* componentPtr = component.get();
+				mScene->addComponent(std::move(component));
+
 				if (auto* serializer = componentPtr->getSerializer(*mScene); serializer != nullptr)
 				{
 					if (!serializer->read(componentJson, cache))

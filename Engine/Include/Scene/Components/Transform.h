@@ -44,23 +44,23 @@ namespace Trinity
 		}
 
 		virtual std::type_index getType() const override;
-		virtual UUIDv4::UUID getUUID() const override;
+		virtual UUIDv4::UUID getTypeUUID() const override;
 
 		virtual IEditor* getEditor(Scene& scene) override;
 		virtual ISerializer* getSerializer(Scene& scene) override;
 
-		glm::mat4 getMatrix() const;
-		glm::mat4 getWorldMatrix();
+		virtual glm::mat4 getMatrix() const;
+		virtual glm::mat4 getWorldMatrix();
 
-		void setMatrix(const glm::mat4& matrix);
-		void setWorldMatrix(const glm::mat4& matrix);
-		void setWorldMatrix(const glm::vec3& translation, const glm::vec3& rotation,
+		virtual void setMatrix(const glm::mat4& matrix);
+		virtual void setWorldMatrix(const glm::mat4& matrix);
+		virtual void setWorldMatrix(const glm::vec3& translation, const glm::vec3& rotation,
 			const glm::vec3& scale);
 
-		void setTranslation(const glm::vec3& translation);
-		void setRotation(const glm::vec3& rotation);
-		void setScale(const glm::vec3& scale);
-		void invalidateWorldMatrix();
+		virtual void setTranslation(const glm::vec3& translation);
+		virtual void setRotation(const glm::vec3& rotation);
+		virtual void setScale(const glm::vec3& scale);
+		virtual void invalidateWorldMatrix();
 
 	public:
 

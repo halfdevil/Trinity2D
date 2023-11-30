@@ -31,7 +31,7 @@ namespace Trinity
 		virtual ISerializer* getSerializer(Scene& scene) override;
 
 		virtual std::type_index getType() const override;
-		virtual UUIDv4::UUID getUUID() const override;
+		virtual UUIDv4::UUID getTypeUUID() const override;
 
 		virtual bool init();
 		virtual void update(float deltaTime);

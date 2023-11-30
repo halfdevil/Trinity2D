@@ -8,7 +8,7 @@ namespace Trinity
 		return typeid(SpriteRenderable);
 	}
 
-	UUIDv4::UUID SpriteRenderable::getUUID() const
+	UUIDv4::UUID SpriteRenderable::getTypeUUID() const
 	{
 		return SpriteRenderable::UUID;
 	}

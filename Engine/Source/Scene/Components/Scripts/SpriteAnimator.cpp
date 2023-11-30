@@ -151,7 +151,7 @@ namespace Trinity
 		}
 	}
 
-	UUIDv4::UUID SpriteAnimator::getUUID() const
+	UUIDv4::UUID SpriteAnimator::getTypeUUID() const
 	{
 		return SpriteAnimator::UUID;
 	}

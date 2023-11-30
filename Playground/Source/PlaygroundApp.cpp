@@ -3,7 +3,7 @@
 #include "ImGui/ImGuiRenderer.h"
 #include "ImGui/ImGuiFont.h"
 #include "Gui/Font.h"
-#include "Gui/TextRenderer.h"
+#include "Gui/GuiRenderer.h"
 #include "Scene/Scene.h"
 #include "Scene/Components/Camera.h"
 #include "Scene/Components/Scripts/CameraController.h"
@@ -59,15 +59,20 @@ namespace Trinity
 			return false;
 		}
 
-		mTextRenderer = std::make_unique<TextRenderer>();
-		if (!mTextRenderer->create(TextRenderer::kDefaultShader, swapChain))
+		mTextRenderer = std::make_unique<GuiRenderer>();
+		if (!mTextRenderer->create(swapChain, *mResourceCache, "/Assets/Engine/Shaders/Textured.wgsl", 
+			"/Assets/Engine/Shaders/Colored.wgsl"))
 		{
 			LogError("TextRenderer::create() failed");
 			return false;
 		}
 
 		mBatchRenderer = std::make_unique<BatchRenderer>();
-		if (!mBatchRenderer->create("/Assets/Engine/Shaders/SpriteRenderer.wgsl", swapChain, *mResourceCache))
+		if (!mBatchRenderer->create( 
+			swapChain, 
+			*mResourceCache,
+			"/Assets/Engine/Shaders/Textured.wgsl",
+			"/Assets/Engine/Shaders/Colored.wgsl"))
 		{
 			LogError("BatchRenderer::create() failed");
 			return false;

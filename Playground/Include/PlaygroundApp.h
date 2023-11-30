@@ -11,7 +11,7 @@ namespace Trinity
 	class CameraController;
 	class Texture;
 	class ImGuiRenderer;
-	class TextRenderer;
+	class GuiRenderer;
 	class BatchRenderer;
 	class FrameBuffer;
 	class RenderPass;
@@ -51,7 +51,7 @@ namespace Trinity
 		FrameBuffer* mFrameBuffer{ nullptr };
 		std::vector<Script*> mScripts;
 		std::unique_ptr<ImGuiRenderer> mImGuiRenderer{ nullptr };
-		std::unique_ptr<TextRenderer> mTextRenderer{ nullptr };
+		std::unique_ptr<GuiRenderer> mTextRenderer{ nullptr };
 		std::unique_ptr<BatchRenderer> mBatchRenderer{ nullptr };
 		std::unique_ptr<RenderPass> mRenderPass{ nullptr };
 	};

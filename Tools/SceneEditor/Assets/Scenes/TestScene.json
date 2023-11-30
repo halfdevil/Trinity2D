@@ -1,0 +1,388 @@
+{
+    "components": [
+        {
+            "farPlane": 100.0,
+            "name": "camera",
+            "nearPlane": 0.10000000149011612,
+            "node": "9c2b154c-f4c8-4799-99ba-1c3ffb0a4ecc",
+            "size": [
+                1024.0,
+                768.0
+            ],
+            "uuid": "ddc4737c-17aa-4928-9d60-6041eb96b562"
+        },
+        {
+            "color": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "flip": [
+                false,
+                false
+            ],
+            "name": "",
+            "node": "535b2973-2f27-43c3-b732-26dfff66e131",
+            "origin": [
+                0.5,
+                0.5
+            ],
+            "texture": "/Assets/Textures/grass.png",
+            "uuid": "8224636f-bf93-43f2-af4e-32c11e6ebaab"
+        }
+    ],
+    "nodes": [
+        {
+            "name": "Root",
+            "parent": "",
+            "transform": {
+                "name": "",
+                "node": "9a5924d0-e62a-428e-9357-3b5f2438cdf6",
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "uuid": "173f2ec0-93c2-4be1-bf11-f25e61ce2bdb"
+            },
+            "uuid": "9a5924d0-e62a-428e-9357-3b5f2438cdf6"
+        },
+        {
+            "name": "Node1",
+            "parent": "9a5924d0-e62a-428e-9357-3b5f2438cdf6",
+            "transform": {
+                "name": "",
+                "node": "b5144ad1-8b56-4d25-bfcf-5d8ceb7aafce",
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    -256.0,
+                    -256.0,
+                    1.0
+                ],
+                "uuid": "173f2ec0-93c2-4be1-bf11-f25e61ce2bdb"
+            },
+            "uuid": "b5144ad1-8b56-4d25-bfcf-5d8ceb7aafce"
+        },
+        {
+            "name": "Node2",
+            "parent": "9a5924d0-e62a-428e-9357-3b5f2438cdf6",
+            "transform": {
+                "name": "",
+                "node": "1c2c2746-b934-4bb0-b734-f56aa8b77678",
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "uuid": "173f2ec0-93c2-4be1-bf11-f25e61ce2bdb"
+            },
+            "uuid": "1c2c2746-b934-4bb0-b734-f56aa8b77678"
+        },
+        {
+            "name": "Node3",
+            "parent": "9a5924d0-e62a-428e-9357-3b5f2438cdf6",
+            "transform": {
+                "name": "",
+                "node": "5457220f-449b-4a14-9e91-6bff9abeeb99",
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "uuid": "173f2ec0-93c2-4be1-bf11-f25e61ce2bdb"
+            },
+            "uuid": "5457220f-449b-4a14-9e91-6bff9abeeb99"
+        },
+        {
+            "name": "Node11",
+            "parent": "b5144ad1-8b56-4d25-bfcf-5d8ceb7aafce",
+            "transform": {
+                "name": "",
+                "node": "535b2973-2f27-43c3-b732-26dfff66e131",
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "uuid": "173f2ec0-93c2-4be1-bf11-f25e61ce2bdb"
+            },
+            "uuid": "535b2973-2f27-43c3-b732-26dfff66e131"
+        },
+        {
+            "name": "Node12",
+            "parent": "b5144ad1-8b56-4d25-bfcf-5d8ceb7aafce",
+            "transform": {
+                "name": "",
+                "node": "5081fbdc-29d1-43dd-8002-894bf8efa5f7",
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "uuid": "173f2ec0-93c2-4be1-bf11-f25e61ce2bdb"
+            },
+            "uuid": "5081fbdc-29d1-43dd-8002-894bf8efa5f7"
+        },
+        {
+            "name": "Node13",
+            "parent": "b5144ad1-8b56-4d25-bfcf-5d8ceb7aafce",
+            "transform": {
+                "name": "",
+                "node": "8b8dca7c-60a2-465d-a54f-59c90969829e",
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "uuid": "173f2ec0-93c2-4be1-bf11-f25e61ce2bdb"
+            },
+            "uuid": "8b8dca7c-60a2-465d-a54f-59c90969829e"
+        },
+        {
+            "name": "Node21",
+            "parent": "1c2c2746-b934-4bb0-b734-f56aa8b77678",
+            "transform": {
+                "name": "",
+                "node": "21a7520d-0bfa-4b7c-9a1d-1f0c942f72a3",
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "uuid": "173f2ec0-93c2-4be1-bf11-f25e61ce2bdb"
+            },
+            "uuid": "21a7520d-0bfa-4b7c-9a1d-1f0c942f72a3"
+        },
+        {
+            "name": "Node22",
+            "parent": "1c2c2746-b934-4bb0-b734-f56aa8b77678",
+            "transform": {
+                "name": "",
+                "node": "a0527e66-3f29-41b6-936d-886b2ab239c8",
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "uuid": "173f2ec0-93c2-4be1-bf11-f25e61ce2bdb"
+            },
+            "uuid": "a0527e66-3f29-41b6-936d-886b2ab239c8"
+        },
+        {
+            "name": "Node23",
+            "parent": "1c2c2746-b934-4bb0-b734-f56aa8b77678",
+            "transform": {
+                "name": "",
+                "node": "39df6502-18db-41d1-8001-49d050c7dd72",
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "uuid": "173f2ec0-93c2-4be1-bf11-f25e61ce2bdb"
+            },
+            "uuid": "39df6502-18db-41d1-8001-49d050c7dd72"
+        },
+        {
+            "name": "Node31",
+            "parent": "5457220f-449b-4a14-9e91-6bff9abeeb99",
+            "transform": {
+                "name": "",
+                "node": "6cf77f2e-da24-4de7-a93c-c98401f20f3c",
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "uuid": "173f2ec0-93c2-4be1-bf11-f25e61ce2bdb"
+            },
+            "uuid": "6cf77f2e-da24-4de7-a93c-c98401f20f3c"
+        },
+        {
+            "name": "Node32",
+            "parent": "5457220f-449b-4a14-9e91-6bff9abeeb99",
+            "transform": {
+                "name": "",
+                "node": "bedabb00-b9d3-4bd2-81c1-b855cd9ff5e0",
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "uuid": "173f2ec0-93c2-4be1-bf11-f25e61ce2bdb"
+            },
+            "uuid": "bedabb00-b9d3-4bd2-81c1-b855cd9ff5e0"
+        },
+        {
+            "name": "Node33",
+            "parent": "5457220f-449b-4a14-9e91-6bff9abeeb99",
+            "transform": {
+                "name": "",
+                "node": "b4017c9b-5f43-4dba-81a5-367ac3b6d4f2",
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "uuid": "173f2ec0-93c2-4be1-bf11-f25e61ce2bdb"
+            },
+            "uuid": "b4017c9b-5f43-4dba-81a5-367ac3b6d4f2"
+        },
+        {
+            "name": "mainCamera",
+            "parent": "9a5924d0-e62a-428e-9357-3b5f2438cdf6",
+            "transform": {
+                "name": "",
+                "node": "9c2b154c-f4c8-4799-99ba-1c3ffb0a4ecc",
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "translation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "uuid": "173f2ec0-93c2-4be1-bf11-f25e61ce2bdb"
+            },
+            "uuid": "9c2b154c-f4c8-4799-99ba-1c3ffb0a4ecc"
+        }
+    ],
+    "root": "9a5924d0-e62a-428e-9357-3b5f2438cdf6"
+}

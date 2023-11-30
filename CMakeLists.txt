@@ -63,4 +63,5 @@ include_directories("ThirdParty/uuid_v4")
 # Include sub-projects.
 add_subdirectory("Engine")
 add_subdirectory("Editor")
+add_subdirectory("Tools")
 add_subdirectory("Playground")

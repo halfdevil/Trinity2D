@@ -47,7 +47,7 @@ namespace Trinity
 		}
 
 		virtual std::type_index getType() const override;
-		virtual UUIDv4::UUID getUUID() const override;
+		virtual UUIDv4::UUID getTypeUUID() const override;
 
 		virtual void setLightType(LightType lightType);
 		virtual void setLightProperties(const LightProperties& properties);

@@ -36,6 +36,11 @@ namespace Trinity
 		QuadTree(QuadTree&&) = default;
 		QuadTree& operator = (QuadTree&&) = default;
 
+		QuadTreeNode* getRoot() const
+		{
+			return mRoot;
+		}
+
 		virtual void create(const BoundingRect& minBounds, const BoundingRect& bounds);
 		virtual bool insert(QuadTreeData& data);
 		virtual void remove(QuadTreeData& data);

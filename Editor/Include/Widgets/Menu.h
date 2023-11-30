@@ -44,8 +44,8 @@ namespace Trinity
 		);		
 
 		virtual void addSeparator(MenuItem* parent = nullptr);
+		virtual MenuItem* findMenuItem(const std::string& name);
 
-		virtual MenuItem* findMenuItem(const std::string& title);
 		virtual bool isEnabled() const override;
 		virtual void draw() override;
 

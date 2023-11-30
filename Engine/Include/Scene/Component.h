@@ -54,7 +54,7 @@ namespace Trinity
 		virtual void setNode(Node& node);
 
 		virtual std::type_index getType() const = 0;
-		virtual UUIDv4::UUID getUUID() const = 0;
+		virtual UUIDv4::UUID getTypeUUID() const = 0;
 
 	protected:
 

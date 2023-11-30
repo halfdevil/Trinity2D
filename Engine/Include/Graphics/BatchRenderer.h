@@ -4,7 +4,7 @@
 #include <string>
 #include <unordered_map>
 #include <glm/glm.hpp>
-#include <webgpu/webgpu_cpp.h>
+#include "webgpu/webgpu_cpp.h"
 
 namespace Trinity
 {
@@ -45,13 +45,13 @@ namespace Trinity
 		{
 			size_t textureId{ 0 };
 			uint32_t numIndices{ 0 };
-			uint32_t firstIndex{ 0 };
+			uint32_t baseIndex{ 0 };
 		};
 
 		struct RenderContext
 		{
-			Shader* shader{ nullptr };
-			RenderPipeline* pipeline{ nullptr };
+			RenderPipeline* texturedPipeline{ nullptr };
+			RenderPipeline* coloredPipeline{ nullptr };
 			VertexLayout* vertexLayout{ nullptr };
 			VertexBuffer* vertexBuffer{ nullptr };
 			IndexBuffer* indexBuffer{ nullptr };
@@ -86,44 +86,64 @@ namespace Trinity
 		BatchRenderer(BatchRenderer&&) = default;
 		BatchRenderer& operator = (BatchRenderer&&) = default;
 
-		virtual bool create(const std::string& shaderFile, RenderTarget& renderTarget, ResourceCache& cache);
+		virtual bool create(
+			RenderTarget& renderTarget, 
+			ResourceCache& cache, 
+			const std::string& texturedShaderFile,
+			const std::string& coloredShaderFile);
+
 		virtual void destroy();
-
-		virtual bool drawTexture(
-			Texture* texture, 
-			const glm::vec2& srcPosition, 
-			const glm::vec2& srcSize, 
-			const glm::vec2& origin,
-			const glm::mat4& transform, 
-			const glm::vec4& color = glm::vec4(0.0f),
-			bool flipX = false, 
-			bool flipY = false
-		);
-
-		virtual bool drawTexture(
-			Texture* texture, 
-			const glm::vec2& srcPosition, 
-			const glm::vec2& srcSize, 
-			const glm::vec2& dstPosition,
-			const glm::vec2& dstSize, 
-			const glm::vec4& color = glm::vec4(0.0f),
-			float depth = 0.0f,
-			bool flipX = false, 
-			bool flipY = false
-		);
-
 		virtual void begin(const glm::mat4& viewProj);
 		virtual void end(const RenderPass& renderPass);
+		virtual void invalidateTexture(const Texture& texture);
+
+		virtual bool drawRect(
+			const glm::vec2& position,
+			const glm::vec2& size,
+			const glm::vec2& origin,
+			const glm::mat4& transform,
+			const glm::vec4& color
+		);
+
+		virtual bool drawTexture(
+			Texture* texture,
+			const glm::vec2& srcPosition,
+			const glm::vec2& srcSize,
+			const glm::vec2& dstPosition,
+			const glm::vec2& dstSize,
+			const glm::vec2& origin,
+			const glm::mat4& transform,
+			const glm::vec4& color = glm::vec4(0.0f),
+			bool flipX = false,
+			bool flipY = false
+		);
+
+		virtual bool drawTexture(
+			Texture* texture,
+			const glm::vec2& srcPosition,
+			const glm::vec2& srcSize,
+			const glm::vec2& origin,
+			const glm::mat4& transform,
+			const glm::vec4& color = glm::vec4(0.0f),
+			bool flipX = false,
+			bool flipY = false
+		);
 
 	protected:
 
 		virtual void addVertices(const Vertex* vertices, uint32_t numVertices);
 		virtual void addIndices(const uint32_t* indices, uint32_t numIndices);
-		virtual bool addCommand(Texture* texture, uint32_t firstIndex, uint32_t numIndices);
+		virtual bool addCommand(Texture* texture, uint32_t baseIndex, uint32_t numIndices);
 
 		virtual bool createCommonBindGroup();
 		virtual bool createImageBindGroup(const Texture& texture);
 		virtual bool createBufferData();
+
+		virtual bool createTexturedPipeline(RenderTarget& renderTarget, 
+			const std::string& texturedShaderFile);
+
+		virtual bool createColoredPipeline(RenderTarget& renderTarget, 
+			const std::string& coloredShaderFile);
 
 	protected:
 
@@ -134,5 +154,6 @@ namespace Trinity
 		Texture* mCurrentTexture{ nullptr };
 		glm::vec2 mInvTextureSize{ 0.0f };
 		std::vector<DrawCommand> mCommands;
+		DrawCommand mColorCommand;
 	};
 }

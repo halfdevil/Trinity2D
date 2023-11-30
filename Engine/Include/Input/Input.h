@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core/Singleton.h"
 #include "Core/Window.h"
 #include "Input/Keyboard.h"
 #include "Input/Mouse.h"
@@ -43,7 +44,7 @@ namespace Trinity
 		Max
 	};
 
-	class Input
+	class Input : public Singleton<Input>
 	{
 	public:
 
@@ -66,27 +67,27 @@ namespace Trinity
 			return mMouse.get();
 		}
 
-		bool create(Window& window);
-		void destroy();
-		bool loadConfig(const json& inputConfig);
+		virtual bool create(Window& window);
+		virtual void destroy();
+		virtual bool loadConfig(const json& inputConfig);
 
-		void update();
-		void postUpdate();
+		virtual void update();
+		virtual void postUpdate();
 
-		void addAction(const InputAction& action);
-		void addAxis(const InputAxis& axis);
+		virtual void addAction(const InputAction& action);
+		virtual void addAxis(const InputAxis& axis);
 
-		void bindAction(const std::string& actionName, InputEvent event,
+		virtual void bindAction(const std::string& actionName, InputEvent event,
 			std::function<void(int32_t)> callback);
 
-		void bindAxis(const std::string& axisName, std::function<void(float)> callback);
+		virtual void bindAxis(const std::string& axisName, std::function<void(float)> callback);
 
 	private:
 
-		void onKeyCallback(int32_t key, bool pressed);
-		void onMousePosCallback(float x, float y);
-		void onMouseButtonCallback(int32_t button, bool pressed, int32_t mods);
-		void onMouseScrollCallback(float xoffset, float yoffset);
+		virtual void onKeyCallback(int32_t key, bool pressed);
+		virtual void onMousePosCallback(float x, float y);
+		virtual void onMouseButtonCallback(int32_t button, bool pressed, int32_t mods);
+		virtual void onMouseScrollCallback(float xoffset, float yoffset);
 
 	private:
 

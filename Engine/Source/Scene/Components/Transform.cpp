@@ -17,7 +17,7 @@ namespace Trinity
 		return typeid(Transform);
 	}
 
-	UUIDv4::UUID Transform::getUUID() const
+	UUIDv4::UUID Transform::getTypeUUID() const
 	{
 		return Transform::UUID;
 	}

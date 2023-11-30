@@ -101,12 +101,18 @@ namespace Trinity
 
     void FrameBuffer::resize(uint32_t width, uint32_t height)
     {
-        for (auto& texture : mColorTextures)
+        for (uint32_t idx = 0; idx < mColorTextures.size(); idx++)
         {
-            if (!texture->create(width, height, texture->getFormat(), texture->getUsage()))
-            {
-                LogWarning("Texture::create() failed on resize (%dx%d)", width, height);
-            }
+            auto& texture = mColorTextures[idx];
+            auto& attachment = mColorAttachments[idx];
+
+			if (!texture->create(width, height, texture->getFormat(), texture->getUsage()))
+			{
+				LogWarning("Texture::create() failed on resize (%dx%d)", width, height);
+                return;
+			}
+
+            attachment.view = texture->getView();
         }
 
         if (mDepthTexture != nullptr)
@@ -114,7 +120,10 @@ namespace Trinity
             if (!mDepthTexture->create(width, height, mDepthTexture->getFormat(), mDepthTexture->getUsage()))
             {
                 LogWarning("Texture::create() failed on resize (%dx%d)", width, height);
+                return;
             }
+
+            mDepthStencilAttachment.view = mDepthTexture->getView();
         }
     }
 

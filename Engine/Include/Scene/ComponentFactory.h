@@ -14,13 +14,22 @@ namespace Trinity
 
 		using ComponentCreator = std::function<std::unique_ptr<Component>()>;
 
-		void registerCreator(const UUIDv4::UUID& uuid, const std::string& name, ComponentCreator creator);
-		bool hasRegister(const UUIDv4::UUID& uuid);
-		void removeCreator(const UUIDv4::UUID& uuid);
+		ComponentFactory() = default;
+		virtual ~ComponentFactory() = default;
 
-		std::unique_ptr<Component> createComponent(const UUIDv4::UUID& uuid);
-		std::unique_ptr<Component> createComponentByName(const std::string& name);
-		std::vector<std::string> getComponentNames() const;
+		ComponentFactory(const ComponentFactory&) = delete;
+		ComponentFactory& operator = (const ComponentFactory&) = delete;
+
+		ComponentFactory(ComponentFactory&&) = default;
+		ComponentFactory& operator = (ComponentFactory&&) = default;
+
+		virtual void registerCreator(const UUIDv4::UUID& uuid, const std::string& name, ComponentCreator creator);
+		virtual bool hasRegister(const UUIDv4::UUID& uuid);
+		virtual void removeCreator(const UUIDv4::UUID& uuid);
+
+		virtual std::unique_ptr<Component> createComponent(const UUIDv4::UUID& uuid);
+		virtual std::unique_ptr<Component> createComponentByName(const std::string& name);
+		virtual std::vector<std::string> getComponentNames() const;
 
 	public:
 

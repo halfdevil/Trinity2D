@@ -19,7 +19,7 @@ namespace Trinity
 		return typeid(RigidBody);
 	}
 
-	UUIDv4::UUID RigidBody::getUUID() const
+	UUIDv4::UUID RigidBody::getTypeUUID() const
 	{
 		return RigidBody::UUID;
 	}

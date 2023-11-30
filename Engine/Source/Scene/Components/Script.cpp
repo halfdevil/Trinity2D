@@ -7,7 +7,7 @@ namespace Trinity
 		return typeid(Script);
 	}
 
-	UUIDv4::UUID Script::getUUID() const
+	UUIDv4::UUID Script::getTypeUUID() const
 	{
 		return Script::UUID;
 	}

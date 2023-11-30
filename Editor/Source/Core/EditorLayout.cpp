@@ -196,7 +196,13 @@ namespace Trinity
 		ImGui::TableSetColumnIndex(1);
 		ImGui::SetNextItemWidth(-FLT_MIN);
 
-		return ImGui::BeginCombo("##combo", preview.c_str());
+		bool ret = ImGui::BeginCombo("##combo", preview.c_str());
+		if (!ret)
+		{
+			ImGui::PopID();
+		}
+
+		return ret;
 	}
 
 	bool EditorLayout::comboItem(const std::string& label, bool selected) const

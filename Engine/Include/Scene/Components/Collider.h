@@ -32,7 +32,7 @@ namespace Trinity
 
 		virtual bool init();
 		virtual std::type_index getType() const override;
-		virtual UUIDv4::UUID getUUID() const override;
+		virtual UUIDv4::UUID getTypeUUID() const override;
 
 	public:
 

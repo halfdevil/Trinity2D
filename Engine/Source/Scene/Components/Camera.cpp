@@ -27,7 +27,7 @@ namespace Trinity
 		return typeid(Camera);
 	}
 
-	UUIDv4::UUID Camera::getUUID() const
+	UUIDv4::UUID Camera::getTypeUUID() const
 	{
 		return Camera::UUID;
 	}

@@ -14,19 +14,19 @@ namespace Trinity
 		mRoot = root.get();
 		mNodes.push_back(std::move(root));
 
-		std::stack<QuadTreeNode*> process;
-		process.push(mRoot);
+		std::stack<QuadTreeNode*> traverseNodes;
+		traverseNodes.push(mRoot);
 
 		auto minSize = minBounds.getSize();
-		while (!process.empty())
+		while (!traverseNodes.empty())
 		{
-			auto* node = process.top();
-			process.pop();
+			auto* node = traverseNodes.top();
+			traverseNodes.pop();
 
 			auto min = node->bounds.min;
 			auto max = node->bounds.max;
-			auto center = node->bounds.getCenter();
 			auto size = node->bounds.getSize();
+			auto center = node->bounds.getCenter();
 
 			if ((size.x * 0.5f) >= minSize.x && ((size.y * 0.5f) >= minSize.y))
 			{
@@ -42,7 +42,7 @@ namespace Trinity
 					auto childNode = std::make_unique<QuadTreeNode>();
 					childNode->bounds = childBounds[idx];
 
-					process.push(childNode.get());
+					traverseNodes.push(childNode.get());
 					node->children.push_back(childNode.get());
 
 					mNodes.push_back(std::move(childNode));
@@ -53,13 +53,13 @@ namespace Trinity
 
 	bool QuadTree::insert(QuadTreeData& data)
 	{
-		std::stack<QuadTreeNode*> process;
-		process.push(mRoot);
+		std::stack<QuadTreeNode*> traverseNodes;
+		traverseNodes.push(mRoot);
 
-		while (!process.empty())
+		while (!traverseNodes.empty())
 		{
-			auto* node = process.top();
-			process.pop();
+			auto* node = traverseNodes.top();
+			traverseNodes.pop();
 
 			if (node->bounds.isIntersecting(data.bounds))
 			{
@@ -72,7 +72,7 @@ namespace Trinity
 				{
 					for (auto* child : node->children)
 					{
-						process.push(child);
+						traverseNodes.push(child);
 					}
 				}
 			}
@@ -83,13 +83,13 @@ namespace Trinity
 
 	void QuadTree::remove(QuadTreeData& data)
 	{
-		std::stack<QuadTreeNode*> process;
-		process.push(mRoot);
+		std::stack<QuadTreeNode*> traverseNodes;
+		traverseNodes.push(mRoot);
 
-		while (!process.empty())
+		while (!traverseNodes.empty())
 		{
-			auto* node = process.top();
-			process.pop();
+			auto* node = traverseNodes.top();
+			traverseNodes.pop();
 
 			if (node->bounds.isIntersecting(data.bounds))
 			{
@@ -105,7 +105,7 @@ namespace Trinity
 				{
 					for (auto* child : node->children)
 					{
-						process.push(child);
+						traverseNodes.push(child);
 					}
 				}
 			}
@@ -122,13 +122,13 @@ namespace Trinity
 	{
 		result.clear();
 
-		std::stack<QuadTreeNode*> process;
-		process.push(mRoot);
+		std::stack<QuadTreeNode*> traverseNodes;
+		traverseNodes.push(mRoot);
 
-		while (!process.empty())
+		while (!traverseNodes.empty())
 		{
-			auto* node = process.top();
-			process.pop();
+			auto* node = traverseNodes.top();
+			traverseNodes.pop();
 
 			if (node->bounds.isIntersecting(area))
 			{
@@ -143,7 +143,7 @@ namespace Trinity
 				{
 					for (auto* child : node->children)
 					{
-						process.push(child);
+						traverseNodes.push(child);
 					}
 				}
 			}

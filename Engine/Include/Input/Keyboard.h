@@ -18,13 +18,13 @@ namespace Trinity
         Keyboard(Keyboard&&) = delete;
         Keyboard& operator = (Keyboard&&) = delete;
 
-        bool isKeyDown(int32_t key) const;
-        bool isKeyUp(int32_t key) const;
-        bool isKeyHeld(int32_t key) const;
-        bool isKeyiggered(int32_t key) const;
+        virtual bool isKeyDown(int32_t key) const;
+        virtual bool isKeyUp(int32_t key) const;
+        virtual bool isKeyHeld(int32_t key) const;
+        virtual bool isKeyiggered(int32_t key) const;
 
-        void update(int32_t key, bool pressed);
-        void postUpdate();
+        virtual void update(int32_t key, bool pressed);
+        virtual void postUpdate();
 
     public:
 

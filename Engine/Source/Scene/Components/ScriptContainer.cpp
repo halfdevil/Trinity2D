@@ -30,7 +30,7 @@ namespace Trinity
 		return typeid(ScriptContainer);
 	}
 
-	UUIDv4::UUID ScriptContainer::getUUID() const
+	UUIDv4::UUID ScriptContainer::getTypeUUID() const
 	{
 		return ScriptContainer::UUID;
 	}
@@ -76,14 +76,14 @@ namespace Trinity
 
 	void ScriptContainer::setScript(Script& script)
 	{
-		auto it = mScripts.find(script.getUUID());
+		auto it = mScripts.find(script.getTypeUUID());
 		if (it != mScripts.end())
 		{
 			it->second = &script;
 		}
 		else
 		{
-			mScripts.insert(std::make_pair(script.getUUID(), &script));
+			mScripts.insert(std::make_pair(script.getTypeUUID(), &script));
 		}
 	}
 

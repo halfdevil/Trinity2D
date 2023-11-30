@@ -50,7 +50,7 @@ namespace Trinity
 		ImVec2 position = ImGui::GetCursorPos();
 		ImVec2 buttonSize = { iconSize.x, iconSize.y + textSize.y };
 		ImVec2 imgSize = { (float)texture->getWidth(), (float)texture->getHeight() };
-		ImVec2 imgPosition = { position.x + iconSize.x / 2 - imgSize.x / 2, position.y + iconSize.y / 2 - imgSize.y / 2 };
+		ImVec2 imgPosition = { position.x + (iconSize.x - imgSize.x) / 2, position.y + (iconSize.y - imgSize.y) / 2 };
 
 		ImGui::Button("##imageButton", buttonSize);
 
@@ -63,7 +63,7 @@ namespace Trinity
 		ImVec2 newTextSize = ImGui::CalcTextSize(text.c_str());
 		if (newTextSize.x < textSize.x - textPadding)
 		{
-			ImVec2 textPosition = { position.x + textSize.x / 2 - newTextSize.x / 2, position.y + iconSize.y };
+			ImVec2 textPosition = { position.x + (textSize.x - newTextSize.x) / 2, position.y + iconSize.y };
 			ImGui::SetCursorPos(textPosition);
 			ImGui::TextUnformatted(text.c_str());
 		}

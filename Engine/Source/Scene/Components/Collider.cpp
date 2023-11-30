@@ -46,7 +46,7 @@ namespace Trinity
 		return typeid(Collider);
 	}
 
-	UUIDv4::UUID Collider::getUUID() const
+	UUIDv4::UUID Collider::getTypeUUID() const
 	{
 		return Collider::UUID;
 	}

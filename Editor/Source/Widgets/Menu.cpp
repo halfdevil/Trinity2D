@@ -28,11 +28,11 @@ namespace Trinity
 		addMenuItem("", "", "", parent);
 	}
 
-	MenuItem* Menu::findMenuItem(const std::string& title)
+	MenuItem* Menu::findMenuItem(const std::string& name)
 	{
 		for (auto& menuItem : mAllItems)
 		{
-			if (menuItem->title == title)
+			if (menuItem->name == name)
 			{
 				return menuItem.get();
 			}

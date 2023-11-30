@@ -54,7 +54,7 @@ namespace Trinity
 		}
 
 		virtual std::type_index getType() const override;
-		virtual UUIDv4::UUID getUUID() const override;
+		virtual UUIDv4::UUID getTypeUUID() const override;
 
 		virtual void setSprite(Sprite& sprite);
 		virtual void setOrigin(const glm::vec2& origin);

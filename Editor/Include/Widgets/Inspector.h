@@ -17,7 +17,7 @@ namespace Trinity
 	{
 	public:
 
-		Inspector();
+		Inspector() = default;
 		virtual ~Inspector() = default;
 
 		Inspector(const Inspector&) = delete;
@@ -28,24 +28,16 @@ namespace Trinity
 
 		virtual void setLayout(EditorLayout& layout);
 		virtual void setResourceCache(ResourceCache& cache);
-		virtual void setScene(Scene& scene);
-		virtual void setSelectedNode(Node* node);
 		virtual void draw() override;
 
 	protected:
 
-		virtual void addComponent();
+		virtual void drawInspector();
 
 	protected:
 
 		EditorLayout* mLayout{ nullptr };
 		ResourceCache* mResourceCache{ nullptr };
-		std::unique_ptr<NodeEditor> mEditor{ nullptr };
-		Scene* mScene{ nullptr };
-		Node* mSelectedNode{ nullptr };
-		std::string mSelectedComponentName;
-		std::vector<std::string> mComponentNames;
-		std::string mSelectedNodeName;
 		bool mIsOpen{ true };
 	};
 }

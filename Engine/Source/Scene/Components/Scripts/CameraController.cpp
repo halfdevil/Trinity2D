@@ -84,7 +84,7 @@ namespace Trinity
 		mRotation = glm::vec3{ 0.0f };
 	}
 
-	UUIDv4::UUID CameraController::getUUID() const
+	UUIDv4::UUID CameraController::getTypeUUID() const
 	{
 		return CameraController::UUID;
 	}

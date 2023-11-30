@@ -10,8 +10,7 @@ if (APPLE)
 	set(SOURCE_FILES ${SOURCE_FILES} ${OSX_SOURCE_FILES})
 endif()
 
-add_library("Trinity2D-Engine" ${SOURCE_FILES} ${HEADER_FILES}
-	${GENERATED_HEADER_FILES} ${GENERATED_SOURCE_FILES})
+add_library("Trinity2D-Engine" ${SOURCE_FILES} ${HEADER_FILES})
 
 set_property(TARGET "Trinity2D-Engine" PROPERTY CXX_STANDARD 20)
 set_property(TARGET "Trinity2D-Engine" PROPERTY CXX_STANDARD_REQUIRED ON)

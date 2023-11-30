@@ -48,7 +48,7 @@ namespace Trinity
 		virtual bool init() override;
 		virtual void update(float deltaTime) override;
 
-		virtual UUIDv4::UUID getUUID() const override;
+		virtual UUIDv4::UUID getTypeUUID() const override;
 
 	public:
 

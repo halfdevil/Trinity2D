@@ -7,7 +7,7 @@ namespace Trinity
 		return typeid(Light);
 	}
 
-	UUIDv4::UUID Light::getUUID() const
+	UUIDv4::UUID Light::getTypeUUID() const
 	{
 		return Light::UUID;
 	}

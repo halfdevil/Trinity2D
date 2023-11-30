@@ -348,6 +348,20 @@ namespace Trinity
 		}
 	}
 
+	void ImGuiRenderer::invalidateTexture(const Texture& texture)
+	{
+		size_t textureId = std::hash<const Texture*>{}(&texture);
+		auto& bindGroups = mImageContext.bindGroups;
+
+		if (auto it = bindGroups.find(textureId); it != bindGroups.end())
+		{
+			auto* bindGroup = it->second;
+
+			bindGroups.erase(it);
+			mResourceCache->removeResource(bindGroup);
+		}
+	}
+
 	void ImGuiRenderer::setupCallbacks(Window& window)
 	{
 		auto& callbacks = window.getCallbacks();
@@ -634,11 +648,6 @@ namespace Trinity
 
 	bool ImGuiRenderer::createImageBindGroup(const Texture& texture)
 	{
-		if (mImageContext.sampler == nullptr)
-		{
-			
-		}
-
 		const std::vector<BindGroupItem> bindGroupItems =
 		{
 			{
@@ -651,6 +660,9 @@ namespace Trinity
 			}
 		};
 
+		size_t textureId = std::hash<const Texture*>{}(&texture);
+		auto& bindGroups = mImageContext.bindGroups;
+				
 		auto bindGroup = std::make_unique<BindGroup>();
 		if (!bindGroup->create(*mImageContext.bindGroupLayout, bindGroupItems))
 		{
@@ -658,8 +670,7 @@ namespace Trinity
 			return false;
 		}
 
-		size_t textureHash = std::hash<const Texture*>{}(&texture);
-		mImageContext.bindGroups.insert(std::make_pair(textureHash, bindGroup.get()));
+		bindGroups.insert(std::make_pair(textureId, bindGroup.get()));
 		mResourceCache->addResource(std::move(bindGroup));
 
 		return true;

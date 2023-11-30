@@ -49,7 +49,7 @@ namespace Trinity
 		}
 
 		virtual std::type_index getType() const override;
-		virtual UUIDv4::UUID getUUID() const override;
+		virtual UUIDv4::UUID getTypeUUID() const override;
 
 		virtual IEditor* getEditor(Scene& scene) override;
 		virtual ISerializer* getSerializer(Scene& scene) override;

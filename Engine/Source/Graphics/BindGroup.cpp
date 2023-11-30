@@ -68,7 +68,7 @@ namespace Trinity
         return true;
     }
 
-    void BindGroup::destroy()
+	void BindGroup::destroy()
     {
         mHandle = nullptr;
     }

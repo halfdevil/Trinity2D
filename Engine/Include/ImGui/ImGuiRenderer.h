@@ -78,8 +78,10 @@ namespace Trinity
 
 		virtual bool create(Window& window, RenderTarget& renderTarget);
 		virtual void destroy();
+
 		virtual void newFrame(Window& window, float deltaTime);
 		virtual void draw(const RenderPass& renderPass);
+		virtual void invalidateTexture(const Texture& texture);
 
 	protected:
 

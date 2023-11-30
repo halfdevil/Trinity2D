@@ -48,8 +48,9 @@ fn vs_main(in : VertexInput) -> VertexOutput
 
 @fragment
 fn fs_main(in: VertexOutput) -> FragmentOutput {
-    var color = in.color;
-    color = textureSample(diffuse_texture, diffuse_sampler, in.uv);
+    var c = textureSample(diffuse_texture, diffuse_sampler, in.uv);
+    var r = c.rgb * (1.0 - in.color.a) + in.color.rgb * in.color.a;
+    var color = vec4<f32>(r.r, r.g, r.b, c.a);
 
     var out: FragmentOutput;    
     out.frag_color = color;

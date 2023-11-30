@@ -129,7 +129,7 @@ namespace Trinity
 
     bool ComponentSerializer::write(json& object)
     {
-        auto uuid = mComponent->getUUID().str();
+        auto uuid = mComponent->getTypeUUID().str();
         auto name = mComponent->mName;
         
         std::string nodeUUID;
