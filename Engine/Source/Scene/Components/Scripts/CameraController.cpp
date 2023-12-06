@@ -18,7 +18,7 @@ namespace Trinity
 
 	void CameraController::turn(float scale)
 	{
-		mRotation.z += scale * mRotationSpeed;
+		mRotation += scale * mRotationSpeed;
 	}
 
 	void CameraController::panTo(const glm::vec2& position)
@@ -26,12 +26,12 @@ namespace Trinity
 		auto& transform = getNode()->getTransform();
 		auto& translation = transform.getTranslation();
 		
-		panBy(position - glm::vec2{ translation });
+		panBy(position - translation);
 	}
 
 	void CameraController::panBy(const glm::vec2& delta)
 	{
-		mTranslation = glm::vec3{ delta, 0.0f };
+		mTranslation = delta;
 	}
 
 	void CameraController::setMoveSpeed(float moveSpeed)
@@ -68,20 +68,20 @@ namespace Trinity
 		mTranslation *= deltaTime;
 		mRotation *= deltaTime;
 
-		if (mRotation != glm::vec3{ 0.0f } || mTranslation != glm::vec3{ 0.0f })
+		if (mRotation != 0.0f || mTranslation != glm::vec2{ 0.0f })
 		{
 			auto& transform = getNode()->getTransform();
 
-			glm::vec3 rotation = transform.getRotation() + mRotation;
-			glm::mat4 orientation = glm::yawPitchRoll(rotation.y, rotation.x, rotation.z);
-			glm::vec3 translation = transform.getTranslation() + glm::vec3(glm::vec4(mTranslation, 1.0f) * orientation);
+			float rotation = transform.getRotation() + mRotation;
+			glm::mat4 orientation = glm::yawPitchRoll(0.0f, 0.0f, rotation);
+			glm::vec2 translation = transform.getTranslation() + glm::vec2(glm::vec4(mTranslation, 0.0f, 1.0f) * orientation);
 
 			transform.setTranslation(translation);
 			transform.setRotation(rotation);
 		}
 
-		mTranslation = glm::vec3{ 0.0f };
-		mRotation = glm::vec3{ 0.0f };
+		mTranslation = glm::vec2{ 0.0f };
+		mRotation =  0.0f;
 	}
 
 	UUIDv4::UUID CameraController::getTypeUUID() const

@@ -82,15 +82,18 @@ namespace Trinity
 
 	void ResourceCache::removeResource(Resource* resource)
 	{
-		if (auto it = mResources.find(resource->getType()); it != mResources.end())
+		if (resource != nullptr)
 		{
-			auto& resources = it->second;
-			for (uint32_t idx = 0; idx < (uint32_t)resources.size(); idx++)
+			if (auto it = mResources.find(resource->getType()); it != mResources.end())
 			{
-				auto& res = resources[idx];
-				if (res.get() == resource)
+				auto& resources = it->second;
+				for (uint32_t idx = 0; idx < (uint32_t)resources.size(); idx++)
 				{
-					resources.erase(resources.begin() + idx);
+					auto& res = resources[idx];
+					if (res.get() == resource)
+					{
+						resources.erase(resources.begin() + idx);
+					}
 				}
 			}
 		}

@@ -29,6 +29,7 @@ namespace Trinity
 
 		virtual bool init() override;
 		virtual void setupInput() override;
+		virtual void update(float deltaTime) override;
 		virtual void onDraw(float deltaTime) override;
 
 		virtual Gui* openGui(const std::string& path);
@@ -37,7 +38,7 @@ namespace Trinity
 		virtual MenuBar* createMainMenu() override;
 		virtual AssetFileDialog* createFileDialog() override;
 
-		virtual Gui* createDefaultGui();
+		virtual Gui* createDefaultGui() const;
 		virtual GuiHierarchy* createGuiHierarchy(const std::string& title, Gui& gui);
 		virtual GuiViewport* createGuiViewport(const std::string& title, Gui& gui);
 		virtual GuiInspector* createGuiInspector(const std::string& title, Gui& gui);

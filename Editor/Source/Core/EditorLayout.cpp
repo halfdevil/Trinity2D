@@ -1,7 +1,9 @@
 #include "Core/EditorLayout.h"
 #include "Core/Logger.h"
+#include "Utils/EditorHelper.h"
 #include "VFS/FileSystem.h"
 #include "glm/gtc/type_ptr.hpp"
+#include "misc/cpp/imgui_stdlib.h"
 
 #include "nlohmann/json.hpp"
 using json = nlohmann::json;
@@ -160,6 +162,27 @@ namespace Trinity
 		return ret;
 	}
 
+	bool EditorLayout::inputString(const std::string& label, std::string& value) const
+	{
+		char id[kMaxIdSize];
+		std::snprintf(id, kMaxIdSize, "##%s", label.c_str());
+
+		ImGui::PushID(id);
+		ImGui::TableNextRow();
+
+		ImGui::TableSetColumnIndex(0);
+		ImGui::AlignTextToFramePadding();
+		ImGui::TextUnformatted(label.c_str());
+
+		ImGui::TableSetColumnIndex(1);
+		ImGui::SetNextItemWidth(-FLT_MIN);
+
+		bool ret = ImGui::InputText("##value", &value);
+		ImGui::PopID();
+
+		return ret;
+	}
+
 	bool EditorLayout::checkbox(const std::string& label, bool& value) const
 	{
 		char id[kMaxIdSize];
@@ -267,6 +290,27 @@ namespace Trinity
 		}
 
 		ImGui::PopID();
+		return ret;
+	}
+
+	ListBoxOperation EditorLayout::listBox(const std::string& label, int32_t& selectedIndex, const std::vector<const char*>& items) const
+	{
+		char id[kMaxIdSize];
+		std::snprintf(id, kMaxIdSize, "##%s", label.c_str());
+
+		ImGui::PushID(id);
+		ImGui::TableNextRow();
+
+		ImGui::TableSetColumnIndex(0);
+		ImGui::AlignTextToFramePadding();
+		ImGui::TextUnformatted(label.c_str());
+
+		ImGui::TableSetColumnIndex(1);
+		ImGui::SetNextItemWidth(-FLT_MIN);
+
+		auto ret = EditorHelper::listBox("##listBox", selectedIndex, items);
+		ImGui::PopID();
+
 		return ret;
 	}
 

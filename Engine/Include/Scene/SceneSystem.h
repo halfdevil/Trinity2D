@@ -3,6 +3,7 @@
 #include "Core/Singleton.h"
 #include <memory>
 #include <string>
+#include "glm/glm.hpp"
 
 namespace Trinity
 {
@@ -49,11 +50,12 @@ namespace Trinity
 
 		virtual void update(float deltaTime);
 		virtual void draw(const RenderPass& renderPass);
+		virtual void draw(const RenderPass& renderPass, const glm::mat4& viewProj);
 
 	protected:
 
-		virtual void drawTextures(const RenderPass& renderPass);
-		virtual void drawSprites(const RenderPass& renderPass);
+		virtual void drawTextures(const RenderPass& renderPass, const glm::mat4& viewProj);
+		virtual void drawSprites(const RenderPass& renderPass, const glm::mat4& viewProj);
 
 	protected:
 

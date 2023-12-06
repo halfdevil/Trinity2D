@@ -3,6 +3,8 @@
 #include "Core/EditorTheme.h"
 #include "Core/EditorResources.h"
 #include "Core/EditorGizmo.h"
+#include "Core/EditorCamera.h"
+#include "Core/EditorGrid.h"
 #include "Core/ResourceCache.h"
 #include "Core/Logger.h"
 #include "Core/Debugger.h"
@@ -49,9 +51,9 @@ namespace Trinity
 			return false;
 		}
 
-		mSceneViewport = createSceneViewport(mCurrentScene->getName(), *mCurrentScene);
-		mSceneInspector = createSceneInspector("Inspector", *mCurrentScene);
-		mSceneHierarchy = createSceneHierarchy("Scene", *mCurrentScene);
+		mViewport = createSceneViewport(mCurrentScene->getName(), *mCurrentScene);
+		mInspector = createSceneInspector("Inspector", *mCurrentScene);
+		mHierarchy = createSceneHierarchy("Scene", *mCurrentScene);
 		mComponentsWindow = createComponentsWindow("Add Component", *mCurrentScene);
 
 		return true;
@@ -62,13 +64,21 @@ namespace Trinity
 		Application::setupInput();
 	}
 
+	void SceneEditorApp::update(float deltaTime)
+	{
+		if (mViewport != nullptr)
+		{
+			mViewport->update(deltaTime);
+		}
+	}
+
 	void SceneEditorApp::onDraw(float deltaTime)
 	{
 		EditorApp::onDraw(deltaTime);
 
-		if (mSceneViewport != nullptr)
+		if (mViewport != nullptr)
 		{
-			mSceneViewport->drawContent(deltaTime);
+			mViewport->drawContent(deltaTime);
 		}
 	}
 
@@ -92,9 +102,9 @@ namespace Trinity
 		}
 		else if (name == "inspector")
 		{
-			if (mSceneInspector != nullptr)
+			if (mInspector != nullptr)
 			{
-				mSceneInspector->setEnabled(true);
+				mInspector->setEnabled(true);
 			}
 		}
 	}
@@ -117,9 +127,9 @@ namespace Trinity
 				}
 
 				mCurrentScene = scene;
-				mSceneHierarchy->setScene(*mCurrentScene);
-				mSceneViewport->setScene(*mCurrentScene);
-				mSceneInspector->setScene(*mCurrentScene);
+				mHierarchy->setScene(*mCurrentScene);
+				mViewport->setScene(*mCurrentScene);
+				mInspector->setScene(*mCurrentScene);
 			}
 			else
 			{
@@ -239,7 +249,7 @@ namespace Trinity
 	SceneViewport* SceneEditorApp::createSceneViewport(const std::string& title, Scene& scene)
 	{
 		auto sceneViewport = std::make_unique<SceneViewport>();
-		if (!sceneViewport->create(*mEditorResources))
+		if (!sceneViewport->create(*mResources))
 		{
 			LogError("Viewport::create() failed");
 			return nullptr;
@@ -247,10 +257,9 @@ namespace Trinity
 
 		sceneViewport->setTitle(title);
 		sceneViewport->setScene(scene);
-		sceneViewport->setCamera(*mEditorCamera);
 
 		sceneViewport->onResize.subscribe([this](auto width, auto height) {
-			onSceneViewportResize(width, height);
+			onViewportResize(width, height);
 		});
 
 		auto* resolution = sceneViewport->getSelectedResolution();
@@ -319,15 +328,15 @@ namespace Trinity
 
 	void SceneEditorApp::onSelectNodeClick(Node* selectedNode)
 	{
-		mSceneInspector->setSelectedNode(selectedNode);
-		mSceneViewport->setSelectedNode(selectedNode);
+		mInspector->setSelectedNode(selectedNode);
+		mViewport->setSelectedNode(selectedNode);
 	}
 
-	void SceneEditorApp::onSceneViewportResize(uint32_t width, uint32_t height)
+	void SceneEditorApp::onViewportResize(uint32_t width, uint32_t height)
 	{
-		if (mSceneViewport != nullptr)
+		if (mViewport != nullptr)
 		{
-			auto* frameBuffer = mSceneViewport->getFrameBuffer();
+			auto* frameBuffer = mViewport->getFrameBuffer();
 			auto* colorTarget = frameBuffer->getColorTexture();
 
 			if (colorTarget != nullptr)
@@ -335,16 +344,11 @@ namespace Trinity
 				mImGuiRenderer->invalidateTexture(*colorTarget);
 			}
 		}
-
-		if (mEditorCamera != nullptr)
-		{
-			mEditorCamera->setSize(glm::vec2{ (float)width, (float)height });
-		}
 	}
 
 	void SceneEditorApp::onComponentSelect(const SelectionItem& item)
 	{
-		auto* selectedNode = mSceneHierarchy->getCurrentNode();
+		auto* selectedNode = mHierarchy->getCurrentNode();
 		auto& componentName = item.name;
 
 		if (selectedNode != nullptr && !componentName.empty())

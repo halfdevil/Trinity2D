@@ -120,15 +120,21 @@ namespace Trinity
 		auto textureFileName = reader.readString();
 		if (!textureFileName.empty())
 		{
-			auto texture = std::make_unique<Texture>();
-			if (!texture->create(textureFileName, wgpu::TextureFormat::RGBA8Unorm))
+			if (!cache.isLoaded<Texture>(textureFileName))
 			{
-				LogError("Texture::create() failed for: '%s'", textureFileName.c_str());
-				return false;
+				auto texture = std::make_unique<Texture>();
+				if (!texture->create(textureFileName, wgpu::TextureFormat::RGBA8Unorm))
+				{
+					LogError("Texture::create() failed for: '%s'", textureFileName.c_str());
+					return false;
+				}
+				else
+				{
+					cache.addResource(std::move(texture));
+				}
 			}
 
-			mTextureRenderable->mTexture = texture.get();
-			cache.addResource(std::move(texture));
+			mTextureRenderable->mTexture = cache.getResource<Texture>(textureFileName);
 		}
 
 		if (!reader.read(glm::value_ptr(mTextureRenderable->mOrigin)))
@@ -170,7 +176,7 @@ namespace Trinity
 		{
 			LogError("FileWriter::writeString() failed for '%s'", textureFileName.c_str());
 			return false;
-;		}
+		}
 
 		if (!writer.write(glm::value_ptr(mTextureRenderable->mOrigin)))
 		{
@@ -228,15 +234,21 @@ namespace Trinity
 		auto textureFileName = object["texture"].get<std::string>();
 		if (!textureFileName.empty())
 		{
-			auto texture = std::make_unique<Texture>();
-			if (!texture->create(textureFileName, wgpu::TextureFormat::RGBA8Unorm))
+			if (!cache.isLoaded<Texture>(textureFileName))
 			{
-				LogError("Texture::create() failed for: '%s'", textureFileName.c_str());
-				return false;
+				auto texture = std::make_unique<Texture>();
+				if (!texture->create(textureFileName, wgpu::TextureFormat::RGBA8Unorm))
+				{
+					LogError("Texture::create() failed for: '%s'", textureFileName.c_str());
+					return false;
+				}
+				else
+				{
+					cache.addResource(std::move(texture));
+				}
 			}
 
-			mTextureRenderable->mTexture = texture.get();
-			cache.addResource(std::move(texture));
+			mTextureRenderable->mTexture = cache.getResource<Texture>(textureFileName);
 		}
 
 		mTextureRenderable->mOrigin = {

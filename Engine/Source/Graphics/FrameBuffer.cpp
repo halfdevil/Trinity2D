@@ -125,6 +125,9 @@ namespace Trinity
 
             mDepthStencilAttachment.view = mDepthTexture->getView();
         }
+
+        mWidth = width;
+        mHeight = height;
     }
 
     bool FrameBuffer::addColorAttachment(

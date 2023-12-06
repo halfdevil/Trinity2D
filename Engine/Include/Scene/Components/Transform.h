@@ -28,17 +28,17 @@ namespace Trinity
 		Transform(Transform&&) = default;
 		Transform& operator = (Transform&&) = default;
 
-		const glm::vec3& getTranslation() const
+		const glm::vec2& getTranslation() const
 		{
 			return mTranslation;
 		}
 
-		const glm::vec3& getRotation() const
+		float getRotation() const
 		{
 			return mRotation;
 		}
 
-		const glm::vec3& getScale() const
+		const glm::vec2& getScale() const
 		{
 			return mScale;
 		}
@@ -54,12 +54,12 @@ namespace Trinity
 
 		virtual void setMatrix(const glm::mat4& matrix);
 		virtual void setWorldMatrix(const glm::mat4& matrix);
-		virtual void setWorldMatrix(const glm::vec3& translation, const glm::vec3& rotation,
-			const glm::vec3& scale);
+		virtual void setWorldMatrix(const glm::vec2& translation, float rotation,
+			const glm::vec2& scale);
 
-		virtual void setTranslation(const glm::vec3& translation);
-		virtual void setRotation(const glm::vec3& rotation);
-		virtual void setScale(const glm::vec3& scale);
+		virtual void setTranslation(const glm::vec2& translation);
+		virtual void setRotation(float rotation);
+		virtual void setScale(const glm::vec2& scale);
 		virtual void invalidateWorldMatrix();
 
 	public:
@@ -72,9 +72,9 @@ namespace Trinity
 
 	protected:
 
-		glm::vec3 mTranslation{ 0.0f, 0.0f, 0.0f };
-		glm::vec3 mRotation{ 0.0f };
-		glm::vec3 mScale{ 1.0f, 1.0f, 1.0f };
+		glm::vec2 mTranslation{ 0.0f };
+		float mRotation{ 0.0f };
+		glm::vec2 mScale{ 1.0f };
 		glm::mat4 mWorldMatrix{ 1.0f };
 
 	private:

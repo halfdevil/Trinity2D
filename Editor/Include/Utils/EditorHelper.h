@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Editor/EditorLayout.h"
 #include <string>
 #include "imgui.h"
 #include "glm/glm.hpp"
@@ -18,5 +19,8 @@ namespace Trinity
 		static bool imageButton(ImGuiID id, Texture* texture, const glm::vec2& size);
 		static bool assetIcon(ImGuiID id, Texture* texture, const glm::vec2& iconSize, const std::string& text, 
 			const glm::vec2& textSize, float textPadding, bool& doubleClicked);
+
+		static ListBoxOperation listBox(const std::string& label, int32_t& selectedIndex, 
+			const std::vector<const char*>& items);
 	};
 }

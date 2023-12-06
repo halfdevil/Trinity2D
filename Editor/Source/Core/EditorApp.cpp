@@ -45,8 +45,8 @@ namespace Trinity
 			return false;
 		}
 
-		mEditorResources = std::make_unique<EditorResources>();
-		if (!mEditorResources->create(mConfig["resources"], *mResourceCache))
+		mResources = std::make_unique<EditorResources>();
+		if (!mResources->create(mConfig["resources"], *mResourceCache))
 		{
 			LogError("EditorCache::create() failed");
 			return false;
@@ -65,16 +65,6 @@ namespace Trinity
 			LogError("EditorLayout::updateFiles() failed for 'texture'");
 			return false;
 		}
-
-		mEditorScene = createDefaultScene();
-		if (!mEditorScene)
-		{
-			LogError("EditorApp::createDefaultScene() for editor failed");
-			return false;
-		}
-
-		auto cameras = mEditorScene->getComponents<Camera>();
-		mEditorCamera = cameras[0];
 
 		mMainMenu = createMainMenu();
 		mFileDialog = createFileDialog();
@@ -136,7 +126,7 @@ namespace Trinity
 	{		
 	}
 
-	Scene* EditorApp::createDefaultScene(float width, float height, float nearPlane, float farPlane)
+	Scene* EditorApp::createDefaultScene(float width, float height)
 	{
 		auto scene = std::make_unique<Scene>();
 		scene->setName("New Scene");
@@ -148,9 +138,7 @@ namespace Trinity
 
 		auto* cameraNode = scene->addEmpty();
 		cameraNode->setName("Camera");
-
-		scene->addCamera("Camera", glm::vec2{ width, height },  
-			nearPlane, farPlane);
+		scene->addCamera("Camera", glm::vec2{ width, height });
 
 		auto* scenePtr = scene.get();
 		mResourceCache->addResource(std::move(scene));
@@ -174,7 +162,7 @@ namespace Trinity
 	AssetFileDialog* EditorApp::createFileDialog()
 	{
 		auto fileDialog = std::make_unique<AssetFileDialog>();
-		if (!fileDialog->create("/Assets", *mEditorResources))
+		if (!fileDialog->create("/Assets", *mResources))
 		{
 			LogError("AssetFileDialog::create() failed");
 			return nullptr;
@@ -193,7 +181,7 @@ namespace Trinity
 	MessageBox* EditorApp::createMessageBox()
 	{
 		auto messageBox = std::make_unique<MessageBox>();
-		if (!messageBox->create(500, 250, *mEditorResources))
+		if (!messageBox->create(500, 250, *mResources))
 		{
 			LogError("MessageBox::create() failed");
 			return nullptr;
@@ -211,7 +199,7 @@ namespace Trinity
 	AssetBrowser* EditorApp::createAssetBrowser(const std::string& title)
 	{
 		auto assetBrowser = std::make_unique<AssetBrowser>();
-		if (!assetBrowser->create("/Assets", *mEditorResources))
+		if (!assetBrowser->create("/Assets", *mResources))
 		{
 			LogError("AssetBrowser::create() failed");
 			return nullptr;

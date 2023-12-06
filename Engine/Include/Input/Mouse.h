@@ -49,8 +49,8 @@ namespace Trinity
     public:
 
         Observer<int32_t, bool> onButtonStateUpdated;
-        Observer<int32_t, int32_t> onPositionUpdated;
-        Observer<int32_t, int32_t> onScrollUpdated;
+        Observer<float, float> onPositionUpdated;
+        Observer<float, float> onScrollUpdated;
 
     private:
 

@@ -21,7 +21,7 @@ namespace Trinity
 	public:
 
 		Image() = default;
-		~Image() = default;
+		virtual ~Image() = default;
 
 		Image(const Image&) = delete;
 		Image& operator = (const Image&) = delete;
@@ -50,9 +50,11 @@ namespace Trinity
 		}
 
 		virtual bool create(const std::string& filePath);
-		virtual bool create(const std::vector<uint8_t>& data);
+		virtual bool create(std::vector<uint8_t>&& data);
 		virtual bool create(uint32_t width, uint32_t height, uint32_t channels, const uint8_t* data = nullptr);
+		
 		virtual void destroy();
+		virtual void blit(const Image& image, uint32_t x, uint32_t y);
 
 		virtual std::type_index getType() const override;
 		virtual std::vector<Mipmap> generateMipmaps() const;

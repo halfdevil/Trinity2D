@@ -28,6 +28,7 @@ namespace Trinity
 
 		virtual bool init() override;
 		virtual void setupInput() override;
+		virtual void update(float deltaTime) override;
 		virtual void onDraw(float deltaTime) override;
 
 		virtual Scene* openScene(const std::string& path);
@@ -46,15 +47,15 @@ namespace Trinity
 			const std::string& path) override;
 
 		virtual void onSelectNodeClick(Node* selectedNode);
-		virtual void onSceneViewportResize(uint32_t width, uint32_t height);
+		virtual void onViewportResize(uint32_t width, uint32_t height);
 		virtual void onComponentSelect(const SelectionItem& item);
 
 	protected:
 
 		Scene* mCurrentScene{ nullptr };
-		SceneHierarchy* mSceneHierarchy{ nullptr };
-		SceneViewport* mSceneViewport{ nullptr };
-		SceneInspector* mSceneInspector{ nullptr };
+		SceneHierarchy* mHierarchy{ nullptr };
+		SceneViewport* mViewport{ nullptr };
+		SceneInspector* mInspector{ nullptr };
 		SelectionWindow* mComponentsWindow{ nullptr };
 	};
 }

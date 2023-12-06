@@ -78,7 +78,7 @@ namespace Trinity
 	public:
 
 		BatchRenderer() = default;
-		~BatchRenderer();
+		virtual ~BatchRenderer();
 
 		BatchRenderer(const BatchRenderer&) = delete;
 		BatchRenderer& operator = (const BatchRenderer&) = delete;

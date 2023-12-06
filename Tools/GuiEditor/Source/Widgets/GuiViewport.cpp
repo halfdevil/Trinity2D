@@ -10,6 +10,7 @@
 #include "Core/EditorTheme.h"
 #include "Core/EditorResources.h"
 #include "Core/EditorGizmo.h"
+#include "Core/EditorCamera.h"
 #include "Core/ResourceCache.h"
 #include "Core/Logger.h"
 
@@ -51,24 +52,15 @@ namespace Trinity
 		mSelectedWidget = widget;
 	}
 
-	void GuiViewport::resize(uint32_t width, uint32_t height)
-	{
-		Viewport::resize(width, height);
-
-		if (mGuiSystem != nullptr)
-		{
-			mGuiSystem->setProjection(0, 0, (float)width, (float)height);
-		}
-	}
-
 	void GuiViewport::drawContent(float deltaTime)
 	{
 		mRenderPass->begin(*mFrameBuffer);
-		mGuiSystem->draw(*mRenderPass);
-		mRenderPass->end();
-	}
 
-	void GuiViewport::editTransform(float x, float y, float width, float height)
-	{		
+		if (mCamera != nullptr)
+		{
+			mGuiSystem->draw(*mRenderPass, mCamera->getViewProj());
+		}
+
+		mRenderPass->end();
 	}
 }

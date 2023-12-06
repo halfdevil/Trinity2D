@@ -68,7 +68,7 @@ namespace Trinity
 
 		if (component.getType() == typeid(Script))
 		{
-			mScriptContainer.setScript(dynamic_cast<Script&>(component));
+			mScriptContainer.setScript((Script&)component);
 			return;
 		}
 

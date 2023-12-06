@@ -43,7 +43,9 @@ namespace Trinity
 		virtual void setGui(Gui& gui);
 		virtual void setProjection(float x, float y, float width, float height);
 		virtual void update(float deltaTime);
+
 		virtual void draw(const RenderPass& renderPass);
+		virtual void draw(const RenderPass& renderPass, const glm::mat4& viewProj);
 
 		virtual void mouseMove(float x, float y);
 		virtual void mouseDown(int32_t button);

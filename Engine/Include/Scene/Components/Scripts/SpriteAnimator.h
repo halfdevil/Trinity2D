@@ -14,16 +14,16 @@ namespace Trinity
 		Swing
 	};
 
+	enum class SpriteAnimationState
+	{
+		Playing,
+		Paused,
+		Stopped
+	};
+
 	class SpriteAnimator : public Script
 	{
 	public:
-
-		enum class PlayState
-		{
-			Playing,
-			Paused,
-			Stopped
-		};
 
 		SpriteAnimator() = default;
 		virtual ~SpriteAnimator() = default;
@@ -44,14 +44,26 @@ namespace Trinity
 			return mLooping;
 		}
 
-		float getFrameLength() const
+		float getSpeed() const
 		{
-			return mFrameLength;
+			return mSpeed;
+		}
+
+		uint32_t getCurrentFrame() const
+		{
+			return mCurrentFrame;
+		}
+
+		SpriteAnimationState getState() const
+		{
+			return mState;
 		}
 
 		virtual bool play(const std::string& name, SpriteAnimationType animationType = SpriteAnimationType::Left, 
 			bool looping = false, float frameLength = 100.0f);
 
+		virtual void setSpeed(float frameLength);
+		virtual void setLooping(bool looping);
 		virtual void pause(bool paused);
 		virtual void stop();
 
@@ -71,9 +83,9 @@ namespace Trinity
 		SpriteAnimation* mCurrentAnimation{ nullptr };
 		uint32_t mCurrentFrame{ 0 };
 		float mCurrentFrameTime{ 0.0f };
-		float mFrameLength{ 0.0f };
-		bool mLooping{ false };
+		float mSpeed{ 100.0f };
+		bool mLooping{ true };
 		bool mForwardAnimation{ true };
-		PlayState mState{ PlayState::Stopped };
+		SpriteAnimationState mState{ SpriteAnimationState::Stopped };
 	};
 }

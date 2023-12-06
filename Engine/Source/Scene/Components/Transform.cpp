@@ -42,9 +42,9 @@ namespace Trinity
 
 	glm::mat4 Transform::getMatrix() const
 	{
-		return glm::translate(glm::mat4(1.0f), mTranslation) *
-			glm::yawPitchRoll(mRotation.y, mRotation.x, mRotation.z) *
-			glm::scale(glm::mat4(1.0f), mScale);
+		return glm::translate(glm::mat4(1.0f), glm::vec3(mTranslation, 0.0f)) *
+			glm::yawPitchRoll(0.0f, 0.0f, mRotation) *
+			glm::scale(glm::mat4(1.0f), glm::vec3(mScale, 1.0f));
 	}
 
 	glm::mat4 Transform::getWorldMatrix()
@@ -55,7 +55,16 @@ namespace Trinity
 
 	void Transform::setMatrix(const glm::mat4& matrix)
 	{
-		Math::decomposeTransform(matrix, mTranslation, mRotation, mScale);
+		glm::vec3 translation{ 0.0f };
+		glm::vec3 rotation{ 0.0f };
+		glm::vec3 scale{ 1.0f };
+
+		Math::decomposeTransform(matrix, translation, rotation, scale);
+
+		mTranslation = glm::vec2(translation);
+		mRotation = rotation.z;
+		mScale = glm::vec2(scale);
+
 		invalidateWorldMatrix();
 	}
 
@@ -75,11 +84,11 @@ namespace Trinity
 		mWorldMatrix = matrix;
 	}
 
-	void Transform::setWorldMatrix(const glm::vec3& translation, const glm::vec3& rotation, const glm::vec3& scale)
+	void Transform::setWorldMatrix(const glm::vec2& translation, float rotation, const glm::vec2& scale)
 	{
-		mWorldMatrix = glm::translate(glm::mat4(1.0f), translation) *
-			glm::yawPitchRoll(rotation.y, rotation.x, rotation.z) *
-			glm::scale(glm::mat4(1.0f), scale);
+		mWorldMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(translation, 0.0f)) *
+			glm::yawPitchRoll(0.0f, 0.0f, rotation) *
+			glm::scale(glm::mat4(1.0f), glm::vec3(scale, 1.0f));
 
 		auto parent = mNode->getParent();
 		if (parent != nullptr)
@@ -93,19 +102,19 @@ namespace Trinity
 		}
 	}
 
-	void Transform::setTranslation(const glm::vec3& translation)
+	void Transform::setTranslation(const glm::vec2& translation)
 	{
 		mTranslation = translation;
 		invalidateWorldMatrix();
 	}
 
-	void Transform::setRotation(const glm::vec3& rotation)
+	void Transform::setRotation(float rotation)
 	{
 		mRotation = rotation;
 		invalidateWorldMatrix();
 	}
 
-	void Transform::setScale(const glm::vec3& scale)
+	void Transform::setScale(const glm::vec2& scale)
 	{
 		mScale = scale;
 		invalidateWorldMatrix();
@@ -152,17 +161,17 @@ namespace Trinity
 	{
 		if (layout.beginLayout("Transform"))
 		{
-			if (layout.inputVec3("Translation", mTransform->mTranslation))
+			if (layout.inputVec2("Translation", mTransform->mTranslation))
 			{
 				mTransform->invalidateWorldMatrix();
 			}
 
-			if (layout.inputVec3("Rotation", mTransform->mRotation))
+			if (layout.inputFloat("Rotation", mTransform->mRotation))
 			{
 				mTransform->invalidateWorldMatrix();
 			}
 
-			if (layout.inputVec3("Scale", mTransform->mScale))
+			if (layout.inputVec2("Scale", mTransform->mScale))
 			{
 				mTransform->invalidateWorldMatrix();
 			}
@@ -191,7 +200,7 @@ namespace Trinity
 			return false;
 		}
 
-		if (!reader.read(glm::value_ptr(mTransform->mRotation)))
+		if (!reader.read(&mTransform->mRotation))
 		{
 			LogError("FileReader::read() failed for 'rotation'");
 			return false;
@@ -220,7 +229,7 @@ namespace Trinity
 			return false;
 		}
 
-		if (!writer.write(glm::value_ptr(mTransform->mRotation)))
+		if (!writer.write(&mTransform->mRotation))
 		{
 			LogError("FileWriter::write() failed for 'rotation'");
 			return false;
@@ -263,20 +272,13 @@ namespace Trinity
 
 		mTransform->mTranslation = {
 			object["translation"][0].get<float>(),
-			object["translation"][1].get<float>(),
-			object["translation"][2].get<float>()
+			object["translation"][1].get<float>()
 		};
 
-		mTransform->mRotation = {
-			object["rotation"][0].get<float>(),
-			object["rotation"][1].get<float>(),
-			object["rotation"][2].get<float>()
-		};
-
+		mTransform->mRotation =	object["rotation"].get<float>();
 		mTransform->mScale = {
 			object["scale"][0].get<float>(),
-			object["scale"][1].get<float>(),
-			object["scale"][2].get<float>()
+			object["scale"][1].get<float>()
 		};
 
 		return true;
@@ -292,20 +294,13 @@ namespace Trinity
 
 		object["translation"] = std::vector<float>{
 			mTransform->mTranslation.x,
-			mTransform->mTranslation.y,
-			mTransform->mTranslation.z
+			mTransform->mTranslation.y
 		};
 
-		object["rotation"] = std::vector<float>{
-			mTransform->mRotation.x,
-			mTransform->mRotation.y,
-			mTransform->mRotation.z
-		};
-
+		object["rotation"] = mTransform->mRotation;
 		object["scale"] = std::vector<float>{
 			mTransform->mScale.x,
-			mTransform->mScale.y,
-			mTransform->mScale.z
+			mTransform->mScale.y
 		};
 
 		return true;

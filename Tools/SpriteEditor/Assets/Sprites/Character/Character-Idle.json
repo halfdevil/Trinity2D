@@ -1,0 +1,65 @@
+{
+    "animations": [
+        {
+            "frames": [
+                0,
+                1,
+                2,
+                3
+            ],
+            "name": "animation0"
+        }
+    ],
+    "frames": [
+        {
+            "name": "frame0",
+            "position": [
+                0.0,
+                0.0
+            ],
+            "size": [
+                80.0,
+                80.0
+            ]
+        },
+        {
+            "name": "frame1",
+            "position": [
+                64.0,
+                0.0
+            ],
+            "size": [
+                80.0,
+                80.0
+            ]
+        },
+        {
+            "name": "frame2",
+            "position": [
+                128.0,
+                0.0
+            ],
+            "size": [
+                80.0,
+                80.0
+            ]
+        },
+        {
+            "name": "frame3",
+            "position": [
+                256.0,
+                0.0
+            ],
+            "size": [
+                80.0,
+                80.0
+            ]
+        }
+    ],
+    "name": "New Sprite",
+    "size": [
+        80.0,
+        80.0
+    ],
+    "texture": "/Assets/Sprites/Character/Idle-Sheet.png"
+}

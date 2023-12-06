@@ -49,9 +49,14 @@ namespace Trinity
 
 	void GuiSystem::draw(const RenderPass& renderPass)
 	{		
+		draw(renderPass, mProjection);
+	}
+
+	void GuiSystem::draw(const RenderPass& renderPass, const glm::mat4& viewProj)
+	{
 		if (mGui != nullptr)
 		{
-			mRenderer->begin(mProjection);
+			mRenderer->begin(viewProj);
 			mGui->getRoot()->draw(*mRenderer);
 			mRenderer->end(renderPass);
 		}

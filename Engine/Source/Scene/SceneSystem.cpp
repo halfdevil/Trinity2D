@@ -95,16 +95,23 @@ namespace Trinity
 	{
 		if (mCamera != nullptr)
 		{
-			drawTextures(renderPass);
-			drawSprites(renderPass);
+			auto viewProj = mCamera->getProjection() * mCamera->getView();
+			draw(renderPass, viewProj);
 		}
 	}
 
-	void SceneSystem::drawTextures(const RenderPass& renderPass)
+	void SceneSystem::draw(const RenderPass& renderPass, const glm::mat4& viewProj)
 	{
-		auto viewProj = mCamera->getProjection() * mCamera->getView();
-		auto renderables = mScene->getComponents<TextureRenderable>();
+		if (mScene != nullptr)
+		{
+			drawTextures(renderPass, viewProj);
+			drawSprites(renderPass, viewProj);
+		}
+	}
 
+	void SceneSystem::drawTextures(const RenderPass& renderPass, const glm::mat4& viewProj)
+	{
+		auto renderables = mScene->getComponents<TextureRenderable>();
 		mRenderer->begin(viewProj);
 
 		for (auto& renderable : renderables)
@@ -136,14 +143,14 @@ namespace Trinity
 		mRenderer->end(renderPass);
 	}
 
-	void SceneSystem::drawSprites(const RenderPass& renderPass)
+	void SceneSystem::drawSprites(const RenderPass& renderPass, const glm::mat4& viewProj)
 	{
-		auto viewProj = mCamera->getProjection() * mCamera->getView();
 		auto renderables = mScene->getComponents<SpriteRenderable>();
-
-		std::sort(renderables.begin(), renderables.end(), [](const auto& a, const auto& b) {
-			return a->getLayer() > b->getLayer();
-			});
+		std::sort(renderables.begin(), renderables.end(), 
+			[](const auto& a, const auto& b) {
+				return a->getLayer() > b->getLayer();
+			}
+		);
 
 		mRenderer->begin(viewProj);
 

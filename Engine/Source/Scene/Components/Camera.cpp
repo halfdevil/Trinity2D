@@ -19,7 +19,7 @@ namespace Trinity
 		float halfWidth = 0.5f * mSize.x;
 		float halfHeight = 0.5f * mSize.y;
 
-		return glm::ortho(-halfWidth, halfWidth, -halfHeight, halfHeight, mNearPlane, mFarPlane);
+		return glm::ortho(-halfWidth, halfWidth, -halfHeight, halfHeight);
 	}
 
 	std::type_index Camera::getType() const
@@ -55,16 +55,6 @@ namespace Trinity
 		mSize = size;
 	}
 
-	void Camera::setNearPlane(float nearPlane)
-	{
-		mNearPlane = nearPlane;
-	}
-
-	void Camera::setFarPlane(float farPlane)
-	{
-		mFarPlane = farPlane;
-	}
-
 	void CameraEditor::setCamera(Camera& camera)
 	{
 		mCamera = &camera;
@@ -78,8 +68,6 @@ namespace Trinity
 			addCommonFields(layout);
 
 			layout.inputVec2("Size", mCamera->mSize);
-			layout.inputFloat("Near Plane", mCamera->mNearPlane);
-			layout.inputFloat("Far Plane", mCamera->mFarPlane);
 			layout.endLayout();
 		}
 	}
@@ -104,18 +92,6 @@ namespace Trinity
 			return false;
 		}
 
-		if (!reader.read(&mCamera->mNearPlane))
-		{
-			LogError("FileReader::read() failed for 'near plane'");
-			return false;
-		}
-
-		if (!reader.read(&mCamera->mFarPlane))
-		{
-			LogError("FileReader::read() failed for 'far plane'");
-			return false;
-		}
-
 		return true;
 	}
 
@@ -130,18 +106,6 @@ namespace Trinity
 		if (!writer.write(glm::value_ptr(mCamera->mSize)))
 		{
 			LogError("FileWriter::write() failed for 'size'");
-			return false;
-		}
-
-		if (!writer.write(&mCamera->mNearPlane))
-		{
-			LogError("FileWriter::write() failed for 'near plane'");
-			return false;
-		}
-
-		if (!writer.write(&mCamera->mFarPlane))
-		{
-			LogError("FileWriter::write() failed for 'far plane'");
 			return false;
 		}
 
@@ -162,21 +126,10 @@ namespace Trinity
 			return false;
 		}
 
-		if (!object.contains("nearPlane"))
-		{
-			LogError("JSON Camera object doesn't contain 'nearPlane' key");
-			return false;
-		}
-
-		if (!object.contains("farPlane"))
-		{
-			LogError("JSON Camera object doesn't contain 'farPlane' key");
-			return false;
-		}
-
-		mCamera->mSize = { object["size"][0].get<float>(), object["size"][1].get<float>()};
-		mCamera->mNearPlane = object["nearPlane"].get<float>();
-		mCamera->mFarPlane = object["farPlane"].get<float>();
+		mCamera->mSize = { 
+			object["size"][0].get<float>(), 
+			object["size"][1].get<float>()
+		};
 
 		return true;
 	}
@@ -193,9 +146,6 @@ namespace Trinity
 			mCamera->mSize.x, 
 			mCamera->mSize.y
 		};
-
-		object["nearPlane"] = mCamera->mNearPlane;
-		object["farPlane"] = mCamera->mFarPlane;
 
 		return true;
 	}

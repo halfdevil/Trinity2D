@@ -16,17 +16,12 @@ namespace Trinity
 		mOperation = operation;
 	}
 
-	void EditorGizmo::setCamera(Camera& camera)
-	{
-		mCamera = &camera;
-	}
-
 	void EditorGizmo::setRect(float x, float y, float width, float height)
 	{
 		ImGuizmo::SetRect(x, y, width, height);
 	}
 
-	bool EditorGizmo::show(glm::mat4& matrix)
+	bool EditorGizmo::show(const glm::mat4& view, const glm::mat4& projection, glm::mat4& matrix)
 	{
 		ImGuizmo::SetDrawlist();
 
@@ -34,8 +29,8 @@ namespace Trinity
 		auto mode = (ImGuizmo::MODE)mMode;
 
 		ImGuizmo::Manipulate(
-			glm::value_ptr(mCamera->getView()), 
-			glm::value_ptr(mCamera->getProjection()), 
+			glm::value_ptr(view), 
+			glm::value_ptr(projection), 
 			operation, 
 			mode, 
 			glm::value_ptr(matrix)

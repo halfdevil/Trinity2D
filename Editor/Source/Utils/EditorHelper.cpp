@@ -2,6 +2,7 @@
 #include "Graphics/Texture.h"
 #include "Core/Logger.h"
 #include "imgui_internal.h"
+#include "IconsFontAwesome6.h"
 
 namespace Trinity
 {
@@ -78,5 +79,45 @@ namespace Trinity
 
 		ImGui::PopStyleVar();
 		return clicked;
+	}
+
+	ListBoxOperation EditorHelper::listBox(const std::string& label, int32_t& selectedIndex, const std::vector<const char*>& items)
+	{
+		ListBoxOperation operation{ ListBoxOperation::None };
+
+		if (ImGui::ListBox(label.c_str(), &selectedIndex, items.data(), (int)items.size()))
+		{
+			operation = ListBoxOperation::Select;
+		}
+		
+		ImGui::Separator();
+
+		if (ImGui::Button(ICON_FA_PLUS))
+		{
+			operation = ListBoxOperation::Add;
+		}
+
+		ImGui::SameLine();
+
+		if (ImGui::Button(ICON_FA_TRASH))
+		{
+			operation = ListBoxOperation::Delete;
+		}
+
+		ImGui::SameLine();
+
+		if (ImGui::Button(ICON_FA_CARET_UP))
+		{
+			operation = ListBoxOperation::Up;
+		}
+
+		ImGui::SameLine();
+
+		if (ImGui::Button(ICON_FA_CARET_DOWN))
+		{
+			operation = ListBoxOperation::Down;
+		}
+
+		return operation;
 	}
 }

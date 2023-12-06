@@ -21,18 +21,12 @@ namespace Trinity
 		GuiViewport(GuiViewport&&) = default;
 		GuiViewport& operator = (GuiViewport&&) = default;
 
-		virtual bool create(EditorResources& resources) override;
+		virtual bool create(EditorResources& resources);
 		virtual void destroy() override;
 
 		virtual void setGui(Gui& gui);
 		virtual void setSelectedWidget(Widget* widget);
-
-		virtual void resize(uint32_t width, uint32_t height) override;
 		virtual void drawContent(float deltaTime) override;
-
-	protected:
-
-		virtual void editTransform(float x, float y, float width, float height) override;
 
 	protected:
 

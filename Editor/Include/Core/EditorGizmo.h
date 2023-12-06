@@ -4,8 +4,6 @@
 
 namespace Trinity
 {
-	class Camera;
-
 	enum GizmoMode : uint32_t
 	{
 		Local = 0,
@@ -48,15 +46,13 @@ namespace Trinity
 
 		virtual void setMode(GizmoMode mode);
 		virtual void setOperation(GizmoOperation operation);
-		virtual void setCamera(Camera& camera);
 
 		virtual void setRect(float x, float y, float width, float height);
-		virtual bool show(glm::mat4& matrix);
+		virtual bool show(const glm::mat4& view, const glm::mat4& projection, glm::mat4& matrix);
 
 	protected:
 
 		GizmoMode mMode{ GizmoMode::Local };
 		GizmoOperation mOperation{ GizmoOperation::Translate };
-		Camera* mCamera{ nullptr };
 	};
 }

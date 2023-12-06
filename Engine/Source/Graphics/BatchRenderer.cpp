@@ -568,7 +568,7 @@ namespace Trinity
 			{ wgpu::VertexFormat::Float32x3, 0, 0 },
 			{ wgpu::VertexFormat::Float32x2, 12, 1 },
 			{ wgpu::VertexFormat::Float32x4, 20, 2 }
-			});
+		});
 
 		uint32_t numVertices = 128 * 1024;
 		uint32_t numIndices = 256 * 1024;

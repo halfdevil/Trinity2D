@@ -43,7 +43,7 @@ namespace Trinity
 		virtual bool inputVec3(const std::string& label, glm::vec3& value) const override;
 		virtual bool inputVec4(const std::string& label, glm::vec4& value) const override;
 		virtual bool inputQuat(const std::string& label, glm::quat& value) const override;
-
+		virtual bool inputString(const std::string& label, std::string& value) const override;
 		virtual bool checkbox(const std::string& label, bool& value) const override;
 
 		virtual bool beginCombo(const std::string& label, const std::string& preview) const override;
@@ -51,6 +51,8 @@ namespace Trinity
 		virtual void endCombo() const;
 
 		virtual bool fileCombo(const std::string& label, FileType fileType, std::string& selectedFile) const override;
+		virtual ListBoxOperation listBox(const std::string& label, int32_t& selectedIndex, const std::vector<const char*>& items) const;
+
 		virtual bool updateFiles(const std::string& dir, FileType fileType);
 
 	public:

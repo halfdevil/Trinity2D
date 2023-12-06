@@ -24,13 +24,18 @@ namespace Trinity
 
 		FileReader reader(*file);
 		std::vector<uint8_t> buffer(reader.getSize());
-		reader.read(buffer.data(), reader.getSize());
+		
+		if (!reader.read(buffer.data(), reader.getSize()))
+		{
+			LogError("FileReader::read() failed for: %s", filePath.c_str());
+			return false;
+		}
 
 		mFileName = filePath;
-		return create(buffer);
+		return create(std::move(buffer));
 	}
 
-	bool Image::create(const std::vector<uint8_t>& data)
+	bool Image::create(std::vector<uint8_t>&& data)
 	{
 		int32_t width{ 0 };
 		int32_t height{ 0 };
@@ -77,6 +82,29 @@ namespace Trinity
 	void Image::destroy()
 	{
 		mData.clear();
+	}
+
+	void Image::blit(const Image& image, uint32_t x, uint32_t y)
+	{
+		for (int32_t idx = 0; idx < (int32_t)image.mHeight; idx++)
+		{
+			auto dy = (int32_t)y + idx;
+			if (dy < 0 || dy >= (int32_t)mHeight)
+			{
+				continue;
+			}
+
+			for (int32_t jdx = 0; jdx < (int32_t)image.mWidth; jdx++)
+			{
+				auto dx = (int32_t)x + jdx;
+				if (dx < 0 || dx >= (int32_t)mWidth)
+				{
+					continue;;
+				}
+
+				mData[dx + dy * mWidth] = image.mData[jdx + idx * image.mWidth];
+			}
+		}
 	}
 
 	std::type_index Image::getType() const

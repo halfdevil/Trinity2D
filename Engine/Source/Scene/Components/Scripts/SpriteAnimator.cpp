@@ -18,23 +18,38 @@ namespace Trinity
 			return false;
 		}
 
-		mState = PlayState::Playing;
+		mState = SpriteAnimationState::Playing;
 		mCurrentAnimation = animation;
 		mCurrentFrame = 0;
 		mCurrentFrameTime = 0.0f;
+		mSpeed = frameLength;
 		mAnimationType = animationType;
 
 		return true;
 	}
 
+	void SpriteAnimator::setSpeed(float frameLength)
+	{
+		mSpeed = frameLength;
+	}
+
+	void SpriteAnimator::setLooping(bool looping)
+	{
+		mLooping = looping;
+	}
+
 	void SpriteAnimator::pause(bool paused)
 	{
-		mState = PlayState::Paused;
+		if (mState != SpriteAnimationState::Stopped)
+		{
+			mState = paused ? SpriteAnimationState::Paused :
+				SpriteAnimationState::Playing;
+		}
 	}
 
 	void SpriteAnimator::stop()
 	{
-		mState = PlayState::Stopped;
+		mState = SpriteAnimationState::Stopped;
 		mCurrentFrame = 0;
 		mCurrentFrameTime = 0;
 	}
@@ -58,12 +73,12 @@ namespace Trinity
 
 	void SpriteAnimator::update(float deltaTime)
 	{
-		if (mState != PlayState::Playing)
+		if (mState != SpriteAnimationState::Playing)
 		{
 			return;
 		}
 
-		mCurrentFrameTime += deltaTime * (1.0f / mFrameLength);
+		mCurrentFrameTime += mSpeed * (deltaTime / 1000.0f);
 		mCurrentFrame = (uint32_t)std::floor(mCurrentFrameTime);
 
 		auto& frames = mCurrentAnimation->frames;
@@ -118,6 +133,8 @@ namespace Trinity
 				default:
 					break;
 				}
+
+				mCurrentFrameTime = 0.0f;
 			}
 			else
 			{
@@ -146,8 +163,6 @@ namespace Trinity
 					break;
 				}
 			}
-
-			mCurrentFrameTime = 0.0f;
 		}
 	}
 

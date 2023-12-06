@@ -57,8 +57,8 @@ namespace Trinity
 	protected:
 
 		Camera* mCamera{ nullptr };
-		glm::vec3 mTranslation{ 0.0f };
-		glm::vec3 mRotation{ 0.0f };
+		glm::vec2 mTranslation{ 0.0f };
+		float mRotation{ 0.0f };
 		float mMoveSpeed{ 1.0f };
 		float mRotationSpeed{ 1.0f };
 	};

@@ -114,9 +114,7 @@ namespace Trinity
 
 		auto* camera = scene->addCamera(
 			"mainCamera", 
-			{ (float)mWindow->getWidth(), (float)mWindow->getHeight() },
-			0.1f, 
-			100.0f
+			{ (float)mWindow->getWidth(), (float)mWindow->getHeight() }
 		);
 
 		auto* cameraController = scene->addCameraController("mainCamera");

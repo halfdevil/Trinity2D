@@ -14,6 +14,7 @@
 #include "Core/EditorTheme.h"
 #include "Core/EditorResources.h"
 #include "Core/EditorGizmo.h"
+#include "Core/EditorCamera.h"
 #include "Core/ResourceCache.h"
 #include "Core/Logger.h"
 
@@ -55,20 +56,10 @@ namespace Trinity
 		mSelectedNode = node;
 	}
 
-	void SceneViewport::setCamera(Camera& camera)
-	{
-		Viewport::setCamera(camera);
-		
-		if (mSceneSystem != nullptr)
-		{
-			mSceneSystem->setCamera(camera);
-		}
-	}
-
 	void SceneViewport::drawContent(float deltaTime)
 	{
 		mRenderPass->begin(*mFrameBuffer);
-		mSceneSystem->draw(*mRenderPass);
+		mSceneSystem->draw(*mRenderPass, mCamera->getViewProj());
 		mRenderPass->end();
 	}
 
@@ -81,10 +72,23 @@ namespace Trinity
 			auto& transform = mSelectedNode->getTransform();
 			auto matrix = transform.getWorldMatrix();
 
-			if (mGizmo->show(matrix))
+			if (mGizmo->show(mCamera->getView(), mCamera->getProjection(), matrix))
 			{
 				transform.setWorldMatrix(matrix);
 			}
+		}
+	}
+
+	void SceneViewport::onViewportResize(uint32_t width, uint32_t height)
+	{
+		Viewport::onViewportResize(width, height);
+
+		if (mCamera != nullptr)
+		{
+			float halfWidth = 0.5f * width;
+			float halfHeight = 0.5f * height;
+
+			mCamera->setSize(-halfWidth, halfWidth, -halfHeight, halfHeight);
 		}
 	}
 }

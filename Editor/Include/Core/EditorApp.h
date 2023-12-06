@@ -39,7 +39,7 @@ namespace Trinity
 
 		EditorResources* getEditorResource() const
 		{
-			return mEditorResources.get();
+			return mResources.get();
 		}
 
 	protected:
@@ -55,9 +55,7 @@ namespace Trinity
 		
 		virtual Scene* createDefaultScene(
 			float width = 1024.0f, 
-			float height = 768.0f,
-			float nearPlane = 0.0f, 
-			float farPlane = 100.0f
+			float height = 768.0f
 		);
 
 		virtual MenuBar* createMainMenu();
@@ -75,11 +73,9 @@ namespace Trinity
 		std::unique_ptr<RenderPass> mRenderPass{ nullptr };
 		std::unique_ptr<EditorTheme> mTheme{ nullptr };
 		std::unique_ptr<EditorLayout> mLayout{ nullptr };
-		std::unique_ptr<EditorResources> mEditorResources{ nullptr };
+		std::unique_ptr<EditorResources> mResources{ nullptr };
 		std::vector<std::unique_ptr<EditorWidget>> mWidgets;
 		ImGuiFont* mFont{ nullptr };
-		Scene* mEditorScene{ nullptr };
-		Camera* mEditorCamera{ nullptr };
 		MenuBar* mMainMenu{ nullptr };
 		AssetBrowser* mAssetBrowser{ nullptr };
 		AssetFileDialog* mFileDialog{ nullptr };

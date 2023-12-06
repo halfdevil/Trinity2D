@@ -41,8 +41,6 @@ namespace Trinity
 		virtual ISerializer* getSerializer(Scene& scene) override;
 
 		virtual void setSize(const glm::vec2& size);
-		virtual void setNearPlane(float nearPlane);
-		virtual void setFarPlane(float farPlane);
 
 	public:
 
@@ -51,8 +49,6 @@ namespace Trinity
 	protected:
 
 		glm::vec2 mSize{ 0.0f };
-		float mNearPlane{ 0.0f };
-		float mFarPlane{ 100.0f };
 	};
 
 	class CameraEditor : public ComponentEditor

@@ -78,8 +78,8 @@ namespace Trinity
 			auto& translation = transform.getTranslation();
 			auto& position = mShape->getPosition();
 
-			transform.setTranslation(glm::vec3(position.x, position.y, translation.z));
-			transform.setRotation(glm::vec3(0.0f, 0.0f, mShape->getAngle()));
+			transform.setTranslation(position);
+			transform.setRotation(mShape->getAngle());
 		}
 	}
 

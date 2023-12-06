@@ -3,6 +3,8 @@
 #include "Core/EditorTheme.h"
 #include "Core/EditorResources.h"
 #include "Core/EditorGizmo.h"
+#include "Core/EditorCamera.h"
+#include "Core/EditorGrid.h"
 #include "Core/ResourceCache.h"
 #include "Core/Logger.h"
 #include "Core/Debugger.h"
@@ -60,6 +62,14 @@ namespace Trinity
 	void GuiEditorApp::setupInput()
 	{
 		Application::setupInput();
+	}
+
+	void GuiEditorApp::update(float deltaTime)
+	{
+		if (mGuiViewport != nullptr)
+		{
+			mGuiViewport->update(deltaTime);
+		}
 	}
 
 	void GuiEditorApp::onDraw(float deltaTime)
@@ -156,7 +166,7 @@ namespace Trinity
 		return fileDialog;
 	}
 
-	Gui* GuiEditorApp::createDefaultGui()
+	Gui* GuiEditorApp::createDefaultGui() const
 	{
 		auto gui = std::make_unique<Gui>();
 		gui->setName("New Gui");
@@ -193,7 +203,7 @@ namespace Trinity
 	GuiViewport* GuiEditorApp::createGuiViewport(const std::string& title, Gui& gui)
 	{
 		auto guiViewport = std::make_unique<GuiViewport>();
-		if (!guiViewport->create(*mEditorResources))
+		if (!guiViewport->create(*mResources))
 		{
 			LogError("Viewport::create() failed");
 			return nullptr;
@@ -201,7 +211,6 @@ namespace Trinity
 
 		guiViewport->setTitle(title);
 		guiViewport->setGui(gui);
-		guiViewport->setCamera(*mEditorCamera);
 
 		guiViewport->onResize.subscribe([this](auto width, auto height) {
 			onGuiViewportResize(width, height);
@@ -283,11 +292,6 @@ namespace Trinity
 			{
 				mImGuiRenderer->invalidateTexture(*colorTarget);
 			}
-		}
-
-		if (mEditorCamera != nullptr)
-		{
-			mEditorCamera->setSize(glm::vec2{ (float)width, (float)height });
 		}
 
 		if (mCurrentGui != nullptr)

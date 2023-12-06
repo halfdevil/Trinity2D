@@ -1,5 +1,6 @@
 #include "Scene/Scene.h"
 #include "Scene/Node.h"
+#include "Scene/Sprite.h"
 #include "Scene/Component.h"
 #include "Scene/Components/Light.h"
 #include "Scene/Components/Camera.h"
@@ -95,6 +96,20 @@ namespace Trinity
 	const std::vector<std::unique_ptr<Component>>& Scene::getComponents(const std::type_index& type) const
 	{
 		return mComponents.at(type);
+	}
+
+	Component* Scene::getComponent(const std::type_index& type) const
+	{
+		if (hasComponent(type))
+		{
+			const auto& components = getComponents(type);
+			if (components.size() > 0)
+			{
+				return components[0].get();
+			}
+		}
+
+		return nullptr;
 	}
 
 	void Scene::addNode(std::unique_ptr<Node> node)
@@ -237,7 +252,7 @@ namespace Trinity
 		return renderablePtr;
 	}
 
-	Camera* Scene::addCamera(const std::string& nodeName, const glm::vec2& size, float nearPlane, float farPlane)
+	Camera* Scene::addCamera(const std::string& nodeName, const glm::vec2& size)
 	{
 		auto node = findNode(nodeName);
 		if (!node)
@@ -250,8 +265,6 @@ namespace Trinity
 		camera->setName("Camera");
 		camera->setNode(*node);
 		camera->setSize(size);
-		camera->setNearPlane(nearPlane);
-		camera->setFarPlane(farPlane);
 
 		auto* cameraPtr = camera.get();
 		addComponent(std::move(camera), *node);
@@ -273,12 +286,51 @@ namespace Trinity
 		controller->setNode(*node);
 
 		auto* controllerPtr = controller.get();
-		addComponent(std::move(controller));
-
-		auto& container = node->getScriptContainer();
-		container.setScript(*controllerPtr);
+		addComponent(std::move(controller), *node);
 
 		return controllerPtr;
+	}
+
+	SpriteRenderable* Scene::addSpriteRenderable(Sprite& sprite, const std::string& nodeName, const glm::vec2& origin, 
+		const glm::bvec2& flip, const glm::vec4& color)
+	{
+		auto node = findNode(nodeName);
+		if (!node)
+		{
+			LogError("Node not found: '%s'", nodeName.c_str());
+			return nullptr;
+		}
+
+		auto renderable = std::make_unique<SpriteRenderable>();
+		renderable->setName("Sprite Renderable");
+		renderable->setNode(*node);
+		renderable->setSprite(sprite);
+		renderable->setOrigin(origin);
+		renderable->setFlip(flip);
+
+		auto* renderablePtr = renderable.get();
+		addComponent(std::move(renderable), *node);
+
+		return renderablePtr;
+	}
+
+	SpriteAnimator* Scene::addSpriteAnimator(const std::string& nodeName)
+	{
+		auto node = findNode(nodeName);
+		if (!node)
+		{
+			LogError("Node not found: '%s'", nodeName.c_str());
+			return nullptr;
+		}
+
+		auto animator = std::make_unique<SpriteAnimator>();
+		animator->setName("Sprite Animator");
+		animator->setNode(*node);
+
+		auto* animatorPtr = animator.get();
+		addComponent(std::move(animator), *node);
+
+		return animatorPtr;
 	}
 
 	void SceneSerializer::setScene(Scene& scene)

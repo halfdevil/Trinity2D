@@ -1,0 +1,113 @@
+{
+    "animations": [
+        {
+            "frames": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7
+            ],
+            "name": "animation0"
+        }
+    ],
+    "frames": [
+        {
+            "name": "frame0",
+            "position": [
+                0.0,
+                0.0
+            ],
+            "size": [
+                80.0,
+                80.0
+            ]
+        },
+        {
+            "name": "frame1",
+            "position": [
+                80.0,
+                0.0
+            ],
+            "size": [
+                80.0,
+                80.0
+            ]
+        },
+        {
+            "name": "frame2",
+            "position": [
+                160.0,
+                0.0
+            ],
+            "size": [
+                80.0,
+                80.0
+            ]
+        },
+        {
+            "name": "frame3",
+            "position": [
+                240.0,
+                0.0
+            ],
+            "size": [
+                80.0,
+                80.0
+            ]
+        },
+        {
+            "name": "frame4",
+            "position": [
+                320.0,
+                0.0
+            ],
+            "size": [
+                80.0,
+                80.0
+            ]
+        },
+        {
+            "name": "frame5",
+            "position": [
+                400.0,
+                0.0
+            ],
+            "size": [
+                80.0,
+                80.0
+            ]
+        },
+        {
+            "name": "frame6",
+            "position": [
+                480.0,
+                0.0
+            ],
+            "size": [
+                80.0,
+                80.0
+            ]
+        },
+        {
+            "name": "frame7",
+            "position": [
+                560.0,
+                0.0
+            ],
+            "size": [
+                80.0,
+                80.0
+            ]
+        }
+    ],
+    "name": "New Sprite",
+    "size": [
+        64.0,
+        64.0
+    ],
+    "texture": "/Assets/Sprites/Character/Run-Sheet.png"
+}

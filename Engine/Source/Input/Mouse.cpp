@@ -57,13 +57,13 @@ namespace Trinity
     void Mouse::updatePosition(float x, float y)
     {
         mCurrentPosition = { x , y };
-        onPositionUpdated.notify((int32_t)x, (int32_t)y);
+        onPositionUpdated.notify(x, y);
     }
 
     void Mouse::updateScroll(float x, float y)
     {
         mScroll = { x, y };
-        onScrollUpdated.notify((int32_t)x, (int32_t)y);
+        onScrollUpdated.notify(x, y);
     }
 
     void Mouse::postUpdate()

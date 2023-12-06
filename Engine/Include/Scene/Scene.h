@@ -22,6 +22,9 @@ namespace Trinity
 	class CameraController;
 	class TextureRenderable;
 	class Texture;
+	class SpriteRenderable;
+	class SpriteAnimator;
+	class Sprite;
 
 	class Scene : public Resource
 	{
@@ -57,7 +60,9 @@ namespace Trinity
 		virtual bool hasComponent(const std::type_index& type) const;
 		virtual Node* findNode(const std::string& name) const;
 		virtual Node* findNode(const UUIDv4::UUID& uuid) const;
+
 		virtual const std::vector<std::unique_ptr<Component>>& getComponents(const std::type_index& type) const;
+		virtual Component* getComponent(const std::type_index& type) const;
 
 		virtual void addNode(std::unique_ptr<Node> node);
 		virtual void addChild(Node& child);
@@ -106,12 +111,22 @@ namespace Trinity
 
 		virtual Camera* addCamera(
 			const std::string& nodeName,
-			const glm::vec2& size,
-			float nearPlane,
-			float farPlane
+			const glm::vec2& size
 		);
 
 		virtual CameraController* addCameraController(
+			const std::string& nodeName
+		);
+
+		virtual SpriteRenderable* addSpriteRenderable(
+			Sprite& sprite,
+			const std::string& nodeName,
+			const glm::vec2& origin = glm::vec2{ 0.5f },
+			const glm::bvec2& flip = glm::bvec2{ false },
+			const glm::vec4& color = glm::vec4{ 0.0f }
+		);
+
+		virtual SpriteAnimator* addSpriteAnimator(
 			const std::string& nodeName
 		);
 
@@ -154,6 +169,12 @@ namespace Trinity
 			}
 
 			return result;
+		}
+
+		template <typename T>
+		T* getComponent() const
+		{
+			return (T*)getComponent(typeid(T));
 		}
 
 		template <typename T>
