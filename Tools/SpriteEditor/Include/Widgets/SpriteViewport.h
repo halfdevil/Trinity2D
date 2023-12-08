@@ -27,6 +27,7 @@ namespace Trinity
 		virtual void destroy() override;
 
 		virtual void setSprite(Sprite& sprite);
+		virtual void setSelectedFrame(uint32_t selectedFrame);
 		virtual void drawContent(float deltaTime) override;
 
 	protected:
@@ -39,5 +40,6 @@ namespace Trinity
 		Sprite* mSprite{ nullptr };
 		glm::vec2 mPadding{ 10.0f };
 		std::unique_ptr<BatchRenderer> mRenderer{ nullptr };
+		uint32_t mSelectedFrame{ 0 };
 	};
 }

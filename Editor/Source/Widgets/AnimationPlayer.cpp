@@ -9,6 +9,7 @@
 #include "Core/EditorTheme.h"
 #include "Core/EditorResources.h"
 #include "Core/EditorCamera.h"
+#include "Core/EditorGrid.h"
 #include "Core/ResourceCache.h"
 #include "Core/Logger.h"
 #include "IconsFontAwesome6.h"
@@ -60,7 +61,17 @@ namespace Trinity
 	void AnimationPlayer::drawContent(float deltaTime)
 	{
 		mRenderPass->begin(*mFrameBuffer);
-		mSceneSystem->draw(*mRenderPass, mCamera->getViewProj());
+		
+		if (mGrid != nullptr)
+		{
+			mGrid->draw(*mRenderPass);
+		}
+
+		if (mScene != nullptr)
+		{
+			mSceneSystem->draw(*mRenderPass, mCamera->getViewProj());
+		}
+
 		mRenderPass->end();
 	}
 
@@ -128,6 +139,17 @@ namespace Trinity
 			}
 
 			ImGui::EndChild();
+		}
+	}
+
+	void AnimationPlayer::onViewportResize(uint32_t width, uint32_t height)
+	{
+		Viewport::onViewportResize(width, height);
+
+		if (mGrid != nullptr)
+		{
+			mGrid->setCanvasSize(glm::vec2{ (float)width, (float)height });
+			mGrid->updateGridData();
 		}
 	}
 

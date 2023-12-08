@@ -101,7 +101,7 @@ namespace Trinity
 
 	void SpriteAnimationPlayer::onViewportResize(uint32_t width, uint32_t height)
 	{
-		Viewport::onViewportResize(width, height);
+		AnimationPlayer::onViewportResize(width, height);
 
 		if (mCamera != nullptr)
 		{

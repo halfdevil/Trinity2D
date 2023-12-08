@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Core/Singleton.h"
 #include "glm/glm.hpp"
 #include <string>
 #include <vector>
@@ -18,13 +17,13 @@ namespace Trinity
 	class VertexBuffer;
 	class IndexBuffer;
 	class VertexLayout;
-	struct BoundingRect;
+	class BoundingRect;
 
-	class DebugHelper : public Singleton<DebugHelper>
+	class LineCanvas
 	{
 	public:
 
-		static constexpr const char* kShader = "/Assets/Engine/Shaders/Debug.wgsl";
+		static constexpr const char* kShader = "/Assets/Engine/Shaders/LineCanvas.wgsl";
 		static constexpr uint32_t kBindGroupIndex = 0;
 
 		struct Vertex
@@ -58,20 +57,21 @@ namespace Trinity
 			std::vector<uint32_t> indices;
 		};
 
-		DebugHelper() = default;
-		virtual ~DebugHelper();
+		LineCanvas() = default;
+		virtual ~LineCanvas();
 
-		DebugHelper(const DebugHelper&) = delete;
-		DebugHelper& operator = (const DebugHelper&) = delete;
+		LineCanvas(const LineCanvas&) = delete;
+		LineCanvas& operator = (const LineCanvas&) = delete;
 
-		DebugHelper(DebugHelper&&) = default;
-		DebugHelper& operator = (DebugHelper&&) = default;
+		LineCanvas(LineCanvas&&) = default;
+		LineCanvas& operator = (LineCanvas&&) = default;
 
 		virtual bool create(RenderTarget& renderTarget, ResourceCache& cache);
 		virtual void destroy();
 
 		virtual void line(const glm::vec2& p1, const glm::vec2& p2, const glm::vec4& color, float lineWidth = 1.0f);
-		virtual void box(const BoundingRect& rect, const glm::vec4& color, float lineWidth = 1.0f);
+		virtual void rect(const BoundingRect& rect, const glm::vec4& color, float lineWidth = 1.0f);
+		virtual void rect(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, float lineWidth = 1.0f);
 		virtual void draw(const glm::mat4& viewProj, const RenderPass& renderPass);
 
 	protected:

@@ -13,6 +13,7 @@ namespace Trinity
 	class Texture;
 	class RenderSystem;
 	class RenderPass;
+	class LineCanvas;
 	class EditorResources;
 	class EditorGizmo;
 	class EditorCamera;
@@ -48,6 +49,11 @@ namespace Trinity
 			return mFrameBuffer.get();
 		}
 
+		LineCanvas* getLineCanvas() const
+		{
+			return mLineCanvas.get();
+		}
+
 		EditorCamera* getCamera() const
 		{
 			return mCamera.get();
@@ -68,11 +74,8 @@ namespace Trinity
 			return mSize;
 		}
 
-		virtual bool create(
-			EditorResources& resources, 
-			uint32_t resolutionIndex = 0, 
-			const glm::vec4& clearColor = glm::vec4{ 0.5f, 0.5f, 0.5f, 1.0f }
-		);
+		virtual bool create(EditorResources& resources, uint32_t resolutionIndex = 0, 
+			const glm::vec4& clearColor = glm::vec4{ 0.5f, 0.5f, 0.5f, 1.0f });
 
 		virtual void destroy();				
 		virtual void resize(uint32_t width, uint32_t height);
@@ -98,8 +101,9 @@ namespace Trinity
 	protected:
 
 		std::unique_ptr<FrameBuffer> mFrameBuffer{ nullptr };
-		std::unique_ptr<EditorGizmo> mGizmo{ nullptr };
 		std::unique_ptr<RenderPass> mRenderPass{ nullptr };
+		std::unique_ptr<LineCanvas> mLineCanvas{ nullptr };
+		std::unique_ptr<EditorGizmo> mGizmo{ nullptr };
 		std::unique_ptr<EditorCamera> mCamera{ nullptr };
 		std::unique_ptr<EditorGrid> mGrid{ nullptr };
 		std::vector<Resolution> mResolutions;

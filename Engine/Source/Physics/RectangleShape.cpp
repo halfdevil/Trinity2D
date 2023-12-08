@@ -21,14 +21,20 @@ namespace Trinity
 	void RectangleShape::setSize(const glm::vec2& size)
 	{
 		mSize = size;
+		mCenter = {
+			mPosition.x + mSize.x * mOrigin.x,
+			mPosition.y + mSize.y * mOrigin.y
+		};
+
+		updateVertices();
 	}
 
 	void RectangleShape::setPosition(const glm::vec2& position)
 	{
 		mPosition = position;
 		mCenter = { 
-			position.x + mSize.x * mOrigin.x, 
-			position.y + mSize.y * mOrigin.y 
+			mPosition.x + mSize.x * mOrigin.x, 
+			mPosition.y + mSize.y * mOrigin.y 
 		};
 
 		updateVertices();
@@ -101,7 +107,7 @@ namespace Trinity
 		{
 			auto n = mFaceNormals[index];
 			auto dir = n * -1.0f;
-			auto pointOnEdge = mVertices[index];
+			auto& pointOnEdge = mVertices[index];
 
 			SupportPoint supportPoint;
 			hasSupport = otherRect.findSupportPoint(dir, pointOnEdge, supportPoint);

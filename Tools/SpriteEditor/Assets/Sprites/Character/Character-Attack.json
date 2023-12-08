@@ -1,0 +1,113 @@
+{
+    "animations": [
+        {
+            "frames": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7
+            ],
+            "name": "Attack"
+        }
+    ],
+    "frames": [
+        {
+            "name": "frame0",
+            "position": [
+                0.0,
+                0.0
+            ],
+            "size": [
+                96.0,
+                80.0
+            ]
+        },
+        {
+            "name": "frame1",
+            "position": [
+                96.0,
+                0.0
+            ],
+            "size": [
+                96.0,
+                80.0
+            ]
+        },
+        {
+            "name": "frame2",
+            "position": [
+                192.0,
+                0.0
+            ],
+            "size": [
+                96.0,
+                80.0
+            ]
+        },
+        {
+            "name": "frame3",
+            "position": [
+                288.0,
+                0.0
+            ],
+            "size": [
+                96.0,
+                80.0
+            ]
+        },
+        {
+            "name": "frame4",
+            "position": [
+                384.0,
+                0.0
+            ],
+            "size": [
+                96.0,
+                80.0
+            ]
+        },
+        {
+            "name": "frame5",
+            "position": [
+                480.0,
+                0.0
+            ],
+            "size": [
+                96.0,
+                80.0
+            ]
+        },
+        {
+            "name": "frame6",
+            "position": [
+                576.0,
+                0.0
+            ],
+            "size": [
+                96.0,
+                80.0
+            ]
+        },
+        {
+            "name": "frame7",
+            "position": [
+                672.0,
+                0.0
+            ],
+            "size": [
+                96.0,
+                80.0
+            ]
+        }
+    ],
+    "name": "New Sprite",
+    "size": [
+        96.0,
+        80.0
+    ],
+    "texture": "/Assets/Sprites/Character/Attack-01-Sheet.png"
+}

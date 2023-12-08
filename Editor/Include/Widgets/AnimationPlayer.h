@@ -40,6 +40,7 @@ namespace Trinity
 	protected:
 
 		virtual void drawBottomPanel(float x, float y, float width, float height) override;
+		virtual void onViewportResize(uint32_t width, uint32_t height) override;
 		virtual void onPlayPauseClick(bool playing);
 		virtual void onStopClick();
 		virtual void onSpeedChange(float speed);

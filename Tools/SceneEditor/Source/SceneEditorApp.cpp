@@ -30,6 +30,7 @@
 #include "Graphics/GraphicsDevice.h"
 #include "Graphics/FrameBuffer.h"
 #include "Graphics/BatchRenderer.h"
+#include "Graphics/LineCanvas.h"
 #include "VFS/FileSystem.h"
 #include "ImGuizmo.h"
 #include "IconsFontAwesome6.h"

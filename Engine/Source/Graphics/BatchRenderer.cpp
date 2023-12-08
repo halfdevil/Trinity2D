@@ -59,6 +59,19 @@ namespace Trinity
 
 	void BatchRenderer::destroy()
 	{
+		mResourceCache->removeResource(mRenderContext.texturedShader);
+		mResourceCache->removeResource(mRenderContext.coloredShader);
+		mResourceCache->removeResource(mRenderContext.texturedPipeline);
+		mResourceCache->removeResource(mRenderContext.coloredPipeline);
+		mResourceCache->removeResource(mRenderContext.vertexLayout);
+		mResourceCache->removeResource(mRenderContext.vertexBuffer);
+		mResourceCache->removeResource(mRenderContext.indexBuffer);
+		mResourceCache->removeResource(mRenderContext.perFrameBuffer);
+		mResourceCache->removeResource(mRenderContext.bindGroup);
+		mResourceCache->removeResource(mRenderContext.bindGroupLayout);
+
+		mRenderContext = {};
+		mStagingContext = {};
 		mResourceCache = nullptr;
 	}
 
@@ -657,6 +670,7 @@ namespace Trinity
 			return false;
 		}
 
+		mRenderContext.texturedShader = shader.get();
 		mRenderContext.texturedPipeline = pipeline.get();
 		mResourceCache->addResource(std::move(shader));
 		mResourceCache->addResource(std::move(pipeline));
@@ -719,6 +733,7 @@ namespace Trinity
 			return false;
 		}
 
+		mRenderContext.coloredShader = shader.get();
 		mRenderContext.coloredPipeline = pipeline.get();
 		mResourceCache->addResource(std::move(shader));
 		mResourceCache->addResource(std::move(pipeline));

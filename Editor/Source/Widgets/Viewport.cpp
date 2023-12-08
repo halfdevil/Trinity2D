@@ -8,6 +8,7 @@
 #include "Graphics/GraphicsDevice.h"
 #include "Graphics/FrameBuffer.h"
 #include "Graphics/RenderPass.h"
+#include "Graphics/LineCanvas.h"
 #include "Core/EditorTheme.h"
 #include "Core/EditorResources.h"
 #include "Core/EditorGizmo.h"
@@ -46,22 +47,24 @@ namespace Trinity
 			return false;
 		}
 
-		if (!mFrameBuffer->addColorAttachment(
-			wgpu::TextureFormat::RGBA8Unorm, 
-			wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::TextureBinding,
-			{ clearColor.r, clearColor.g, clearColor.b, clearColor.a }
-		))
+		if (!mFrameBuffer->addColorAttachment(wgpu::TextureFormat::RGBA8Unorm, wgpu::TextureUsage::RenderAttachment | 
+			wgpu::TextureUsage::TextureBinding,	{ clearColor.r, clearColor.g, clearColor.b, clearColor.a }))
 		{
 			LogError("FrameBuffer::addColorAttachment() failed");
 			return false;
 		}
 
-		if (!mFrameBuffer->setDepthStencilAttachment(
-			wgpu::TextureFormat::Depth32Float,
-			wgpu::TextureUsage::RenderAttachment
-		))
+		if (!mFrameBuffer->setDepthStencilAttachment(wgpu::TextureFormat::Depth32Float,
+			wgpu::TextureUsage::RenderAttachment))
 		{
 			LogError("FrameBuffer::setDepthStencilAttachment() failed");
+			return false;
+		}
+
+		mLineCanvas = std::make_unique<LineCanvas>();
+		if (!mLineCanvas->create(*mFrameBuffer, *resources.getResourceCache()))
+		{
+			LogError("LineCanvas::create() failed");
 			return false;
 		}
 
@@ -90,6 +93,9 @@ namespace Trinity
 		mRenderPass = std::make_unique<RenderPass>();
 		mGizmo = std::make_unique<EditorGizmo>();
 		mCamera = std::make_unique<EditorCamera>();
+
+		mBottomPanelHeight = 0.0f;
+		mShowBottomPanel = false;
 
 		return true;
 	}
@@ -286,14 +292,6 @@ namespace Trinity
 			mCamera->setSize(0.0f, (float)width, 0.0f, (float)height);
 			mCamera->setPosition(glm::vec2{ 0.0f });
 			mCamera->setRotation(0.0f);
-		}
-
-		if (mGrid != nullptr)
-		{
-			mGrid->updateGridData({
-				.resolution = glm::vec2{ (float)width, (float)height },
-				.scale = glm::vec2{ 0.02f, 0.08f }
-			});
 		}
 	}
 

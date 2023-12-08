@@ -50,6 +50,8 @@ namespace Trinity
 
 		struct RenderContext
 		{
+			Shader* texturedShader{ nullptr };
+			Shader* coloredShader{ nullptr };
 			RenderPipeline* texturedPipeline{ nullptr };
 			RenderPipeline* coloredPipeline{ nullptr };
 			VertexLayout* vertexLayout{ nullptr };

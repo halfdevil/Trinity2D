@@ -1,9 +1,11 @@
 #include "Widgets/SpriteViewport.h"
 #include "Scene/Sprite.h"
+#include "Math/BoundingRect.h"
 #include "Graphics/BatchRenderer.h"
 #include "Graphics/GraphicsDevice.h"
 #include "Graphics/FrameBuffer.h"
 #include "Graphics/RenderPass.h"
+#include "Graphics/LineCanvas.h"
 #include "Core/EditorTheme.h"
 #include "Core/EditorResources.h"
 #include "Core/EditorGizmo.h"
@@ -46,6 +48,11 @@ namespace Trinity
 		mSprite = &sprite;
 	}
 
+	void SpriteViewport::setSelectedFrame(uint32_t selectedFrame)
+	{
+		mSelectedFrame = selectedFrame;
+	}
+
 	void SpriteViewport::drawContent(float deltaTime)
 	{		
 		mRenderPass->begin(*mFrameBuffer);
@@ -60,6 +67,11 @@ namespace Trinity
 			mRenderer->begin(mCamera->getViewProj());
 			drawSprite(mSprite);
 			mRenderer->end(*mRenderPass);
+
+			if (mLineCanvas != nullptr)
+			{
+				mLineCanvas->draw(mCamera->getViewProj(), *mRenderPass);
+			}
 		}
 
 		mRenderPass->end();
@@ -76,11 +88,15 @@ namespace Trinity
 
 			auto& frames = sprite->getFrames();
 			auto* texture = sprite->getTexture();
+			auto numFrames = (uint32_t)frames.size();
 
-			uint32_t numFrames = (uint32_t)frames.size();
-			uint32_t numColumns = (uint32_t)(width / itemWidth);
-			uint32_t numRows = numFrames / numColumns;
+			auto numColumns = (uint32_t)(width / itemWidth);
+			if (numColumns == 0)
+			{
+				numColumns++;
+			}
 
+			auto numRows = numFrames / numColumns;
 			if ((numFrames % numColumns) != 0)
 			{
 				numRows++;
@@ -112,6 +128,11 @@ namespace Trinity
 					glm::mat4(1.0f)
 				);
 
+				if (idx == mSelectedFrame)
+				{
+					mLineCanvas->rect(position, frame.size,	glm::vec4{ 1.0f, 0.6f, 0.0f, 1.0f });
+				}
+
 				if (((idx + 1) % numColumns) == 0)
 				{
 					position = glm::vec2{ -(totalWidth / 2.0f), position.y - itemHeight };
@@ -134,6 +155,12 @@ namespace Trinity
 			float halfHeight = 0.5f * height;
 
 			mCamera->setSize(-halfWidth, halfWidth, -halfHeight, halfHeight);
+		}
+
+		if (mGrid != nullptr)
+		{
+			mGrid->setCanvasSize(glm::vec2{ (float)width, (float)height });
+			mGrid->updateGridData();
 		}
 	}
 }

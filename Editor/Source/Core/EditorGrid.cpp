@@ -6,8 +6,10 @@
 #include "Graphics/UniformBuffer.h"
 #include "Graphics/BindGroup.h"
 #include "Graphics/BindGroupLayout.h"
+#include "Graphics/LineCanvas.h"
 #include "Core/ResourceCache.h"
 #include "Core/Logger.h"
+#include "glm/gtc/type_ptr.hpp"
 
 namespace Trinity
 {
@@ -20,9 +22,9 @@ namespace Trinity
 	{
 		mResourceCache = &cache;
 
-		if (!createGridBuffer())
+		if (!createBindGroup())
 		{
-			LogError("EditorGrid::createGridBuffer() failed");
+			LogError("EditorGrid::createBindGroup() failed!!");
 			return false;
 		}
 
@@ -37,59 +39,45 @@ namespace Trinity
 
 	void EditorGrid::destroy()
 	{
-		if (mPipeline != nullptr)
-		{
-			mResourceCache->removeResource(mPipeline);
-		}
-
-		if (mShader != nullptr)
-		{
-			mResourceCache->removeResource(mShader);
-		}
-
-		if (mGridBuffer != nullptr)
-		{
-			mResourceCache->removeResource(mGridBuffer);
-		}
-
-		if (mGridBindGroup != nullptr)
-		{
-			mResourceCache->removeResource(mGridBindGroup);
-		}
-
-		if (mGridBindGroupLayout != nullptr)
-		{
-			mResourceCache->removeResource(mGridBindGroupLayout);
-		}
-
-		mPipeline = nullptr;
-		mShader = nullptr;
-		mGridBuffer = nullptr;
-		mGridBindGroup = nullptr;
-		mGridBindGroupLayout = nullptr;
+		mResourceCache->removeResource(mRenderContext.pipeline);
+		mResourceCache->removeResource(mRenderContext.shader);
+		mResourceCache->removeResource(mRenderContext.gridBuffer);
+		mResourceCache->removeResource(mRenderContext.bindGroup);
+		mResourceCache->removeResource(mRenderContext.bindGroupLayout);
+		mRenderContext = {};
 	}
 
 	void EditorGrid::draw(const RenderPass& renderPass)
 	{
-		renderPass.setBindGroup(kBindGroupIndex, *mGridBindGroup);
-		renderPass.setPipeline(*mPipeline);
-		renderPass.draw(4);
+		renderPass.setBindGroup(kBindGroupIndex, *mRenderContext.bindGroup);
+		renderPass.setPipeline(*mRenderContext.pipeline);
+		renderPass.draw(6);
 	}
 
-	void EditorGrid::updateGridData(GridData gridData)
+	void EditorGrid::setCanvasSize(const glm::vec2& canvasSize)
 	{
-		if (mGridBuffer != nullptr)
-		{
-			mGridBuffer->write(0, sizeof(GridData), &gridData);
-		}
+		mGridData.canvasSize = canvasSize;
 	}
 
-	bool EditorGrid::createGridBuffer()
+	void EditorGrid::setCheckerSize(const glm::vec2& checkerSize)
 	{
-		GridData gridData{};
+		mGridData.checkeredSize = checkerSize;
+	}
 
-		auto gridDataBuffer = std::make_unique<UniformBuffer>();
-		if (!gridDataBuffer->create(sizeof(GridData), &gridData))
+	void EditorGrid::setColor(float color1, float color2)
+	{
+		mGridData.color = glm::vec2{ color1, color2 };
+	}
+
+	void EditorGrid::updateGridData()
+	{
+		mRenderContext.gridBuffer->write(0, sizeof(GridData), &mGridData);
+	}
+
+	bool EditorGrid::createBindGroup()
+	{
+		auto gridBuffer = std::make_unique<UniformBuffer>();
+		if (!gridBuffer->create(sizeof(GridData)))
 		{
 			LogError("UniformBuffer::create() failed!!");
 			return false;
@@ -99,7 +87,7 @@ namespace Trinity
 		{
 			{
 				.binding = 0,
-				.shaderStages = wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment,
+				.shaderStages = wgpu::ShaderStage::Fragment,
 				.bindingLayout = BufferBindingLayout {
 					.type = wgpu::BufferBindingType::Uniform,
 					.minBindingSize = sizeof(GridData)
@@ -112,7 +100,7 @@ namespace Trinity
 			{
 				.binding = 0,
 				.size = sizeof(GridData),
-				.resource = BufferBindingResource(*gridDataBuffer)
+				.resource = BufferBindingResource(*gridBuffer)
 			}
 		};
 
@@ -130,13 +118,13 @@ namespace Trinity
 			return false;
 		}
 
-		mGridBuffer = gridDataBuffer.get();
-		mGridBindGroup = bindGroup.get();
-		mGridBindGroupLayout = bindGroupLayout.get();
+		mRenderContext.gridBuffer = gridBuffer.get();
+		mRenderContext.bindGroupLayout = bindGroupLayout.get();
+		mRenderContext.bindGroup = bindGroup.get();
 
-		mResourceCache->addResource(std::move(gridDataBuffer));
-		mResourceCache->addResource(std::move(bindGroup));
+		mResourceCache->addResource(std::move(gridBuffer));
 		mResourceCache->addResource(std::move(bindGroupLayout));
+		mResourceCache->addResource(std::move(bindGroup));
 
 		return true;
 	}
@@ -148,14 +136,14 @@ namespace Trinity
 		auto shader = std::make_unique<Shader>();
 		if (!shader->create(kShader, processor))
 		{
-			LogError("Shader::create() failed for: %s!!", kShader);
+			LogError("Shader::create() failed for: %s", kShader);
 			return false;
 		}
 
 		RenderPipelineProperties renderProps = {
 			.shader = shader.get(),
 			.bindGroupLayouts = {
-				mGridBindGroupLayout
+				mRenderContext.bindGroupLayout
 			},
 			.colorTargets = {{
 				.format = renderTarget.getColorFormat(),
@@ -173,7 +161,7 @@ namespace Trinity
 				}
 			}},
 			.primitive = {
-				.topology = wgpu::PrimitiveTopology::TriangleStrip,
+				.topology = wgpu::PrimitiveTopology::TriangleList,
 				.frontFace = wgpu::FrontFace::CW,
 				.cullMode = wgpu::CullMode::None
 			}
@@ -195,9 +183,8 @@ namespace Trinity
 			return false;
 		}
 
-		mShader = shader.get();
-		mPipeline = pipeline.get();
-
+		mRenderContext.shader = shader.get();
+		mRenderContext.pipeline = pipeline.get();
 		mResourceCache->addResource(std::move(shader));
 		mResourceCache->addResource(std::move(pipeline));
 

@@ -1,4 +1,4 @@
-#include "Graphics/DebugHelper.h"
+#include "Graphics/LineCanvas.h"
 #include "Graphics/RenderPass.h"
 #include "Graphics/RenderTarget.h"
 #include "Graphics/RenderPipeline.h"
@@ -13,31 +13,37 @@
 
 namespace Trinity
 {
-	DebugHelper::~DebugHelper()
+	LineCanvas::~LineCanvas()
 	{
 		destroy();
 	}
 
-	bool DebugHelper::create(RenderTarget& renderTarget, ResourceCache& cache)
+	bool LineCanvas::create(RenderTarget& renderTarget, ResourceCache& cache)
 	{
 		mResourceCache = &cache;
 
 		if (!createBufferData())
 		{
-			LogError("EditorGrid::createGridBuffer() failed");
+			LogError("LineCanvas::createBufferData() failed");
+			return false;
+		}
+
+		if (!createBindGroup())
+		{
+			LogError("LineCanvas::createCommonBindGroup() failed!!");
 			return false;
 		}
 
 		if (!createPipeline(renderTarget))
 		{
-			LogError("EditorGrid::createPipeline() failed");
+			LogError("LineCanvas::createPipeline() failed");
 			return false;
 		}
 
 		return true;
 	}
 
-	void DebugHelper::destroy()
+	void LineCanvas::destroy()
 	{
 		mResourceCache->removeResource(mRenderContext.pipeline);
 		mResourceCache->removeResource(mRenderContext.shader);
@@ -52,23 +58,28 @@ namespace Trinity
 		mStagingContext = {};
 	}
 
-	void DebugHelper::line(const glm::vec2& p1, const glm::vec2& p2, const glm::vec4& color, float lineWidth)
+	void LineCanvas::line(const glm::vec2& p1, const glm::vec2& p2, const glm::vec4& color, float lineWidth)
 	{
-		float x1{ p1.x };
-		float y1{ p1.y };
-		float x2{ x1 + lineWidth };
-		float y2{ y1 + lineWidth };
+		static glm::vec2 positions[4] = {
+			glm::vec2{ 0.0f, -0.5f },
+			glm::vec2{ 0.0f, 0.5f },
+			glm::vec2{ 1.0f, 0.5f },
+			glm::vec2{ 1.0f, -0.5f }
+		};
 
-		auto p1 = glm::vec4{ x1, y1, 0.0f, 1.0f };
-		auto p2 = glm::vec4{ x1, y2, 0.0f, 1.0f };
-		auto p3 = glm::vec4{ x2, y2, 0.0f, 1.0f };
-		auto p4 = glm::vec4{ x2, y1, 0.0f, 1.0f };
+		auto xBasis = p2 - p1;
+		auto yBasis = glm::normalize(glm::vec2(-xBasis.y, xBasis.x));
+
+		auto a1 = p1 + xBasis * positions[0].x + yBasis * lineWidth * positions[0].y;
+		auto a2 = p1 + xBasis * positions[1].x + yBasis * lineWidth * positions[1].y;
+		auto a3 = p1 + xBasis * positions[2].x + yBasis * lineWidth * positions[2].y;
+		auto a4 = p1 + xBasis * positions[3].x + yBasis * lineWidth * positions[3].y;
 
 		Vertex vertices[4] = {
-			{ .position = glm::vec2{ x1, y1 }, .color = color },
-			{ .position = glm::vec2{ x1, y2 }, .color = color },
-			{ .position = glm::vec2{ x2, y2 }, .color = color },
-			{ .position = glm::vec2{ x2, y1 }, .color = color }
+			{ .position = a1, .color = color },
+			{ .position = a2, .color = color },
+			{ .position = a3, .color = color },
+			{ .position = a4, .color = color }
 		};
 
 		auto numVertices = mStagingContext.numVertices;
@@ -85,22 +96,23 @@ namespace Trinity
 		addIndices(indices, 6);
 	}
 
-	void DebugHelper::box(const BoundingRect& rect, const glm::vec4& c, float lineWidth)
+	void LineCanvas::rect(const BoundingRect& rect, const glm::vec4& color, float lineWidth)
 	{
-		std::array<glm::vec2, 4> points{
-			glm::vec2(rect.min.x, rect.min.y),
-			glm::vec2(rect.min.x, rect.max.y),
-			glm::vec2(rect.max.x, rect.max.y),
-			glm::vec2(rect.max.x, rect.min.y)
-		};
+		auto halfWidth = 0.5f * lineWidth;
 
-		line(points[0], points[1], c, lineWidth);
-		line(points[1], points[2], c, lineWidth);
-		line(points[2], points[3], c, lineWidth);
-		line(points[3], points[4], c, lineWidth);
+		line({ rect.min.x, rect.min.y }, { rect.min.x, rect.max.y }, color, lineWidth);
+		line({ rect.max.x, rect.max.y }, { rect.max.x, rect.min.y }, color, lineWidth);
+
+		line({ rect.max.x + halfWidth, rect.min.y }, { rect.min.x - halfWidth, rect.min.y }, color, lineWidth);
+		line({ rect.min.x - halfWidth, rect.max.y }, { rect.max.x + halfWidth, rect.max.y }, color, lineWidth);
 	}
 
-	void DebugHelper::draw(const glm::mat4& viewProj, const RenderPass& renderPass)
+	void LineCanvas::rect(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, float lineWidth)
+	{
+		rect({ { position.x, position.y }, { position.x + size.x, position.y + size.y } }, color, lineWidth);
+	}
+
+	void LineCanvas::draw(const glm::mat4& viewProj, const RenderPass& renderPass)
 	{
 		PerFrameData perFrameData = {
 			.viewProj = viewProj
@@ -146,12 +158,12 @@ namespace Trinity
 		mStagingContext.numIndices = 0;
 	}
 
-	bool DebugHelper::createBufferData()
+	bool LineCanvas::createBufferData()
 	{
 		auto vertexLayout = std::make_unique<VertexLayout>();
 		vertexLayout->setAttributes({
 			{ wgpu::VertexFormat::Float32x2, 0, 0 },
-			{ wgpu::VertexFormat::Float32x4, 8, 2 }
+			{ wgpu::VertexFormat::Float32x4, 8, 1 }
 		});
 
 		uint32_t numVertices = 128 * 1024;
@@ -185,7 +197,7 @@ namespace Trinity
 		return true;
 	}
 
-	bool DebugHelper::createBindGroup()
+	bool LineCanvas::createBindGroup()
 	{
 		auto perFrameBuffer = std::make_unique<UniformBuffer>();
 		if (!perFrameBuffer->create(sizeof(PerFrameData)))
@@ -240,7 +252,7 @@ namespace Trinity
 		return true;
 	}
 
-	bool DebugHelper::createPipeline(RenderTarget& renderTarget)
+	bool LineCanvas::createPipeline(RenderTarget& renderTarget)
 	{
 		ShaderPreProcessor processor;
 
@@ -302,7 +314,7 @@ namespace Trinity
 		return true;
 	}
 
-	void DebugHelper::addVertices(const Vertex* vertices, uint32_t numVertices)
+	void LineCanvas::addVertices(const Vertex* vertices, uint32_t numVertices)
 	{
 		auto& allVertices = mStagingContext.vertices;
 		if (mStagingContext.numVertices + numVertices > (uint32_t)allVertices.size())
@@ -314,7 +326,7 @@ namespace Trinity
 		mStagingContext.numVertices += numVertices;
 	}
 
-	void DebugHelper::addIndices(const uint32_t* indices, uint32_t numIndices)
+	void LineCanvas::addIndices(const uint32_t* indices, uint32_t numIndices)
 	{
 		auto& allIndices = mStagingContext.indices;
 		if (mStagingContext.numIndices + numIndices > (uint32_t)allIndices.size())

@@ -11,6 +11,7 @@
 #include "Graphics/GraphicsDevice.h"
 #include "Graphics/FrameBuffer.h"
 #include "Graphics/RenderPass.h"
+#include "Graphics/LineCanvas.h"
 #include "Core/EditorTheme.h"
 #include "Core/EditorResources.h"
 #include "Core/EditorGizmo.h"
@@ -59,7 +60,17 @@ namespace Trinity
 	void SceneViewport::drawContent(float deltaTime)
 	{
 		mRenderPass->begin(*mFrameBuffer);
-		mSceneSystem->draw(*mRenderPass, mCamera->getViewProj());
+		
+		if (mScene != nullptr)
+		{
+			mSceneSystem->draw(*mRenderPass, mCamera->getViewProj());
+		}
+
+		if (mLineCanvas != nullptr)
+		{
+			mLineCanvas->draw(mCamera->getViewProj(), *mRenderPass);
+		}
+
 		mRenderPass->end();
 	}
 

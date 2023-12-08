@@ -1,6 +1,7 @@
 #pragma once
 
 #include "glm/glm.hpp"
+#include <memory>
 
 namespace Trinity
 {
@@ -12,20 +13,30 @@ namespace Trinity
 	class UniformBuffer;
 	class BindGroup;
 	class BindGroupLayout;
+	class LineCanvas;
 
 	class EditorGrid
 	{
 	public:
 
-		static constexpr const char* kShader = "/Assets/Editor/Shaders/Grid.wgsl";
+		static constexpr const char* kShader = "/Assets/Editor/Shaders/Checkered.wgsl";
 		static constexpr uint32_t kBindGroupIndex = 0;
 
 		struct GridData
 		{
-			glm::vec4 thickColor{ 0.7f, 0.7f, 0.7f, 1.0f };
-			glm::vec4 thinColor{ 0.3f, 0.3f, 0.3f, 1.0f };
-			glm::vec2 resolution{ 0.f };
-			glm::vec2 scale{ 0.0f };
+			glm::vec2 canvasSize{ 0.0f };
+			glm::vec2 checkeredSize{ 20.0f };
+			glm::vec2 color{ 0.9f, 0.4f };
+			glm::vec2 padding;
+		};
+
+		struct RenderContext
+		{
+			Shader* shader{ nullptr };
+			RenderPipeline* pipeline{ nullptr };
+			UniformBuffer* gridBuffer{ nullptr };
+			BindGroup* bindGroup{ nullptr };
+			BindGroupLayout* bindGroupLayout{ nullptr };
 		};
 
 		EditorGrid() = default;
@@ -40,20 +51,21 @@ namespace Trinity
 		virtual bool create(RenderTarget& renderTarget, ResourceCache& cache);
 		virtual void destroy();
 		virtual void draw(const RenderPass& renderPass);
-		virtual void updateGridData(GridData gridData);
+
+		virtual void setCanvasSize(const glm::vec2& canvasSize);
+		virtual void setCheckerSize(const glm::vec2& checkerSize);
+		virtual void setColor(float color1, float color2);
+		virtual void updateGridData();
 
 	protected:
 
-		virtual bool createGridBuffer();
+		virtual bool createBindGroup();
 		virtual bool createPipeline(RenderTarget& renderTarget);
 
 	protected:
 
 		ResourceCache* mResourceCache{ nullptr };
-		RenderPipeline* mPipeline{ nullptr };
-		Shader* mShader{ nullptr };
-		UniformBuffer* mGridBuffer{ nullptr };		
-		BindGroup* mGridBindGroup{ nullptr };
-		BindGroupLayout* mGridBindGroupLayout{ nullptr };
+		RenderContext mRenderContext;
+		GridData mGridData;
 	};
 }

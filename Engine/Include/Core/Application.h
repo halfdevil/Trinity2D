@@ -16,6 +16,7 @@ namespace Trinity
     class ResourceCache;
     class GraphicsDevice;
     class RenderPass;
+    class LineCanvas;
     class ImGuiRenderer;
 
     struct ApplicationOptions
