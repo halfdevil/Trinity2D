@@ -160,22 +160,15 @@ namespace Trinity
 			auto& transform = renderable->getNode()->getTransform();
 			auto& flip = renderable->getFlip();
 
-			auto activeIndex = renderable->getActiveFrameIndex();
-			auto* frame = sprite->getFrame(activeIndex);
-
-			if (frame != nullptr)
-			{
-				mRenderer->drawTexture(
-					sprite->getTexture(),
-					frame->position,
-					frame->size,
-					renderable->getOrigin(),
-					transform.getWorldMatrix(),
-					renderable->getColor(),
-					flip.x,
-					flip.y
-				);
-			}
+			sprite->draw(
+				*mRenderer, 
+				renderable->getActiveFrameIndex(), 
+				renderable->getOrigin(), 
+				transform.getWorldMatrix(), 
+				renderable->getColor(), 
+				flip.x, 
+				flip.y
+			);
 		}
 
 		mRenderer->end(renderPass);

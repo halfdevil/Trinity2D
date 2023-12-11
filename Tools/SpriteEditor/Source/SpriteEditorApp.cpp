@@ -56,26 +56,26 @@ namespace Trinity
 		mHierarchy = createSpriteHierarchy("Sprite", *mCurrentSprite);
 		mInspector = createSpriteInspector("Inspector", *mCurrentSprite);
 		mViewport = createSpriteViewport(mCurrentSprite->getName(), *mCurrentSprite);
-		mPlayer = createSpriteAnimationPlayer("Animation Player", *mCurrentSprite);
+		mAnimPlayer = createSpriteAnimationPlayer("Animation Player", *mCurrentSprite);
 
 		return true;
 	}
 
 	void SpriteEditorApp::setupInput()
 	{
-		Application::setupInput();
+		EditorApp::setupInput();
 	}
 
-	void SpriteEditorApp::update(float deltaTime)
+	void SpriteEditorApp::onUpdate(float deltaTime)
 	{
 		if (mViewport != nullptr)
 		{
 			mViewport->update(deltaTime);
 		}
 
-		if (mPlayer != nullptr)
+		if (mAnimPlayer != nullptr)
 		{
-			mPlayer->update(deltaTime);
+			mAnimPlayer->update(deltaTime);
 		}
 	}
 
@@ -88,9 +88,9 @@ namespace Trinity
 			mViewport->drawContent(deltaTime);
 		}
 
-		if (mPlayer != nullptr)
+		if (mAnimPlayer != nullptr)
 		{
-			mPlayer->drawContent(deltaTime);
+			mAnimPlayer->drawContent(deltaTime);
 		}
 	}
 
@@ -340,7 +340,7 @@ namespace Trinity
 				mHierarchy->setSprite(*mCurrentSprite);
 				mViewport->setSprite(*mCurrentSprite);
 				mInspector->setSprite(*mCurrentSprite);
-				mPlayer->setSprite(*mCurrentSprite);
+				mAnimPlayer->setSprite(*mCurrentSprite);
 
 				onSelectFrameClick(0);
 				onSelectAnimationClick(0);
@@ -387,12 +387,12 @@ namespace Trinity
 			mInspector->setSelectedAnimation(selectedAnimation);
 		}
 
-		if (mPlayer != nullptr)
+		if (mAnimPlayer != nullptr)
 		{
 			auto* animation = mCurrentSprite->getAnimation(selectedAnimation);
 			if (animation != nullptr)
 			{
-				mPlayer->setAnimation(animation->name);
+				mAnimPlayer->setAnimation(animation->name);
 			}
 		}
 	}
@@ -413,9 +413,9 @@ namespace Trinity
 
 	void SpriteEditorApp::onPlayerResize(uint32_t width, uint32_t height)
 	{
-		if (mPlayer != nullptr)
+		if (mAnimPlayer != nullptr)
 		{
-			auto* frameBuffer = mPlayer->getFrameBuffer();
+			auto* frameBuffer = mAnimPlayer->getFrameBuffer();
 			auto* colorTarget = frameBuffer->getColorTexture();
 
 			if (colorTarget != nullptr)

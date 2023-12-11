@@ -74,6 +74,12 @@ namespace Trinity
 		return true;
 	}
 
+	void EditorApp::update(float deltaTime)
+	{
+		Application::update(deltaTime);
+		onUpdate(deltaTime);
+	}
+
 	void EditorApp::draw(float deltaTime)
 	{
 		Application::draw(deltaTime);
@@ -87,6 +93,10 @@ namespace Trinity
 	void EditorApp::setupInput()
 	{
 		Application::setupInput();
+	}
+
+	void EditorApp::onUpdate(float deltaTime)
+	{
 	}
 
 	void EditorApp::onDraw(float deltaTime)

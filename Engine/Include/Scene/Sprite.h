@@ -13,6 +13,7 @@ namespace Trinity
 	class Texture;
 	class SpriteEditor;
 	class SpriteSerializer;
+	class BatchRenderer;
 
 	struct SpriteFrame
 	{
@@ -115,9 +116,18 @@ namespace Trinity
 		virtual void addFrame(SpriteFrame&& frame);
 		virtual void removeFrame(uint32_t frameIndex);
 		virtual void moveFrame(uint32_t from, uint32_t to);
-
 		virtual void addAnimation(SpriteAnimation&& animation);
 		virtual void removeAnimation(uint32_t animationIndex);
+
+		virtual void draw(
+			BatchRenderer& batchRenderer, 
+			uint32_t frameIndex,
+			const glm::vec2& origin,
+			const glm::mat4& transform, 
+			const glm::vec4& color = glm::vec4{ 0.0f },
+			bool flipX = false, 
+			bool flipY = false
+		);
 
 	protected:
 

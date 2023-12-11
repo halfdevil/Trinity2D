@@ -45,9 +45,11 @@ namespace Trinity
 	protected:
 
 		virtual bool init() override;
+		virtual void update(float deltaTime) override;
 		virtual void draw(float deltaTime) override;
 		virtual void setupInput() override;
 
+		virtual void onUpdate(float deltaTime);
 		virtual void onDraw(float deltaTime);
 		virtual void onPreGui(float deltaTime);
 		virtual void onGui();

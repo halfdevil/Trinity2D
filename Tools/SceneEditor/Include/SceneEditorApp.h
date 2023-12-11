@@ -28,7 +28,8 @@ namespace Trinity
 
 		virtual bool init() override;
 		virtual void setupInput() override;
-		virtual void update(float deltaTime) override;
+
+		virtual void onUpdate(float deltaTime) override;
 		virtual void onDraw(float deltaTime) override;
 
 		virtual Scene* openScene(const std::string& path);

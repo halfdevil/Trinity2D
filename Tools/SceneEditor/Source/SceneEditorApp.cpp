@@ -65,7 +65,7 @@ namespace Trinity
 		Application::setupInput();
 	}
 
-	void SceneEditorApp::update(float deltaTime)
+	void SceneEditorApp::onUpdate(float deltaTime)
 	{
 		if (mViewport != nullptr)
 		{

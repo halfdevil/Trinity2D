@@ -1,6 +1,7 @@
 #include "Scene/Sprite.h"
 #include "Editor/EditorLayout.h"
 #include "Graphics/Texture.h"
+#include "Graphics/BatchRenderer.h"
 #include "VFS/FileReader.h"
 #include "VFS/FileWriter.h"
 #include "Core/ResourceCache.h"
@@ -122,6 +123,25 @@ namespace Trinity
 		if (from < (uint32_t)mFrames.size() && to < (uint32_t)mFrames.size())
 		{
 			std::swap(mFrames[from], mFrames[to]);
+		}
+	}
+
+	void Sprite::draw(BatchRenderer& batchRenderer,	uint32_t frameIndex, const glm::vec2& origin, const glm::mat4& transform,
+		const glm::vec4& color,	bool flipX,	bool flipY)
+	{
+		auto* frame = getFrame(frameIndex);
+		if (frame != nullptr && mTexture != nullptr)
+		{
+			batchRenderer.drawTexture(
+				mTexture,
+				frame->position,
+				frame->size,
+				origin,
+				transform,
+				color,
+				flipX,
+				flipY
+			);
 		}
 	}
 

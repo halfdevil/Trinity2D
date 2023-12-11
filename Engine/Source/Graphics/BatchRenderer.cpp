@@ -265,10 +265,10 @@ namespace Trinity
 		}
 
 		Vertex vertices[4] = {
-			{.position = glm::vec3(p1), .uv = { u1, v2 }, .color = color },
-			{.position = glm::vec3(p2), .uv = { u1, v1 }, .color = color },
-			{.position = glm::vec3(p3), .uv = { u2, v1 }, .color = color },
-			{.position = glm::vec3(p4), .uv = { u2, v2 }, .color = color }
+			{.position = glm::vec2(p1), .uv = { u1, v2 }, .color = color },
+			{.position = glm::vec2(p2), .uv = { u1, v1 }, .color = color },
+			{.position = glm::vec2(p3), .uv = { u2, v1 }, .color = color },
+			{.position = glm::vec2(p4), .uv = { u2, v2 }, .color = color }
 		};
 
 		auto numVertices = mStagingContext.numVertices;
@@ -339,10 +339,74 @@ namespace Trinity
 		}
 
 		Vertex vertices[4] = {
-			{.position = glm::vec3(p1), .uv = { u1, v2 }, .color = color },
-			{.position = glm::vec3(p2), .uv = { u1, v1 }, .color = color },
-			{.position = glm::vec3(p3), .uv = { u2, v1 }, .color = color },
-			{.position = glm::vec3(p4), .uv = { u2, v2 }, .color = color }
+			{.position = glm::vec2(p1), .uv = { u1, v2 }, .color = color },
+			{.position = glm::vec2(p2), .uv = { u1, v1 }, .color = color },
+			{.position = glm::vec2(p3), .uv = { u2, v1 }, .color = color },
+			{.position = glm::vec2(p4), .uv = { u2, v2 }, .color = color }
+		};
+
+		auto numVertices = mStagingContext.numVertices;
+		uint32_t indices[6] = {
+			numVertices,
+			numVertices + 1,
+			numVertices + 2,
+			numVertices + 2,
+			numVertices + 3,
+			numVertices
+		};
+
+		addVertices(vertices, 4);
+		addIndices(indices, 6);
+
+		return true;
+	}
+
+	bool BatchRenderer::drawTexture(
+		Texture* texture,
+		const glm::vec2& srcPosition,
+		const glm::vec2& srcSize,
+		const glm::vec2& dstPosition,
+		const glm::vec2& dstSize,
+		const glm::vec4& color,
+		bool flipX,
+		bool flipY
+	)
+	{
+		if (!addCommand(texture, mStagingContext.numIndices, 6))
+		{
+			LogError("BatchRenderer::addCommand() failed");
+			return false;
+		}
+
+		float x1{ dstPosition.x };
+		float y1{ dstPosition.y };
+		float x2{ x1 + dstSize.x };
+		float y2{ y1 + dstSize.y };
+
+		float u1{ srcPosition.x * mInvTextureSize.x };
+		float v1{ srcPosition.y * mInvTextureSize.y };
+		float u2{ (srcPosition.x + srcSize.x) * mInvTextureSize.x };
+		float v2{ (srcPosition.y + srcSize.y) * mInvTextureSize.y };
+
+		if (flipX)
+		{
+			auto t = u1;
+			u1 = u2;
+			u2 = t;
+		}
+
+		if (flipY)
+		{
+			auto t = v1;
+			v1 = v2;
+			v2 = t;
+		}
+
+		Vertex vertices[4] = {
+			{.position = { x1, y1 }, .uv = { u1, v2 }, .color = color},
+			{.position = { x1, y2 }, .uv = { u1, v1 }, .color = color},
+			{.position = { x2, y2 }, .uv = { u2, v1 }, .color = color },
+			{.position = { x2, y1 }, .uv = { u2, v2 }, .color = color }
 		};
 
 		auto numVertices = mStagingContext.numVertices;

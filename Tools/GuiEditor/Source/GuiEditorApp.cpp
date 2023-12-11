@@ -52,9 +52,9 @@ namespace Trinity
 			return false;
 		}
 
-		mGuiViewport = createGuiViewport(mCurrentGui->getName(), *mCurrentGui);
-		mGuiHierarchy = createGuiHierarchy("Gui", *mCurrentGui);
-		mGuiInspector = createGuiInspector("Inspector", *mCurrentGui);
+		mViewport = createGuiViewport(mCurrentGui->getName(), *mCurrentGui);
+		mHierarchy = createGuiHierarchy("Gui", *mCurrentGui);
+		mInspector = createGuiInspector("Inspector", *mCurrentGui);
 		mWidgetsWindow = createWidgetsWindow("Widgets", *mCurrentGui);
 
 		return true;
@@ -65,11 +65,11 @@ namespace Trinity
 		Application::setupInput();
 	}
 
-	void GuiEditorApp::update(float deltaTime)
+	void GuiEditorApp::onUpdate(float deltaTime)
 	{
-		if (mGuiViewport != nullptr)
+		if (mViewport != nullptr)
 		{
-			mGuiViewport->update(deltaTime);
+			mViewport->update(deltaTime);
 		}
 	}
 
@@ -77,9 +77,9 @@ namespace Trinity
 	{
 		EditorApp::onDraw(deltaTime);
 
-		if (mGuiViewport != nullptr)
+		if (mViewport != nullptr)
 		{
-			mGuiViewport->drawContent(deltaTime);
+			mViewport->drawContent(deltaTime);
 		}
 	}
 
@@ -278,15 +278,15 @@ namespace Trinity
 
 	void GuiEditorApp::onSelectWidgetClick(Widget* selectedWidget)
 	{
-		mGuiViewport->setSelectedWidget(selectedWidget);
-		mGuiInspector->setSelectedWidget(selectedWidget);
+		mViewport->setSelectedWidget(selectedWidget);
+		mInspector->setSelectedWidget(selectedWidget);
 	}
 
 	void GuiEditorApp::onGuiViewportResize(uint32_t width, uint32_t height)
 	{
-		if (mGuiViewport != nullptr)
+		if (mViewport != nullptr)
 		{
-			auto* frameBuffer = mGuiViewport->getFrameBuffer();
+			auto* frameBuffer = mViewport->getFrameBuffer();
 			auto* colorTarget = frameBuffer->getColorTexture();
 
 			if (colorTarget != nullptr)
@@ -304,7 +304,7 @@ namespace Trinity
 
 	void GuiEditorApp::onWidgetSelect(const SelectionItem& item)
 	{
-		auto* selectedWidget = mGuiHierarchy->getCurrentWidget();
+		auto* selectedWidget = mHierarchy->getCurrentWidget();
 		auto& widgetName = item.name;
 
 		if (selectedWidget != nullptr && !widgetName.empty())

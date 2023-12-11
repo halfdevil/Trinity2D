@@ -29,7 +29,8 @@ namespace Trinity
 
 		virtual bool init() override;
 		virtual void setupInput() override;
-		virtual void update(float deltaTime) override;
+
+		virtual void onUpdate(float deltaTime) override;
 		virtual void onDraw(float deltaTime) override;
 
 		virtual Sprite* openSprite(const std::string& path);
@@ -59,6 +60,6 @@ namespace Trinity
 		SpriteHierarchy* mHierarchy{ nullptr };
 		SpriteInspector* mInspector{ nullptr };
 		SpriteViewport* mViewport{ nullptr };
-		SpriteAnimationPlayer* mPlayer{ nullptr };
+		SpriteAnimationPlayer* mAnimPlayer{ nullptr };
 	};
 }
