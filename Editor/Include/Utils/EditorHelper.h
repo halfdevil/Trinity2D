@@ -20,7 +20,6 @@ namespace Trinity
 		static bool assetIcon(ImGuiID id, Texture* texture, const glm::vec2& iconSize, const std::string& text, 
 			const glm::vec2& textSize, float textPadding, bool& doubleClicked);
 
-		static ListBoxOperation listBox(const std::string& label, int32_t& selectedIndex, 
-			const std::vector<const char*>& items);
+		static ListBoxOperation listBoxEditor(const char* id);
 	};
 }

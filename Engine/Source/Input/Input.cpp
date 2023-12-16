@@ -253,7 +253,7 @@ namespace Trinity
 			bindingIt->second.notify(button);
 		}
 
-		if (mMouse->isButtoniggered(button))
+		if (mMouse->isButtonTriggered(button))
 		{
 			auto& trigBindings = mActionBindings[InputEvent::Triggered];
 			auto trigIt = trigBindings.find(buttonIt->second);

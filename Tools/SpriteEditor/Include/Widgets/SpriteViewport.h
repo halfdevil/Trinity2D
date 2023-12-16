@@ -5,7 +5,6 @@
 namespace Trinity
 {
 	class Sprite;
-	class BatchRenderer;
 
 	class SpriteViewport : public Viewport
 	{
@@ -32,14 +31,18 @@ namespace Trinity
 
 	protected:
 
-		virtual void drawSprite(Sprite* sprite);
+		virtual void drawSprite();
 		virtual void onViewportResize(uint32_t width, uint32_t height) override;
+		virtual glm::vec2 convertToViewport(const glm::vec2& v) const override;
+
+	public:
+
+		Observer<uint32_t> onSelectFrame;
 
 	protected:
 
 		Sprite* mSprite{ nullptr };
 		glm::vec2 mPadding{ 10.0f };
-		std::unique_ptr<BatchRenderer> mRenderer{ nullptr };
 		uint32_t mSelectedFrame{ 0 };
 	};
 }

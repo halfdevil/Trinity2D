@@ -493,7 +493,7 @@ namespace Trinity
 			.primitive = {
 				.topology = wgpu::PrimitiveTopology::TriangleList,
 				.frontFace = wgpu::FrontFace::CW,
-				.cullMode = wgpu::CullMode::None
+				.cullMode = wgpu::CullMode::Back
 			}
 		};
 
@@ -629,9 +629,9 @@ namespace Trinity
 			.addressModeU = wgpu::AddressMode::Repeat,
 			.addressModeV = wgpu::AddressMode::Repeat,
 			.addressModeW = wgpu::AddressMode::Repeat,
-			.magFilter = wgpu::FilterMode::Nearest,
-			.minFilter = wgpu::FilterMode::Nearest,
-			.mipmapFilter = wgpu::MipmapFilterMode::Nearest
+			.magFilter = wgpu::FilterMode::Linear,
+			.minFilter = wgpu::FilterMode::Linear,
+			.mipmapFilter = wgpu::MipmapFilterMode::Linear
 		}))
 		{
 			LogError("Sampler::create() failed!!");

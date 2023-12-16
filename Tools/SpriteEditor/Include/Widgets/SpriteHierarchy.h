@@ -35,11 +35,8 @@ namespace Trinity
 		}
 
 		virtual void setSprite(Sprite& sprite);
+		virtual void setSelectedFrame(uint32_t selectedFrame);
 		virtual void draw() override;
-
-	protected:
-
-		virtual void updateNames();
 
 	public:
 
@@ -49,8 +46,6 @@ namespace Trinity
 	protected:
 
 		Sprite* mSprite{ nullptr };
-		std::vector<const char*> mFrameNames;
-		std::vector<const char*> mAnimationNames;
 		uint32_t mSelectedFrame{ 0 };
 		uint32_t mSelectedAnimation{ 0 };
 	};

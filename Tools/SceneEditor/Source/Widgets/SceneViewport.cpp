@@ -36,6 +36,11 @@ namespace Trinity
 			return false;
 		}
 
+		mShowTopToolbar = true;
+		mShowBottomToolbar = false;
+		mShowGizmoControls = true;
+		mShowResolutionControls = true;
+
 		return true;
 	}
 

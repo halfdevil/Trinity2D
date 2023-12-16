@@ -81,16 +81,12 @@ namespace Trinity
 		return clicked;
 	}
 
-	ListBoxOperation EditorHelper::listBox(const std::string& label, int32_t& selectedIndex, const std::vector<const char*>& items)
+	ListBoxOperation EditorHelper::listBoxEditor(const char* id)
 	{
 		ListBoxOperation operation{ ListBoxOperation::None };
 
-		if (ImGui::ListBox(label.c_str(), &selectedIndex, items.data(), (int)items.size()))
-		{
-			operation = ListBoxOperation::Select;
-		}
-		
 		ImGui::Separator();
+		ImGui::PushID(id);
 
 		if (ImGui::Button(ICON_FA_PLUS))
 		{
@@ -118,6 +114,7 @@ namespace Trinity
 			operation = ListBoxOperation::Down;
 		}
 
+		ImGui::PopID();
 		return operation;
 	}
 }

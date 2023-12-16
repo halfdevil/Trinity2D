@@ -1,5 +1,6 @@
 #include "Widgets/SpriteViewport.h"
 #include "Scene/Sprite.h"
+#include "Input/Input.h"
 #include "Math/BoundingRect.h"
 #include "Graphics/BatchRenderer.h"
 #include "Graphics/GraphicsDevice.h"
@@ -25,14 +26,10 @@ namespace Trinity
 			return false;
 		}
 
-		mRenderer = std::make_unique<BatchRenderer>();
-		if (!mRenderer->create(*mFrameBuffer, *resources.getResourceCache(), 
-			kTexturedShader, kColoredShader))
-		{
-			LogError("BatchRenderer::create() failed with shader: '%s' and '%s'", 
-				kTexturedShader, kColoredShader);
-			return true;
-		}
+		mShowTopToolbar = true;
+		mShowBottomToolbar = false;
+		mShowGizmoControls = false;
+		mShowResolutionControls = true;
 
 		return true;
 	}
@@ -64,30 +61,34 @@ namespace Trinity
 
 		if (mCamera != nullptr)
 		{
-			mRenderer->begin(mCamera->getViewProj());
-			drawSprite(mSprite);
-			mRenderer->end(*mRenderPass);
-
-			if (mLineCanvas != nullptr)
+			if (mSprite != nullptr)
 			{
-				mLineCanvas->draw(mCamera->getViewProj(), *mRenderPass);
+				mRenderer->begin(mCamera->getViewProj());
+				drawSprite();
+				mRenderer->end(*mRenderPass);
 			}
+
+			mLineCanvas->draw(mCamera->getViewProj(), *mRenderPass);
 		}
 
 		mRenderPass->end();
 	}
 
-	void SpriteViewport::drawSprite(Sprite* sprite)
+	void SpriteViewport::drawSprite()
 	{
-		if (sprite->getTexture() != nullptr)
+		auto& input = Input::get();
+		auto* mouse = input.getMouse();
+		bool isSelected = mMouseInViewport && mouse->isButtonTriggered(MOUSE_BUTTON_LEFT);
+
+		if (mSprite->getTexture() != nullptr)
 		{
 			float width = mCamera->getSize().x;
 			float height = mCamera->getSize().y;
-			float itemWidth = sprite->getSize().x + 2 * mPadding.x;
-			float itemHeight = sprite->getSize().y + 2 * mPadding.y;
+			float itemWidth = mSprite->getSize().x + 2 * mPadding.x;
+			float itemHeight = mSprite->getSize().y + 2 * mPadding.y;
 
-			auto& frames = sprite->getFrames();
-			auto* texture = sprite->getTexture();
+			auto& frames = mSprite->getFrames();
+			auto* texture = mSprite->getTexture();
 			auto numFrames = (uint32_t)frames.size();
 
 			auto numColumns = (uint32_t)(width / itemWidth);
@@ -125,12 +126,26 @@ namespace Trinity
 					position,
 					frame.size,
 					glm::vec2{ 0.0f },
-					glm::mat4(1.0f)
+					glm::mat4{ 1.0f }
 				);
 
 				if (idx == mSelectedFrame)
 				{
 					mLineCanvas->rect(position, frame.size,	glm::vec4{ 1.0f, 0.6f, 0.0f, 1.0f });
+				}
+
+				if (isSelected)
+				{
+					auto finalPosition = convertToViewport(mouse->getPosition());
+					if ((finalPosition.x >= position.x && finalPosition.x < position.x + frame.size.x) &&
+						(finalPosition.y >= position.y && finalPosition.y < position.y + frame.size.y))
+					{
+						if (mSelectedFrame != idx)
+						{
+							mSelectedFrame = idx;
+							onSelectFrame.notify(mSelectedFrame);
+						}
+					}
 				}
 
 				if (((idx + 1) % numColumns) == 0)
@@ -162,5 +177,19 @@ namespace Trinity
 			mGrid->setCanvasSize(glm::vec2{ (float)width, (float)height });
 			mGrid->updateGridData();
 		}
+	}
+
+	glm::vec2 SpriteViewport::convertToViewport(const glm::vec2& v) const
+	{
+		const auto& cameraSize = mCamera->getSize();
+		const auto& transform = mCamera->getTransform();
+
+		glm::vec2 scale{
+			cameraSize.x / mSize.x,
+			cameraSize.y / mSize.y
+		};
+
+		auto scaledValue = ((v - mPosition) * scale) - cameraSize * 0.5f;
+		return glm::vec2(transform * glm::vec4{ scaledValue.x, -scaledValue.y, 0.0f, 1.0f });
 	}
 }

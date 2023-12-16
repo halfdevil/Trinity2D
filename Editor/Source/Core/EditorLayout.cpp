@@ -4,6 +4,8 @@
 #include "VFS/FileSystem.h"
 #include "glm/gtc/type_ptr.hpp"
 #include "misc/cpp/imgui_stdlib.h"
+#include "imgui_internal.h"
+#include "IconsFontAwesome6.h"
 
 #include "nlohmann/json.hpp"
 using json = nlohmann::json;
@@ -183,6 +185,27 @@ namespace Trinity
 		return ret;
 	}
 
+	bool EditorLayout::inputSize(const std::string& label, glm::uvec2& value) const
+	{
+		char id[kMaxIdSize];
+		std::snprintf(id, kMaxIdSize, "##%s", label.c_str());
+
+		ImGui::PushID(id);
+		ImGui::TableNextRow();
+
+		ImGui::TableSetColumnIndex(0);
+		ImGui::AlignTextToFramePadding();
+		ImGui::TextUnformatted(label.c_str());
+
+		ImGui::TableSetColumnIndex(1);
+		ImGui::SetNextItemWidth(-FLT_MIN);
+
+		bool ret = ImGui::InputInt2("##value", (int*)glm::value_ptr(value));
+		ImGui::PopID();
+		
+		return ret;
+	}
+
 	bool EditorLayout::checkbox(const std::string& label, bool& value) const
 	{
 		char id[kMaxIdSize];
@@ -295,6 +318,25 @@ namespace Trinity
 
 	ListBoxOperation EditorLayout::listBox(const std::string& label, int32_t& selectedIndex, const std::vector<const char*>& items) const
 	{
+		if (beginListBox(label))
+		{
+			for (uint32_t idx = 0; idx < (uint32_t)items.size(); idx++)
+			{
+				bool selected = idx == selectedIndex;
+				if (listItem(items[idx], selected))
+				{
+					selectedIndex = idx;
+				}
+			}
+
+			endListBox();
+		}
+
+		return listBoxEditor();
+	}
+
+	bool EditorLayout::beginListBox(const std::string& label) const
+	{
 		char id[kMaxIdSize];
 		std::snprintf(id, kMaxIdSize, "##%s", label.c_str());
 
@@ -308,10 +350,43 @@ namespace Trinity
 		ImGui::TableSetColumnIndex(1);
 		ImGui::SetNextItemWidth(-FLT_MIN);
 
-		auto ret = EditorHelper::listBox("##listBox", selectedIndex, items);
-		ImGui::PopID();
+		const float tableHeight = ImGui::GetTextLineHeightWithSpacing() * 7.25f +
+			ImGui::GetStyle().FramePadding.y * 2.0f;
+
+		bool ret = ImGui::BeginTable("##listBox", 1, ImGuiTableFlags_Resizable | ImGuiTableFlags_ScrollY, ImVec2{ 0.0f, tableHeight });
+		if (!ret)
+		{
+			ImGui::PopID();
+		}
 
 		return ret;
+	}
+
+	bool EditorLayout::listItem(const std::string& label, bool selected) const
+	{
+		ImGui::SetNextItemWidth(-FLT_MIN);
+		ImGui::TableNextRow();
+		ImGui::TableSetColumnIndex(0);
+		ImGui::AlignTextToFramePadding();
+
+		bool ret = ImGui::Selectable(label.c_str(), selected);
+		if (ret)
+		{
+			ImGui::SetItemDefaultFocus();
+		}
+
+		return ret;
+	}
+
+	void EditorLayout::endListBox() const
+	{
+		ImGui::EndTable();
+		ImGui::PopID();
+	}
+
+	ListBoxOperation EditorLayout::listBoxEditor() const
+	{
+		return EditorHelper::listBoxEditor("##listbox-editor");
 	}
 
 	bool EditorLayout::updateFiles(const std::string& dir, FileType fileType)

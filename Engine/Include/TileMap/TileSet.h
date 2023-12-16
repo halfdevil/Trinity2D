@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Editor/Editor.h"
+#include "VFS/Serializer.h"
 #include <memory>
 #include <string>
 #include <vector>
@@ -9,6 +11,8 @@
 namespace Trinity
 {
 	class Texture;
+	class TileEditor;
+	class TileSetSerializer;
 
 	struct TileProperty
 	{
@@ -19,6 +23,9 @@ namespace Trinity
 	class TileSet
 	{
 	public:
+
+		friend class TileSetEditor;
+		friend class TileSetSerializer;
 
 		TileSet() = default;
 		virtual ~TileSet() = default;
@@ -70,6 +77,8 @@ namespace Trinity
 		}
 
 		virtual glm::vec2 getPosition(uint32_t globalId) const;
+		virtual IEditor* getEditor();
+		virtual ISerializer* getSerializer();
 
 		virtual void setName(const std::string& name);
 		virtual void setSize(const glm::vec2& size);
@@ -92,5 +101,52 @@ namespace Trinity
 		uint32_t mFirstId{ 0 };
 		Texture* mTexture{ nullptr };
 		std::unordered_map<uint32_t, std::vector<TileProperty>> mProperties;
+	};
+
+	class TileSetEditor : public IEditor
+	{
+	public:
+
+		TileSetEditor() = default;
+		virtual ~TileSetEditor() = default;
+
+		TileSetEditor(const TileSetEditor&) = delete;
+		TileSetEditor& operator = (const TileSetEditor&) = delete;
+
+		TileSetEditor(TileSetEditor&&) = default;
+		TileSetEditor& operator = (TileSetEditor&&) = default;
+
+		virtual void setTileSet(TileSet& tileSet);
+		virtual void onInspectorGui(const IEditorLayout& layout, ResourceCache& cache) override;
+
+	protected:
+
+		TileSet* mTileSet{ nullptr };
+		std::string mSelectedTextureFile;
+	};
+
+	class TileSetSerializer : public ISerializer
+	{
+	public:
+
+		TileSetSerializer() = default;
+		virtual ~TileSetSerializer() = default;
+
+		TileSetSerializer(const TileSetSerializer&) = delete;
+		TileSetSerializer& operator = (const TileSetSerializer&) = delete;
+
+		TileSetSerializer(TileSetSerializer&&) = default;
+		TileSetSerializer& operator = (TileSetSerializer&&) = default;
+
+		virtual void setTileSet(TileSet& tileSet);
+		virtual bool read(FileReader& reader, ResourceCache& cache) override;
+		virtual bool write(FileWriter& writer) override;
+
+		virtual bool read(json& object, ResourceCache& cache) override;
+		virtual bool write(json& object) override;
+
+	protected:
+
+		TileSet* mTileSet{ nullptr };
 	};
 }

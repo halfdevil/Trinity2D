@@ -27,6 +27,16 @@ namespace Trinity
 			return mCenter;
 		}
 
+		const glm::vec2& getPosition() const
+		{
+			return mPosition;
+		}
+
+		const glm::mat4& getTransform() const
+		{
+			return mTransform;
+		}
+
 		float getMoveSpeed() const
 		{
 			return mMoveSpeed;
@@ -55,7 +65,7 @@ namespace Trinity
 		virtual void setPosition(const glm::vec2& position);
 		virtual void setRotation(float rotation);
 
-		virtual void setSize(float left, float right, float top, float bottom);
+		virtual void setSize(float left, float right, float bottom, float top);
 		virtual void update(float deltaTime);
 
 	protected:

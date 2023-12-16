@@ -85,10 +85,10 @@ namespace Trinity
 		mRotationDelta = rotation - mRotation;
 	}
 
-	void EditorCamera::setSize(float left, float right, float top, float bottom)
+	void EditorCamera::setSize(float left, float right, float bottom, float top)
 	{
-		mSize = glm::vec2{ right - left, bottom - top };
-		mCenter = glm::vec2{ left, top } + (mSize * 0.5f);
+		mSize = glm::vec2{ right - left, top - bottom };
+		mCenter = glm::vec2{ left, bottom } + (mSize * 0.5f);
 	}
 
 	void EditorCamera::update(float deltaTime)

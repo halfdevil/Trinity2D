@@ -176,11 +176,9 @@ namespace Trinity
 		if (selectedAnimation < mSprite->mAnimations.size())
 		{
 			auto* animation = &mSprite->mAnimations[selectedAnimation];
-
 			if (mSelectedAnimation != animation)
 			{
 				mSelectedAnimation = &mSprite->mAnimations[selectedAnimation];
-				updateAnimationFrameNames();
 			}
 		}
 	}
@@ -231,65 +229,59 @@ namespace Trinity
 			if (layout.beginLayout("Animation"))
 			{
 				layout.inputString("Name", mSelectedAnimation->name);
-				
-				auto operation = layout.listBox("Frames", (int32_t&)mSelectedAnimationFrame, mSelectedAnimationFrameNames);
-				switch (operation)
+
+				if (layout.beginListBox("Frames"))
 				{
-				case ListBoxOperation::Select:
-					break;
-
-				case ListBoxOperation::Add:
-					mSelectedAnimation->addFrame((uint16_t)mSelectedFrameIndex);
-					updateAnimationFrameNames();
-					break;
-
-				case ListBoxOperation::Delete:
-					if (mSelectedAnimationFrameNames.size() > 1)
+					auto& frames = mSprite->mFrames;
+					for (uint32_t idx = 0; idx < (uint32_t)mSelectedAnimation->frames.size(); idx++)
 					{
-						mSelectedAnimation->removeFrame(mSelectedAnimationFrame);
-						updateAnimationFrameNames();
-					}
-					break;
+						auto frameIdx = mSelectedAnimation->frames[idx];
+						auto& frame = frames[frameIdx];
 
-				case ListBoxOperation::Up:
-					if (mSelectedAnimationFrame > 0)
+						if (layout.listItem(frame.name, idx == mSelectedAnimationFrame))
+						{
+							mSelectedAnimationFrame = idx;
+						}
+					}
+
+					layout.endListBox();
+
+					auto operation = layout.listBoxEditor();
+					switch (operation)
 					{
-						mSelectedAnimation->moveFrame(mSelectedAnimationFrame, mSelectedAnimationFrame - 1);
-						updateAnimationFrameNames();
+					case ListBoxOperation::Add:
+						mSelectedAnimation->addFrame((uint16_t)mSelectedFrameIndex);
+						break;
 
-						mSelectedAnimationFrame--;
+					case ListBoxOperation::Delete:
+						if (mSelectedAnimation->frames.size() > 1)
+						{
+							mSelectedAnimation->removeFrame(mSelectedAnimationFrame);
+						}
+						break;
+
+					case ListBoxOperation::Up:
+						if (mSelectedAnimationFrame > 0)
+						{
+							mSelectedAnimation->moveFrame(mSelectedAnimationFrame, mSelectedAnimationFrame - 1);
+							mSelectedAnimationFrame--;
+						}
+						break;
+
+					case ListBoxOperation::Down:
+						if (mSelectedAnimationFrame < (uint32_t)mSelectedAnimation->frames.size() - 1)
+						{
+							mSelectedAnimation->moveFrame(mSelectedAnimationFrame, mSelectedAnimationFrame + 1);
+							mSelectedAnimationFrame++;
+						}
+						break;
+
+					default:
+						break;
 					}
-					break;
-
-				case ListBoxOperation::Down:
-					if (mSelectedAnimationFrame < (uint32_t)mSelectedAnimationFrameNames.size() - 1)
-					{
-						mSelectedAnimation->moveFrame(mSelectedAnimationFrame, mSelectedAnimationFrame + 1);
-						updateAnimationFrameNames();
-
-						mSelectedAnimationFrame++;
-					}
-					break;
-
-				default:
-					break;
 				}
 
 				layout.endLayout();
-			}
-		}
-	}
-
-	void SpriteEditor::updateAnimationFrameNames()
-	{
-		mSelectedAnimationFrameNames.clear();
-
-		if (mSelectedAnimation != nullptr)
-		{
-			const auto& frames = mSprite->getFrames();
-			for (auto frameIndex : mSelectedAnimation->frames)
-			{
-				mSelectedAnimationFrameNames.push_back(frames[frameIndex].name.c_str());
 			}
 		}
 	}
@@ -301,8 +293,6 @@ namespace Trinity
 
 	bool SpriteSerializer::read(FileReader& reader, ResourceCache& cache)
 	{
-		mSprite->mName = reader.readString();
-
 		if (!reader.read(glm::value_ptr(mSprite->mSize)))
 		{
 			LogError("FileReader::read() failed for 'size'");
@@ -388,12 +378,6 @@ namespace Trinity
 
 	bool SpriteSerializer::write(FileWriter& writer)
 	{
-		if (!writer.writeString(mSprite->mName))
-		{
-			LogError("FileWriter::write() failed for 'name'");
-			return false;
-		}
-
 		if (!writer.write(glm::value_ptr(mSprite->mSize)))
 		{
 			LogError("FileWriter::write() failed for 'size'");
@@ -473,12 +457,6 @@ namespace Trinity
 
 	bool SpriteSerializer::read(json& object, ResourceCache& cache)
 	{
-		if (!object.contains("name"))
-		{
-			LogError("JSON sprite object doesn't have 'name' key");
-			return false;
-		}
-
 		if (!object.contains("size"))
 		{
 			LogError("JSON sprite object doesn't have 'size' key");
@@ -503,7 +481,6 @@ namespace Trinity
 			return false;
 		}
 
-		mSprite->mName = object["name"].get<std::string>();
 		mSprite->mSize = {
 			object["size"][0].get<float>(),
 			object["size"][1].get<float>()
@@ -596,7 +573,6 @@ namespace Trinity
 			animationsObj.push_back(std::move(animationObj));
 		}
 
-		object["name"] = mSprite->mName;
 		object["size"] = std::vector<float>{
 			mSprite->mSize.x,
 			mSprite->mSize.y

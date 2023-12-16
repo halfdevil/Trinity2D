@@ -184,22 +184,8 @@ namespace Trinity
 
 	Sprite* SpriteEditorApp::createDefaultSprite() const
 	{
-		std::vector<SpriteFrame> frames = { {
-			"frame0",
-			glm::vec2{ 0.0f },
-			glm::vec2{ 64.0f, 64.0f }
-		} };
-
-		std::vector<SpriteAnimation> animations = { {
-			"animation0",
-			{ 0 }
-		} };
-
 		auto sprite = std::make_unique<Sprite>();
 		sprite->setName("New Sprite");
-		sprite->setSize(glm::vec2{ 64.0f, 64.0f });
-		sprite->setFrames(std::move(frames));
-		sprite->setAnimations(std::move(animations));
 
 		auto* spritePtr = sprite.get();
 		mResourceCache->addResource(std::move(sprite));
@@ -214,7 +200,7 @@ namespace Trinity
 		hierarchy->setSprite(sprite);
 
 		hierarchy->onSelectFrame.subscribe([this](auto frame) {
-			onSelectFrameClick(frame);
+			onSelectFrameHierarchyClick(frame);
 		});
 
 		hierarchy->onSelectAnimation.subscribe([this](auto animation) {
@@ -252,6 +238,10 @@ namespace Trinity
 
 		viewport->setTitle(title);
 		viewport->setSprite(sprite);
+
+		viewport->onSelectFrame.subscribe([this](auto selectedFrame) {
+			onSelectFrameViewportClick(selectedFrame);
+		});
 
 		viewport->onResize.subscribe([this](auto width, auto height) {
 			onViewportResize(width, height);
@@ -341,8 +331,9 @@ namespace Trinity
 				mViewport->setSprite(*mCurrentSprite);
 				mInspector->setSprite(*mCurrentSprite);
 				mAnimPlayer->setSprite(*mCurrentSprite);
+				mViewport->setTitle(mCurrentSprite->getName());
 
-				onSelectFrameClick(0);
+				onSelectFrameHierarchyClick(0);
 				onSelectAnimationClick(0);
 			}
 			else
@@ -367,7 +358,7 @@ namespace Trinity
 		}
 	}
 
-	void SpriteEditorApp::onSelectFrameClick(uint32_t selectedFrame)
+	void SpriteEditorApp::onSelectFrameHierarchyClick(uint32_t selectedFrame)
 	{
 		if (mInspector != nullptr)
 		{
@@ -377,6 +368,19 @@ namespace Trinity
 		if (mViewport != nullptr)
 		{
 			mViewport->setSelectedFrame(selectedFrame);
+		}
+	}
+
+	void SpriteEditorApp::onSelectFrameViewportClick(uint32_t selectedFrame)
+	{
+		if (mInspector != nullptr)
+		{
+			mInspector->setSelectedFrame(selectedFrame);
+		}
+
+		if (mHierarchy != nullptr)
+		{
+			mHierarchy->setSelectedFrame(selectedFrame);
 		}
 	}
 

@@ -16,7 +16,6 @@ namespace Trinity
 	enum class ListBoxOperation
 	{
 		None,
-		Select,
 		Add,
 		Delete,
 		Up,
@@ -46,6 +45,7 @@ namespace Trinity
 		virtual bool inputVec4(const std::string& label, glm::vec4& value) const = 0;
 		virtual bool inputQuat(const std::string& label, glm::quat& value) const = 0;
 		virtual bool inputString(const std::string& label, std::string& value) const = 0;
+		virtual bool inputSize(const std::string& label, glm::uvec2& value) const = 0;
 		virtual bool checkbox(const std::string& label, bool& value) const = 0;
 
 		virtual bool beginCombo(const std::string& label, const std::string& preview) const = 0;
@@ -54,5 +54,10 @@ namespace Trinity
 
 		virtual bool fileCombo(const std::string& label, FileType fileType, std::string& selectedFile) const = 0;
 		virtual ListBoxOperation listBox(const std::string& label, int32_t& selectedIndex, const std::vector<const char*>& items) const = 0;
+
+		virtual bool beginListBox(const std::string& label) const = 0;
+		virtual bool listItem(const std::string& label, bool selected) const = 0;
+		virtual void endListBox() const = 0;
+		virtual ListBoxOperation listBoxEditor() const = 0;
 	};
 }

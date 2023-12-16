@@ -13,7 +13,6 @@ namespace Trinity
 	{
 	public:
 
-		static constexpr float kBottomPanelHeight = 24.0f;
 		static constexpr float kAnimationSpeeds[] = { 0.25f, 0.5f, 0.75f, 1.0f, 1.25f, 1.75f, 2.0f };
 
 		AnimationPlayer() = default;
@@ -39,8 +38,8 @@ namespace Trinity
 
 	protected:
 
-		virtual void drawBottomPanel(float x, float y, float width, float height) override;
 		virtual void onViewportResize(uint32_t width, uint32_t height) override;
+		virtual void drawBottomToolbarWidgets();
 		virtual void onPlayPauseClick(bool playing);
 		virtual void onStopClick();
 		virtual void onSpeedChange(float speed);

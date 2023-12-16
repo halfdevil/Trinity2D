@@ -2,6 +2,7 @@
 
 #include "Core/EditorWidget.h"
 #include "Core/Observer.h"
+#include "Input/Types.h"
 #include "glm/glm.hpp"
 #include <stdint.h>
 #include <memory>
@@ -14,6 +15,7 @@ namespace Trinity
 	class RenderSystem;
 	class RenderPass;
 	class LineCanvas;
+	class BatchRenderer;
 	class EditorResources;
 	class EditorGizmo;
 	class EditorCamera;
@@ -23,6 +25,10 @@ namespace Trinity
 	{
 	public:
 
+		static constexpr const char* kTexturedShader = "/Assets/Engine/Shaders/Textured.wgsl";
+		static constexpr const char* kColoredShader = "/Assets/Engine/Shaders/Colored.wgsl";
+		static constexpr float kTopToolbarHeight = 24.0f;
+		static constexpr float kBottomToolbarHeight = 24.0f;
 		static constexpr float kZoomSpeed = 0.1f;
 		static constexpr float kZoomMax = 8.0f;
 		static constexpr float kZoomMin = 0.25f;
@@ -85,14 +91,18 @@ namespace Trinity
 
 	protected:
 
-		virtual void drawToolbar(float x, float y, float width, float height);
-		virtual void drawBottomPanel(float x, float y, float width, float height);
+		virtual void drawTopToolbar(float x, float y, float width, float height);
+		virtual void drawBottomToolbar(float x, float y, float width, float height);
 		virtual void editTransform(float x, float y, float width, float height);
+		virtual void drawTopToolbarWidgets();
+		virtual void drawBottomToolbarWidgets();
 
 		virtual void onViewportResize(uint32_t width, uint32_t height);
-		virtual void onMouseButtonStateUpdated(int32_t button, bool pressed);
 		virtual void onMousePositionUpdated(float x, float y);
 		virtual void onMouseScrollUpdated(float x, float y);
+		virtual void onMouseButtonStateUpdated(int32_t button, bool pressed);
+
+		virtual glm::vec2 convertToViewport(const glm::vec2& v) const;
 
 	public:
 
@@ -102,21 +112,24 @@ namespace Trinity
 
 		std::unique_ptr<FrameBuffer> mFrameBuffer{ nullptr };
 		std::unique_ptr<RenderPass> mRenderPass{ nullptr };
+		std::unique_ptr<BatchRenderer> mRenderer{ nullptr };
 		std::unique_ptr<LineCanvas> mLineCanvas{ nullptr };
 		std::unique_ptr<EditorGizmo> mGizmo{ nullptr };
 		std::unique_ptr<EditorCamera> mCamera{ nullptr };
 		std::unique_ptr<EditorGrid> mGrid{ nullptr };
 		std::vector<Resolution> mResolutions;
 		Resolution* mSelectedResolution{ nullptr };
-		bool mShowToolbar{ true };
-		bool mShowBottomPanel{ true };
-		float mToolbarHeight{ 64.0f };
-		float mBottomPanelHeight{ 64.0f };
+		bool mHorizontalScrollBar{ false };
+		bool mKeepAspectRatio{ true };
+		bool mShowTopToolbar{ true };
+		bool mShowBottomToolbar{ true };
+		bool mShowGizmoControls{ false };
+		bool mShowResolutionControls{ false };
+		float mTopToolbarHeight{ 64.0f };
+		float mBottomToolbarHeight{ 64.0f };
 		glm::vec2 mPosition{ 0.0f, 0.0f };
 		glm::vec2 mSize{ 0.0f, 0.0f };
-		glm::vec2 mMousePosition{ 0.0f, 0.0f };
-		glm::vec2 mOldMousePosition{ 0.0f, 0.0f };
 		float mZoom{ 1.0f };
-		bool mIsRightButtonDown{ false };
+		bool mMouseInViewport{ false };
 	};
 }

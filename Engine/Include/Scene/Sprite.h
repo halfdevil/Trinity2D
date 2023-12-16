@@ -157,17 +157,12 @@ namespace Trinity
 
 	protected:
 
-		virtual void updateAnimationFrameNames();
-
-	protected:
-
 		Sprite* mSprite{ nullptr };
 		SpriteFrame* mSelectedFrame{ nullptr };
 		SpriteAnimation* mSelectedAnimation{ nullptr };
 		uint32_t mSelectedFrameIndex{ 0 };
 		uint32_t mSelectedAnimationFrame{ 0 };
 		std::string mSelectedTextureFile;
-		std::vector<const char*> mSelectedAnimationFrameNames;
 	};
 
 	class SpriteSerializer : public ISerializer

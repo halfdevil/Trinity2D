@@ -49,7 +49,8 @@ namespace Trinity
 		virtual void onAssetFileDialogClick(AssetFileDialogType dialogType, AssetFileDialogResult result,
 			const std::string& path) override;
 
-		virtual void onSelectFrameClick(uint32_t selectedFrame);
+		virtual void onSelectFrameHierarchyClick(uint32_t selectedFrame);
+		virtual void onSelectFrameViewportClick(uint32_t selectedFrame);
 		virtual void onSelectAnimationClick(uint32_t selectedAnimation);
 		virtual void onViewportResize(uint32_t width, uint32_t height);
 		virtual void onPlayerResize(uint32_t width, uint32_t height);

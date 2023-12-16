@@ -104,7 +104,7 @@ namespace Trinity
 			const glm::vec2& size,
 			const glm::vec2& origin,
 			const glm::mat4& transform,
-			const glm::vec4& color
+			const glm::vec4& color = glm::vec4{ 0.0f }
 		);
 
 		virtual bool drawTexture(

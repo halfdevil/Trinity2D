@@ -38,7 +38,7 @@ namespace Trinity
         return false;
     }
 
-    bool Mouse::isButtoniggered(int32_t button) const
+    bool Mouse::isButtonTriggered(int32_t button) const
     {
         if (button >= 0 && button < MOUSE_BUTTON_LAST)
         {

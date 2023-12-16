@@ -26,6 +26,11 @@ namespace Trinity
             return mCurrentPosition;
         }
 
+        const glm::vec2& getOldPosition() const
+        {
+            return mOldPosition;
+        }
+
         glm::ivec2 getRelativePosition() const
         {
             return mCurrentPosition - mOldPosition;
@@ -39,7 +44,7 @@ namespace Trinity
         bool isButtonDown(int32_t button) const;
         bool isButtonUp(int32_t button) const;
         bool isButtonHeld(int32_t button) const;
-        bool isButtoniggered(int32_t button) const;
+        bool isButtonTriggered(int32_t button) const;
 
         void update(int32_t button, bool pressed);
         void updatePosition(float x, float y);
