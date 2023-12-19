@@ -270,33 +270,19 @@ namespace Trinity
 			},
 			.vertexLayouts = { mRenderContext.vertexLayout },
 			.colorTargets = {{
-				.format = renderTarget.getColorFormat(),
-				.blendState = wgpu::BlendState {
-					.color = {
-						.operation = wgpu::BlendOperation::Add,
-						.srcFactor = wgpu::BlendFactor::SrcAlpha,
-						.dstFactor = wgpu::BlendFactor::OneMinusSrcAlpha
-					},
-					.alpha = {
-						.operation = wgpu::BlendOperation::Add,
-						.srcFactor = wgpu::BlendFactor::One,
-						.dstFactor = wgpu::BlendFactor::OneMinusSrcAlpha
-					}
-				}
+				.format = renderTarget.getColorFormat()
 			}},
 			.primitive = {
 				.topology = wgpu::PrimitiveTopology::TriangleList,
 				.frontFace = wgpu::FrontFace::CW,
-				.cullMode = wgpu::CullMode::None
+				.cullMode = wgpu::CullMode::Back
 			}
 		};
 
 		if (renderTarget.hasDepthStencilAttachment())
 		{
 			renderProps.depthStencil = {
-				.format = renderTarget.getDepthFormat(),
-				.depthWriteEnabled = false,
-				.depthCompare = wgpu::CompareFunction::Less
+				.format = renderTarget.getDepthFormat()
 			};
 		}
 

@@ -125,6 +125,8 @@ namespace Trinity
 		bool mShowBottomToolbar{ true };
 		bool mShowGizmoControls{ false };
 		bool mShowResolutionControls{ false };
+		bool mAllowZoom{ true };
+		bool mAllowPan{ true };
 		float mTopToolbarHeight{ 64.0f };
 		float mBottomToolbarHeight{ 64.0f };
 		glm::vec2 mPosition{ 0.0f, 0.0f };

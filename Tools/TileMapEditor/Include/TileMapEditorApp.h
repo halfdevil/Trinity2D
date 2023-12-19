@@ -34,6 +34,7 @@ namespace Trinity
 
 		virtual TileMap* openTileMap(const std::string& path);
 		virtual bool saveTileMap(TileMap* tileMap, const std::string& path);
+		virtual void updateTitle();
 
 		virtual MenuBar* createMainMenu() override;
 		virtual AssetFileDialog* createFileDialog() override;
@@ -48,11 +49,16 @@ namespace Trinity
 		virtual void onAssetFileDialogClick(AssetFileDialogType dialogType, AssetFileDialogResult result,
 			const std::string& path) override;
 
+		virtual void onKeyboardKeyStateUpdated(int32_t key, bool pressed);
 		virtual void onViewportResize(uint32_t width, uint32_t height);
 		virtual void onTileSetViewportResize(uint32_t width, uint32_t height);
+
+		virtual void onSelectTilesClick(const glm::ivec2& minTileIndex, const glm::ivec2& maxTileIndex, 
+			const glm::ivec2& firstTileIndex);
+
 		virtual void onSelectTileLayerClick(uint32_t selectedTileLayer);
 		virtual void onSelectTileSetClick(uint32_t selectedTileSet);
-		virtual void onSelectTileClick(uint32_t selectedTile);
+		virtual void onTileMapEditClick();
 
 	protected:
 
@@ -61,5 +67,6 @@ namespace Trinity
 		TileMapInspector* mInspector{ nullptr };
 		TileMapHierarchy* mHierarchy{ nullptr };
 		TileSetViewport* mTileSetViewport{ nullptr };
+		bool mTileMapChanged{ true };
 	};
 }

@@ -82,28 +82,29 @@ namespace Trinity
             return mCallbacks;
         }
 
-        bool create(const std::string& title, uint32_t width, uint32_t height,
+        virtual bool create(const std::string& title, uint32_t width, uint32_t height,
             DisplayMode displayMode);
 
-        void destroy();
-        bool isClosed() const;
+        virtual void destroy();
+        virtual bool isClosed() const;
 
-        void showMouse(bool visible, bool lock) const;
-        void show(bool visible) const;
-        void close();
-        void poll();
+        virtual void showMouse(bool visible, bool lock) const;
+        virtual void show(bool visible) const;
+        virtual void close();
+        virtual void poll();
 
-        void setCursor(Cursor cursor) const;
-        void setSize(const glm::uvec2& size);
+        virtual void setTitle(const std::string& title);
+        virtual void setCursor(Cursor cursor) const;
+        virtual void setSize(const glm::uvec2& size);
 
-        float getScaleFactor() const;
-        glm::uvec2 getSize() const;
-        glm::uvec2 getFramebufferSize() const;
-        std::unique_ptr<wgpu::ChainedStruct> getSurfaceDescriptor() const;
+        virtual float getScaleFactor() const;
+        virtual glm::uvec2 getSize() const;
+        virtual glm::uvec2 getFramebufferSize() const;
+        virtual std::unique_ptr<wgpu::ChainedStruct> getSurfaceDescriptor() const;
 
-    private:
+    protected:
 
-        void createCursors();
+        virtual void createCursors();
 
     public:
 

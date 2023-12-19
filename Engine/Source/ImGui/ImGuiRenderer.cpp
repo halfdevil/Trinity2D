@@ -500,9 +500,7 @@ namespace Trinity
 		if (renderTarget.hasDepthStencilAttachment())
 		{
 			renderProps.depthStencil = {
-				.format = renderTarget.getDepthFormat(),
-				.depthWriteEnabled = false,
-				.depthCompare = wgpu::CompareFunction::Less
+				.format = renderTarget.getDepthFormat()
 			};
 		}
 
@@ -629,9 +627,9 @@ namespace Trinity
 			.addressModeU = wgpu::AddressMode::Repeat,
 			.addressModeV = wgpu::AddressMode::Repeat,
 			.addressModeW = wgpu::AddressMode::Repeat,
-			.magFilter = wgpu::FilterMode::Linear,
-			.minFilter = wgpu::FilterMode::Linear,
-			.mipmapFilter = wgpu::MipmapFilterMode::Linear
+			.magFilter = wgpu::FilterMode::Nearest,
+			.minFilter = wgpu::FilterMode::Nearest,
+			.mipmapFilter = wgpu::MipmapFilterMode::Nearest
 		}))
 		{
 			LogError("Sampler::create() failed!!");

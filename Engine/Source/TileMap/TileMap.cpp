@@ -63,9 +63,14 @@ namespace Trinity
 
 	uint32_t TileMap::getTile(uint32_t layerIdx, uint32_t x, uint32_t y) const
 	{
+		return getTile(layerIdx, y * mNumTiles.x + x);
+	}
+
+	uint32_t TileMap::getTile(uint32_t layerIdx, uint32_t tileIdx) const
+	{
 		if (layerIdx < (uint32_t)mTileLayers.size())
 		{
-			return mTileLayers.at(layerIdx)->getTile(y * mNumTiles.x + x);
+			return mTileLayers.at(layerIdx)->getTile(tileIdx);
 		}
 
 		return 0;
@@ -109,11 +114,16 @@ namespace Trinity
 		return nextId;
 	}
 
-	void TileMap::setTile(uint32_t layerIdx, uint32_t x, uint32_t y, uint32_t globalId)
+	void TileMap::setTile(uint32_t layerIdx, uint32_t x, uint32_t y, uint32_t tileId)
+	{
+		setTile(layerIdx, y * mNumTiles.x + x, tileId);
+	}
+
+	void TileMap::setTile(uint32_t layerIdx, uint32_t tileIdx, uint32_t tileId)
 	{
 		if (layerIdx < (uint32_t)mTileLayers.size())
 		{
-			mTileLayers.at(layerIdx)->setTile(y * mNumTiles.x + x, globalId);
+			mTileLayers.at(layerIdx)->setTile(tileIdx, tileId);
 		}
 	}
 
@@ -205,8 +215,8 @@ namespace Trinity
 					const auto& srcSize = tileSet->getTileSize();
 
 					auto dstPosition = position + glm::vec2{
-						std::floorf((float)(idx % mNumTiles.x)) * mTileSize.x,
-						std::floorf((float)(idx / mNumTiles.y)) * mTileSize.y
+						(float)(idx % mNumTiles.x) * mTileSize.x,
+						(float)(idx / mNumTiles.x) * mTileSize.y
 					};
 
 					if ((dstPosition.x + mTileSize.x < left || dstPosition.y + mTileSize.y < bottom) ||

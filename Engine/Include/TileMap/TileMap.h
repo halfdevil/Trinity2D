@@ -66,12 +66,14 @@ namespace Trinity
 		virtual ISerializer* getSerializer();
 
 		virtual uint32_t getTotalTiles() const;
+		virtual uint32_t getTile(uint32_t layerIdx, uint32_t tileIdx) const;
 		virtual uint32_t getTile(uint32_t layerIdx, uint32_t x, uint32_t y) const;
 		virtual TileSet* getTileSet(uint32_t index) const;
 		virtual TileSet* getTileSetFromId(uint32_t tileId) const;
 		virtual uint32_t getNextTileSetId() const;
 
-		virtual void setTile(uint32_t layerIdx, uint32_t x, uint32_t y, uint32_t globalId);
+		virtual void setTile(uint32_t layerIdx, uint32_t tileIdx, uint32_t tileId);
+		virtual void setTile(uint32_t layerIdx, uint32_t x, uint32_t y, uint32_t tileId);
 		virtual void setTileSize(const glm::vec2& tileSize);
 		virtual void setSize(const glm::vec2& size);
 		virtual void setNumTiles(const glm::uvec2& numTiles);

@@ -85,7 +85,6 @@ namespace Trinity
 	{
 		ListBoxOperation operation{ ListBoxOperation::None };
 
-		ImGui::Separator();
 		ImGui::PushID(id);
 
 		if (ImGui::Button(ICON_FA_PLUS))

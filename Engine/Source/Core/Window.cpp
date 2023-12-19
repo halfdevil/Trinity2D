@@ -192,7 +192,12 @@ namespace Trinity
         glfwPollEvents();
     }
 
-    void Window::setCursor(Cursor cursor) const
+	void Window::setTitle(const std::string& title)
+	{
+        glfwSetWindowTitle(mHandle, title.c_str());
+	}
+
+	void Window::setCursor(Cursor cursor) const
     {
         GLFWcursor* cursorHandle = mCursors[(uint32_t)cursor] ? mCursors[(uint32_t)cursor] :
             mCursors[(uint32_t)Cursor::Arrow];

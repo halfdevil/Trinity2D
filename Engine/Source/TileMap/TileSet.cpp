@@ -75,20 +75,47 @@ namespace Trinity
 		mTexture = texture;
 	}
 
-	void TileSet::addProperty(uint32_t id, const TileProperty& property)
+	void TileSet::addProperty(uint32_t id, const std::string& name, const std::string& value)
 	{
 		if (auto it = mProperties.find(id); it != mProperties.end())
 		{
-			it->second.push_back(property);
+			it->second.insert(std::make_pair(name, value));
 		}
 		else
 		{
-			std::vector<TileProperty> properties{ property };
+			std::unordered_map<std::string, std::string> properties{ 
+				{ name, value } 
+			};
+
 			mProperties.insert(std::make_pair(id, std::move(properties)));
 		}
 	}
 
-	void TileSet::setProperties(uint32_t id, std::vector<TileProperty>&& properties)
+	void TileSet::updateProperty(uint32_t id, const std::string& name, const std::string& value)
+	{
+		if (auto it = mProperties.find(id); it != mProperties.end())
+		{
+			if (auto it2 = it->second.find(name); it2 != it->second.end())
+			{
+				it->second.erase(it2);
+			}
+
+			it->second.insert(std::make_pair(name, value));
+		}
+	}
+
+	void TileSet::removeProperty(uint32_t id, const std::string& name)
+	{
+		if (auto it = mProperties.find(id); it != mProperties.end())
+		{
+			if (auto it2 = it->second.find(name); it2 != it->second.end())
+			{
+				it->second.erase(it2);
+			}
+		}
+	}
+
+	void TileSet::setProperties(uint32_t id, std::unordered_map<std::string, std::string>&& properties)
 	{
 		if (auto it = mProperties.find(id); it != mProperties.end())
 		{
@@ -118,7 +145,7 @@ namespace Trinity
 	{
 		if (layout.beginLayout("Tile Set"))
 		{
-			layout.inputString("Name", mTileSet->mName);
+			layout.inputString("Name", mTileSet->mName);			
 			layout.inputVec2("Tile Size", mTileSet->mTileSize);
 			layout.inputSize("No. of Tiles", mTileSet->mNumTiles);
 			layout.inputFloat("Spacing", mTileSet->mSpacing);
@@ -141,6 +168,10 @@ namespace Trinity
 					}
 
 					mTileSet->mTexture = cache.getResource<Texture>(mSelectedTextureFile);
+					mTileSet->mSize = glm::vec2{
+						(float)mTileSet->mTexture->getWidth(),
+						(float)mTileSet->mTexture->getHeight()
+					};
 				}
 			}
 
@@ -215,7 +246,7 @@ namespace Trinity
 		if (numProperties > 0)
 		{
 			std::vector<uint32_t> keys(numProperties);
-			std::vector<std::vector<TileProperty>> values(numProperties);
+			std::vector<std::unordered_map<std::string, std::string>> values(numProperties);
 
 			if (!reader.read(keys.data(), numProperties))
 			{
@@ -234,13 +265,13 @@ namespace Trinity
 
 				if (numTileProperties > 0)
 				{
-					std::vector<TileProperty> properties;
+					std::unordered_map<std::string, std::string> properties;
 					for (uint32_t jdx = 0; jdx < numTileProperties; jdx++)
 					{
 						auto key = reader.readString();
 						auto value = reader.readString();
 
-						properties.push_back({ key, value });
+						properties.insert(std::make_pair(key, value));
 					}
 
 					values[idx] = std::move(properties);
@@ -310,7 +341,7 @@ namespace Trinity
 		if (numProperties > 0)
 		{
 			std::vector<uint32_t> keys;
-			std::vector<std::vector<TileProperty>> values;
+			std::vector<std::unordered_map<std::string, std::string>> values;
 
 			keys.reserve(numProperties);
 			values.reserve(numProperties);
@@ -338,15 +369,15 @@ namespace Trinity
 
 				if (numTileProperties > 0)
 				{
-					for (auto& tileProperty : value)
+					for (auto& [key1, value1] : value)
 					{
-						if (!writer.writeString(tileProperty.name))
+						if (!writer.writeString(key1))
 						{
 							LogError("FileWriter::write() failed for 'tile property name'");
 							return false;
 						}
 
-						if (!writer.writeString(tileProperty.value))
+						if (!writer.writeString(value1))
 						{
 							LogError("FileWriter::write() failed for 'tile property value'");
 							return false;
@@ -443,13 +474,15 @@ namespace Trinity
 
 		for (auto& propertyJson : object["properties"])
 		{
-			std::vector<TileProperty> properties;
+			std::unordered_map<std::string, std::string> properties;
 			for (auto& tilePropertiesJson : propertyJson["tileProperties"])
 			{
-				properties.push_back({
-					tilePropertiesJson["name"].get<std::string>(),
-					tilePropertiesJson["value"].get<std::string>()
-				});
+				for (auto& [key, value] : tilePropertiesJson.items())
+				{
+					properties.insert(std::make_pair(
+						key, value.get<std::string>()
+					));
+				}
 			}
 
 			auto tileId = propertyJson["tileId"].get<uint32_t>();
@@ -470,17 +503,20 @@ namespace Trinity
 		json propertiesJson;
 		for (auto& [key, value] : mTileSet->mProperties)
 		{
+			json propertyJson;
 			json tilePropertiesJson;
-			for (auto& property : value)
+
+			for (auto& [key1, value1] : value)
 			{
 				json propertyJson;
-				propertyJson[property.name] = property.value;
+				propertyJson[key1] = value1;
 
 				tilePropertiesJson.push_back(std::move(propertyJson));
 			}
 
-			propertiesJson["tileId"] = key;
-			propertiesJson["tileProperties"] = std::move(tilePropertiesJson);
+			propertyJson["tileId"] = key;
+			propertyJson["tileProperties"] = std::move(tilePropertiesJson);
+			propertiesJson.push_back(std::move(propertyJson));
 		}
 
 		object["name"] = mTileSet->mName;

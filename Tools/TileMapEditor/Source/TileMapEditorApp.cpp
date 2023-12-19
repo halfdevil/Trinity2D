@@ -53,7 +53,15 @@ namespace Trinity
 		mViewport = createTileMapViewport("Viewport", *mCurrentTileMap);
 		mInspector = createTileMapInspector("Inspector", *mCurrentTileMap);
 		mHierarchy = createTileMapHierarchy("Hierarchy", *mCurrentTileMap);
-		mTileSetViewport = createTileSetViewport("Tile Set");
+		mTileSetViewport = createTileSetViewport("TileSet");
+		updateTitle();
+
+		auto& input = Input::get();
+		auto* keyboard = input.getKeyboard();
+
+		keyboard->onKeyStateUpdated.subscribe([this](auto key, auto pressed) {
+			onKeyboardKeyStateUpdated(key, pressed);
+		});
 
 		return true;
 	}
@@ -145,7 +153,24 @@ namespace Trinity
 			return false;
 		}
 
+		tileMap->setFileName(path);
+		tileMap->setName(fileSystem.getFileName(path, false));
+
+		mTileMapChanged = false;
+		updateTitle();
+
 		return true;
+	}
+
+	void TileMapEditorApp::updateTitle()
+	{
+		if (mCurrentTileMap != nullptr)
+		{
+			const auto title = std::format("Trinity2D - TileMap Editor | {}{}", mCurrentTileMap->getName(), 
+				mTileMapChanged ? "*" : "");
+
+			mWindow->setTitle(title);
+		}
 	}
 
 	MenuBar* TileMapEditorApp::createMainMenu()
@@ -161,8 +186,11 @@ namespace Trinity
 		mainMenu->addMenuItem("saveTileMap", "  Save TileMap  ", "CTRL+S", fileMenu);
 		mainMenu->addMenuItem("saveAsTileMap", "  Save TileMap As  ", "CTRL+SHIFT+S", fileMenu);
 		mainMenu->addSeparator(fileMenu);
-		mainMenu->addMenuItem("exit", "  Exit  ", "ALT+F4", fileMenu);
+		mainMenu->addMenuItem("exit", "  Exit  ", "ALT+X", fileMenu);
 
+		mainMenu->addMenuItem("undo", "  Undo  ", "CTRL+Z", editMenu);
+		mainMenu->addMenuItem("redo", "  Redo  ", "CTRL+Y", editMenu);
+		mainMenu->addSeparator(editMenu);
 		mainMenu->addMenuItem("cut", "  Cut  ", "CTRL+X", editMenu);
 		mainMenu->addMenuItem("copy", "  Copy  ", "CTRL+C", editMenu);
 		mainMenu->addMenuItem("paste", "  Paste  ", "CTRL+V", editMenu);
@@ -204,6 +232,10 @@ namespace Trinity
 
 		viewport->onResize.subscribe([this](auto width, auto height) {
 			onViewportResize(width, height);
+		});
+
+		viewport->onTileMapEdit.subscribe([this]() {
+			onTileMapEditClick();
 		});
 
 		auto* resolution = viewport->getSelectedResolution();
@@ -263,8 +295,8 @@ namespace Trinity
 			onTileSetViewportResize(width, height);
 		});
 
-		viewport->onSelectTile.subscribe([this](auto selectedTile) {
-			onSelectTileClick(selectedTile);
+		viewport->onSelectTiles.subscribe([this](const auto& minTileIndex, const auto& maxTileIndex, const auto& firstTileIndex) {
+			onSelectTilesClick(minTileIndex, maxTileIndex, firstTileIndex);
 		});
 
 		auto* resolution = viewport->getSelectedResolution();
@@ -280,7 +312,26 @@ namespace Trinity
 	{
 		EditorApp::onMainMenuClick(name);
 
-		if (name == "openTileMap")
+		if (name == "exit")
+		{
+			exit();
+		}
+		else if (name == "newTileMap")
+		{
+			if (mCurrentTileMap != nullptr)
+			{
+				mResourceCache->removeResource(mCurrentTileMap);
+			}
+
+			mCurrentTileMap = createDefaultTileMap();
+			mViewport->setTileMap(*mCurrentTileMap);
+			mInspector->setTileMap(*mCurrentTileMap);
+			mHierarchy->setTileMap(*mCurrentTileMap);
+
+			onSelectTileLayerClick(0);
+			onSelectTileSetClick(0);
+		}
+		else if (name == "openTileMap")
 		{
 			if (mFileDialog != nullptr)
 			{
@@ -289,18 +340,47 @@ namespace Trinity
 		}
 		else if (name == "saveTileMap")
 		{
-			if (mFileDialog != nullptr)
+			if (mTileMapChanged && mCurrentTileMap != nullptr)
 			{
-				mFileDialog->show(AssetFileDialogType::Save, "Save TileMap");
+				if (mCurrentTileMap->getFileName().empty())
+				{
+					if (mFileDialog != nullptr)
+					{
+						mFileDialog->show(AssetFileDialogType::Save, "Save TileMap");
+					}
+				}
+				else
+				{
+					saveTileMap(mCurrentTileMap, mCurrentTileMap->getFileName());
+				}
 			}
+		}
+		else if (name == "saveAsTileMap")
+		{
+			if (mFileDialog != nullptr && mCurrentTileMap != nullptr)
+			{
+				mFileDialog->show(AssetFileDialogType::Save, "Save TileMap As");
+			}
+		}
+		else if (name == "cut")
+		{
+			mViewport->cut();
 		}
 		else if (name == "copy")
 		{
-			mViewport->copySelection();
+			mViewport->copy();
 		}
 		else if (name == "paste")
 		{
-			mViewport->pasteSelection();
+			mViewport->paste();
+		}
+		else if (name == "undo")
+		{
+			mViewport->undo();
+		}
+		else if (name == "redo")
+		{
+			mViewport->redo();
 		}
 	}
 
@@ -325,14 +405,13 @@ namespace Trinity
 				mViewport->setTileMap(*mCurrentTileMap);
 				mInspector->setTileMap(*mCurrentTileMap);
 				mHierarchy->setTileMap(*mCurrentTileMap);
-				mViewport->setTitle(mCurrentTileMap->getName());
 
 				onSelectTileLayerClick(0);
 				onSelectTileSetClick(0);
 			}
 			else
 			{
-				mMessageBox->show(std::format("Unable to open tilemap file '{}'", path), "Error",
+				mMessageBox->show(std::format("Unable to open TileMap file '{}'", path), "Error",
 					MessageBoxButtons::Ok, MessageBoxIcon::Error);
 			}
 		}
@@ -340,14 +419,102 @@ namespace Trinity
 		{
 			if (!saveTileMap(mCurrentTileMap, path))
 			{
-				mMessageBox->show(std::format("Unable to save tilemap file '{}'", path), "Error",
+				mMessageBox->show(std::format("Unable to save TileMap file '{}'", path), "Error",
 					MessageBoxButtons::Ok, MessageBoxIcon::Error);
+
+				return;
 			}
 
 			if (mAssetBrowser != nullptr)
 			{
 				auto& fileSystem = FileSystem::get();
 				mAssetBrowser->refreshPath(fileSystem.getDirectory(path));
+			}
+
+			mTileMapChanged = false;
+			updateTitle();
+		}
+	}
+
+	void TileMapEditorApp::onKeyboardKeyStateUpdated(int32_t key, bool pressed)
+	{
+		if (!pressed)
+		{
+			auto& input = Input::get();
+			auto* keyboard = input.getKeyboard();
+			auto ctrlKeyDown = keyboard->isKeyDown(KEY_LEFT_CONTROL);
+			auto shiftKeyDown = keyboard->isKeyDown(KEY_LEFT_SHIFT);
+			auto altKeyDown = keyboard->isKeyDown(KEY_LEFT_ALT);
+
+			if (key == KEY_O && ctrlKeyDown)
+			{
+				if (mFileDialog != nullptr)
+				{
+					mFileDialog->show(AssetFileDialogType::Open, "Open TileMap");
+				}
+			}
+			else if (key == KEY_S && ctrlKeyDown)
+			{
+				if (mTileMapChanged && mCurrentTileMap != nullptr)
+				{
+					if (mCurrentTileMap->getFileName().empty())
+					{
+						if (mFileDialog != nullptr)
+						{
+							mFileDialog->show(AssetFileDialogType::Save, "Save TileMap");
+						}
+					}
+					else
+					{
+						saveTileMap(mCurrentTileMap, mCurrentTileMap->getFileName());
+					}
+				}
+			}
+			else if (key == KEY_S && ctrlKeyDown && shiftKeyDown)
+			{
+				if (mFileDialog != nullptr && mCurrentTileMap != nullptr)
+				{
+					mFileDialog->show(AssetFileDialogType::Save, "Save TileMap As");
+				}
+			}
+			else if (key == KEY_X && ctrlKeyDown)
+			{
+				if (mViewport != nullptr)
+				{
+					mViewport->cut();
+				}
+			}
+			else if (key == KEY_C && ctrlKeyDown)
+			{
+				if (mViewport != nullptr)
+				{
+					mViewport->copy();
+				}
+			}
+			else if (key == KEY_V && ctrlKeyDown)
+			{
+				if (mViewport != nullptr)
+				{
+					mViewport->paste();
+				}
+			}
+			else if (key == KEY_Z && ctrlKeyDown)
+			{
+				if (mViewport != nullptr)
+				{
+					mViewport->undo();
+				}
+			}
+			else if (key == KEY_Y && ctrlKeyDown)
+			{
+				if (mViewport != nullptr)
+				{
+					mViewport->redo();
+				}
+			}
+			else if (key == KEY_X && altKeyDown)
+			{
+				exit();
 			}
 		}
 	}
@@ -413,15 +580,26 @@ namespace Trinity
 		if (mViewport != nullptr)
 		{
 			mViewport->setSelectedTileSet(selectedTileSet);
-			mViewport->setSelectedTile(0);
 		}
 	}
 
-	void TileMapEditorApp::onSelectTileClick(uint32_t selectedTile)
+	void TileMapEditorApp::onTileMapEditClick()
+	{
+		mTileMapChanged = true;
+		updateTitle();
+	}
+
+	void TileMapEditorApp::onSelectTilesClick(const glm::ivec2& minTileIndex, const glm::ivec2& maxTileIndex, 
+		const glm::ivec2& firstTileIndex)
 	{
 		if (mViewport != nullptr)
 		{
-			mViewport->setSelectedTile(selectedTile);
+			mViewport->setSelectedTiles(minTileIndex, maxTileIndex, firstTileIndex);
+		}
+
+		if (mInspector != nullptr)
+		{
+			mInspector->setSelectedTile(firstTileIndex);
 		}
 	}
 }

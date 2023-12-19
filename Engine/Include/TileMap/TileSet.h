@@ -14,12 +14,6 @@ namespace Trinity
 	class TileEditor;
 	class TileSetSerializer;
 
-	struct TileProperty
-	{
-		std::string name;
-		std::string value;
-	};
-
 	class TileSet
 	{
 	public:
@@ -71,7 +65,12 @@ namespace Trinity
 			return mTexture;
 		}
 
-		const std::vector<TileProperty>& getProperties(uint32_t id) const
+		bool hasProperties(uint32_t id) const
+		{
+			return mProperties.contains(id);
+		}
+
+		const std::unordered_map<std::string, std::string>& getProperties(uint32_t id) const
 		{
 			return mProperties.at(id);
 		}
@@ -88,8 +87,10 @@ namespace Trinity
 		virtual void setFirstId(uint32_t id);
 		virtual void setTexture(Texture* texture);
 
-		virtual void addProperty(uint32_t id, const TileProperty& property);
-		virtual void setProperties(uint32_t id, std::vector<TileProperty>&& properties);
+		virtual void addProperty(uint32_t id, const std::string& name, const std::string& value);
+		virtual void updateProperty(uint32_t id, const std::string& name, const std::string& value);
+		virtual void removeProperty(uint32_t id, const std::string& name);
+		virtual void setProperties(uint32_t id, std::unordered_map<std::string, std::string>&& properties);
 
 	protected:
 
@@ -100,7 +101,8 @@ namespace Trinity
 		float mSpacing{ 0.0f };
 		uint32_t mFirstId{ 0 };
 		Texture* mTexture{ nullptr };
-		std::unordered_map<uint32_t, std::vector<TileProperty>> mProperties;
+		std::unordered_map<uint32_t, std::unordered_map<std::string, 
+			std::string>> mProperties;
 	};
 
 	class TileSetEditor : public IEditor

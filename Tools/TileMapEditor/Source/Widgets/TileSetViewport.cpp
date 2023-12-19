@@ -28,7 +28,7 @@ namespace Trinity
 			return false;
 		}
 
-		mKeepAspectRatio = false;
+		mKeepAspectRatio = true;
 		mShowTopToolbar = false;
 		mShowBottomToolbar = false;
 		mShowGizmoControls = false;
@@ -51,16 +51,8 @@ namespace Trinity
 	void TileSetViewport::setTileSet(TileSet* tileSet)
 	{
 		mTileSet = tileSet;
-		if (mTileSet != nullptr)
-		{
-			setSelectedTile(0);
-		}
-	}
-
-	void TileSetViewport::setSelectedTile(uint32_t selectedTile)
-	{
-		mSelectedTile = selectedTile;
-		onSelectTile.notify(mSelectedTile);
+		mSelectionData = {};
+		selectTiles();
 	}
 
 	void TileSetViewport::drawContent(float deltaTime)
@@ -99,6 +91,12 @@ namespace Trinity
 			}
 
 			mRenderer->end(*mRenderPass);
+
+			if (mTileSet != nullptr)
+			{
+				drawTileGrid();
+			}
+
 			mLineCanvas->draw(mCamera->getViewProj(), *mRenderPass);
 		}
 
@@ -109,69 +107,178 @@ namespace Trinity
 	{
 		if (mCurrentTexture != nullptr)
 		{
-			const auto size = glm::vec2{
-				(float)mCurrentTexture->getWidth(),
-				(float)mCurrentTexture->getHeight()
-			};
-
+			const auto& size = mTileSet->getSize();
 			mRenderer->drawTexture(mCurrentTexture, glm::vec2{ 0.0f }, size, 
-				glm::vec2{ 0.0f}, size);
+				size * -0.5f, size);
+		}
+	}
+
+	void TileSetViewport::drawTileGrid()
+	{
+		const auto& tileSize = mTileSet->getTileSize();
+		const auto& numTiles = mTileSet->getNumTiles();
+		const auto& size = mTileSet->getSize();
+		const auto position = size * -0.5f;
+
+		if (numTiles.x > 0 && numTiles.y > 0)
+		{
+			for (uint32_t idx = 0; idx <= numTiles.x; idx++)
+			{
+				const auto from = glm::vec2{ idx * tileSize.x, 0.0f } + position;
+				const auto to = glm::vec2{ idx * tileSize.x, size.y } + position;
+
+				mLineCanvas->line(from, to, kTileGridColor);
+			}
+
+			for (uint32_t idx = 0; idx <= numTiles.y; idx++)
+			{
+				const auto from = glm::vec2{ 0.0f, idx * tileSize.y } + position;
+				const auto to = glm::vec2{ size.x, idx * tileSize.y } + position;
+
+				mLineCanvas->line(from, to, kTileGridColor);
+			}
 		}
 	}
 
 	void TileSetViewport::drawSelection()
 	{
-		const auto& tileSize = mTileSet->getTileSize();
 		const auto& numTiles = mTileSet->getNumTiles();
+		const auto& tileSize = mTileSet->getTileSize();
+		const auto& size = mTileSet->getSize();
+		const auto position = size * -0.5f;
 
-		auto& input = Input::get();
-		auto* mouse = input.getMouse();
-		bool isSelected = mMouseInViewport && mouse->isButtonTriggered(MOUSE_BUTTON_LEFT);
+		const auto minPos = glm::min(mSelectionData.start, mSelectionData.end);
+		const auto maxPos = glm::max(mSelectionData.start, mSelectionData.end);
 
-		if (isSelected)
+		const auto minTileIdx = glm::ivec2{
+			(int32_t)((minPos.x - position.x) / tileSize.x),
+			(int32_t)((minPos.y - position.y) / tileSize.y)
+		};
+
+		const auto maxTileIdx = glm::ivec2{
+			(int32_t)((maxPos.x - position.x) / tileSize.x),
+			(int32_t)((maxPos.y - position.y) / tileSize.y)
+		};
+
+		for (auto idx = minTileIdx.y; idx <= maxTileIdx.y; idx++)
 		{
-			auto finalPosition = convertToViewport(mouse->getPosition());
-			for (uint32_t idx = 0; idx < numTiles.x * numTiles.y; idx++)
+			if (idx < 0 || idx >= (int32_t)numTiles.y)
 			{
-				const auto row = idx / numTiles.x;
-				const auto col = idx % numTiles.x;
+				continue;
+			}
 
-				const auto position = glm::vec2{
-					col * tileSize.x,
-					row * tileSize.y
+			for (auto jdx = minTileIdx.x; jdx <= maxTileIdx.x; jdx++)
+			{
+				if (jdx < 0 || jdx >= (int32_t)numTiles.x)
+				{
+					continue;
+				}
+
+				const auto rect = BoundingRect{
+					glm::vec2{ jdx * tileSize.x, idx * tileSize.y } + position,
+					glm::vec2{ (jdx + 1) * tileSize.x, (idx + 1) * tileSize.y } + position
 				};
 
-				if ((finalPosition.x >= position.x && finalPosition.x < position.x + tileSize.x) &&
-					(finalPosition.y >= position.y && finalPosition.y < position.y + tileSize.y))
-				{
-					if (mSelectedTile != idx)
-					{
-						setSelectedTile(idx);
-					}
-				}
+				const auto tilePos = glm::vec2{ jdx * tileSize.x, idx * tileSize.y } + position;
+				mRenderer->drawRect(tilePos, tileSize, glm::vec2{ 0.0f },
+					glm::mat4{ 1.0f }, kSelectionColor);
 			}
 		}
+	}
 
-		if (numTiles.x > 0 && numTiles.y > 0)
+	void TileSetViewport::selectTiles()
+	{
+		if (mTileSet != nullptr)
 		{
-			const auto row = mSelectedTile / numTiles.x;
-			const auto col = mSelectedTile % numTiles.x;
+			const auto& numTiles = mTileSet->getNumTiles();
+			const auto& tileSize = mTileSet->getTileSize();
+			const auto& size = mTileSet->getSize();
+			const auto position = size * -0.5f;
 
-			const auto min = glm::vec2{
-				col * tileSize.x,
-				row * tileSize.y
+			const auto minPos = glm::min(mSelectionData.start, mSelectionData.end);
+			const auto maxPos = glm::max(mSelectionData.start, mSelectionData.end);
+
+			const auto minTileIdx = glm::ivec2{
+				(int32_t)((minPos.x - position.x) / tileSize.x),
+				(int32_t)((minPos.y - position.y) / tileSize.y)
 			};
 
-			const auto max = min + tileSize;
-			const auto rect = BoundingRect{	min, max };
+			const auto maxTileIdx = glm::ivec2{
+				(int32_t)((maxPos.x - position.x) / tileSize.x),
+				(int32_t)((maxPos.y - position.y) / tileSize.y)
+			};
 
-			mLineCanvas->rect(rect, glm::vec4{ 1.0f, 0.6f, 0.0f, 1.0f }, 2.0f);
+			onSelectTiles.notify(minTileIdx, maxTileIdx, getFirstTileIndex(minTileIdx, maxTileIdx));
+		}
+	}
+
+	void TileSetViewport::onMousePositionUpdated(float x, float y)
+	{
+		Viewport::onMousePositionUpdated(x, y);
+
+		if (mSelectionData.selecting)
+		{
+			auto& input = Input::get();
+			auto* mouse = input.getMouse();
+
+			mSelectionData.end = convertToViewport(mouse->getPosition());
+		}
+	}
+
+	void TileSetViewport::onMouseButtonStateUpdated(int32_t button, bool pressed)
+	{
+		Viewport::onMouseButtonStateUpdated(button, pressed);
+
+		if (button == MOUSE_BUTTON_LEFT)
+		{
+			mMouseButtonDown = pressed;
+
+			if (mMouseInViewport)
+			{
+				auto& input = Input::get();
+				auto* mouse = input.getMouse();
+
+				if (mMouseButtonDown)
+				{
+					mSelectionData = {
+						.selecting = true,
+						.start = convertToViewport(mouse->getPosition()),
+						.end = convertToViewport(mouse->getPosition())
+					};
+				}
+				else
+				{
+					if (mSelectionData.selecting)
+					{
+						selectTiles();
+					}
+
+					mSelectionData.selecting = false;
+				}
+			}
+			else
+			{
+				if (mSelectionData.selecting)
+				{
+					selectTiles();
+				}
+
+				mSelectionData.selecting = false;
+			}
 		}
 	}
 
 	void TileSetViewport::onViewportResize(uint32_t width, uint32_t height)
 	{
 		Viewport::onViewportResize(width, height);
+
+		if (mCamera != nullptr)
+		{
+			float halfWidth = 0.5f * width;
+			float halfHeight = 0.5f * height;
+
+			mCamera->setSize(-halfWidth, halfWidth, -halfHeight, halfHeight);
+		}
 
 		if (mGrid != nullptr)
 		{
@@ -190,7 +297,38 @@ namespace Trinity
 			cameraSize.y / mSize.y
 		};
 
-		auto scaledValue = ((v - mPosition) * scale);
-		return glm::vec2(transform * glm::vec4{ scaledValue.x, cameraSize.y - scaledValue.y, 0.0f, 1.0f });
+		auto scaledValue = ((v - mPosition) * scale) - cameraSize * 0.5f;
+		return glm::vec2(transform * glm::vec4{ scaledValue.x, -scaledValue.y, 0.0f, 1.0f });
+	}
+
+	glm::ivec2 TileSetViewport::getFirstTileIndex(const glm::ivec2& minTileIdx, const glm::ivec2& maxTileIdx) const
+	{
+		glm::ivec2 firstTileIdx{ -1 };
+
+		for (auto idx = minTileIdx.y; idx <= maxTileIdx.y; idx++)
+		{
+			if (idx == -1)
+			{
+				continue;
+			}
+
+			for (auto jdx = minTileIdx.x; jdx <= maxTileIdx.x; jdx++)
+			{
+				if (jdx == -1)
+				{
+					continue;
+				}
+
+				firstTileIdx = { jdx, idx };
+				break;
+			}
+
+			if (firstTileIdx.x != -1 && firstTileIdx.y != -1)
+			{
+				break;
+			}
+		}
+
+		return firstTileIdx;
 	}
 }

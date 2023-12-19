@@ -46,7 +46,11 @@ namespace Trinity
 			{
 				ImGui::SetNextItemWidth(-FLT_MIN);
 
-				if (ImGui::BeginTable("##tileLayers", 2, ImGuiTableFlags_Resizable | ImGuiTableFlags_ScrollY, ImVec2{ 0.0f, tableHeight }))
+				auto tableFlags = ImGuiTableFlags_Resizable |
+					ImGuiTableFlags_Borders |
+					ImGuiTableFlags_ScrollY;
+
+				if (ImGui::BeginTable("##tileLayers", 2, tableFlags, ImVec2{ 0.0f, tableHeight }))
 				{
 					for (uint32_t idx = 0; idx < (uint32_t)tileLayers.size(); idx++)
 					{
@@ -69,7 +73,7 @@ namespace Trinity
 
 						ImGui::TableSetColumnIndex(1);
 						ImGui::PushID(idx);
-
+						
 						if (ImGui::Selectable(tileLayer->isVisible() ? ICON_FA_EYE : ICON_FA_EYE_SLASH, &selected))
 						{
 							tileLayer->toggleVisibility();

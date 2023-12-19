@@ -373,7 +373,7 @@ namespace Trinity
 				(mousePosition.y >= mPosition.y && mousePosition.y < mPosition.y + mSize.y);
 		}
 
-		if (mMouseInViewport)
+		if (mMouseInViewport && mAllowPan)
 		{
 			auto& input = Input::get();
 			auto* mouse = input.getMouse();
@@ -391,18 +391,25 @@ namespace Trinity
 				mCamera->panBy({
 					-relativePosition.x * scale.x,
 					relativePosition.y * scale.y
-				});
+					});
 			}
 		}
 	}
 
 	void Viewport::onMouseScrollUpdated(float x, float y)
 	{
-		if (mMouseInViewport)
+		if (mMouseInViewport && mAllowZoom)
 		{
-			if (mCamera != nullptr)
+			auto& input = Input::get();
+			auto* keyboard = input.getKeyboard();
+			auto ctrlKeyDown = keyboard->isKeyDown(KEY_LEFT_CONTROL);
+
+			if (ctrlKeyDown)
 			{
-				mCamera->zoomBy(1.0f + (kZoomSpeed * y * -1.0f));
+				if (mCamera != nullptr)
+				{
+					mCamera->zoomBy(1.0f + (kZoomSpeed * y * -1.0f));
+				}
 			}
 		}
 	}
