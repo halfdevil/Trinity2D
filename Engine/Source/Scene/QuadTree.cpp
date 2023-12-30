@@ -61,7 +61,7 @@ namespace Trinity
 			auto* node = traverseNodes.top();
 			traverseNodes.pop();
 
-			if (node->bounds.isIntersecting(data.bounds))
+			if (node->bounds.collideStatus(data.bounds) != BoundCollideStatus::Outside)
 			{
 				if (node->isLeaf())
 				{
@@ -91,7 +91,7 @@ namespace Trinity
 			auto* node = traverseNodes.top();
 			traverseNodes.pop();
 
-			if (node->bounds.isIntersecting(data.bounds))
+			if (node->bounds.collideStatus(data.bounds) != BoundCollideStatus::Outside)
 			{
 				if (node->isLeaf())
 				{
@@ -130,7 +130,7 @@ namespace Trinity
 			auto* node = traverseNodes.top();
 			traverseNodes.pop();
 
-			if (node->bounds.isIntersecting(area))
+			if (node->bounds.collideStatus(area) != BoundCollideStatus::Outside)
 			{
 				if (node->isLeaf())
 				{

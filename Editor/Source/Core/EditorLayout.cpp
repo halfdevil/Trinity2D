@@ -289,6 +289,9 @@ namespace Trinity
 		{
 			auto& fileSystem = FileSystem::get();
 			auto fileName = fileSystem.getFileName(selectedFile);
+			
+			ImGui::SetNextItemWidth(ImMax(1.0f, ImGui::CalcItemWidth() - (ImGui::GetFrameHeight() + 
+				ImGui::GetStyle().ItemInnerSpacing.x)));
 
 			if (ImGui::BeginCombo("##combo", fileName.c_str()))
 			{
@@ -309,6 +312,13 @@ namespace Trinity
 				}
 
 				ImGui::EndCombo();
+			}
+
+			ImGui::SameLine(0, ImGui::GetStyle().ItemInnerSpacing.x);
+			if (ImGui::Button(ICON_FA_SQUARE_MINUS))
+			{
+				selectedFile.clear();
+				ret = true;
 			}
 		}
 

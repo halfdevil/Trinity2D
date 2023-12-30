@@ -48,6 +48,11 @@ namespace Trinity
 			return mKinematic;
 		}
 
+		const BoundingRect& getBounds() const
+		{
+			return mBounds;
+		}
+
 		virtual std::type_index getType() const override;
 		virtual UUIDv4::UUID getTypeUUID() const override;
 
@@ -66,6 +71,7 @@ namespace Trinity
 
 		virtual void init(SpriteRenderable& renderable);
 		virtual void init(TextureRenderable& renderable);
+		virtual void updateBounds();
 
 	public:
 
@@ -75,6 +81,7 @@ namespace Trinity
 
 		std::unique_ptr<RigidShape> mShape{ nullptr };
 		RigidShapeType mShapeType{ RigidShapeType::Rectangle };
+		BoundingRect mBounds;
 		float mMass{ 1.0f };
 		bool mKinematic{ false };
 	};

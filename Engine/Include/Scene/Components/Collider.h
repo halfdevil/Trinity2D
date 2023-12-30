@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Scene/Component.h"
+#include "Scene/QuadTree.h"
 #include "Core/Observer.h"
 #include "Editor/Editor.h"
 #include "VFS/Serializer.h"
@@ -8,8 +9,15 @@
 namespace Trinity
 {
 	class RigidBody;
+	class Collider;
 	class ColliderEditor;
 	class ColliderSerializer;
+	struct CollisionInfo;
+
+	struct ColliderData : public QuadTreeData
+	{
+		Collider* collider{ nullptr };
+	};
 
 	class Collider : public Component
 	{
@@ -27,12 +35,33 @@ namespace Trinity
 		Collider(Collider&&) = default;
 		Collider& operator = (Collider&&) = default;
 
+		RigidBody* getRigidBody() const
+		{
+			return mRigidBody;
+		}
+
+		uint32_t getLayers() const
+		{
+			return mLayers;
+		}
+
+		ColliderData& getQuadTreeData()
+		{
+			return mQuadTreeData;
+		}
+
 		virtual IEditor* getEditor(Scene& scene) override;
 		virtual ISerializer* getSerializer(Scene& scene) override;
 
 		virtual bool init();
 		virtual std::type_index getType() const override;
 		virtual UUIDv4::UUID getTypeUUID() const override;
+
+		virtual void setColliders(std::vector<Collider*>&& colliders);
+		virtual bool hasLayer(uint32_t layerIdx) const;
+		virtual void addLayer(uint32_t layerIdx);
+		virtual void removeLayer(uint32_t layerIdx);
+		virtual void update();
 
 	public:
 
@@ -47,6 +76,9 @@ namespace Trinity
 	protected:
 
 		RigidBody* mRigidBody{ nullptr };
+		ColliderData mQuadTreeData;
+		uint32_t mLayers{ 0 };
+		std::vector<Collider*> mColliders;
 	};
 
 	class ColliderEditor : public ComponentEditor

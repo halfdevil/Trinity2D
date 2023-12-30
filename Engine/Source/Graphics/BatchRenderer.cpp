@@ -15,6 +15,7 @@
 #include "Graphics/SwapChain.h"
 #include "Graphics/RenderTarget.h"
 #include "Core/Logger.h"
+#include "Core/Debugger.h"
 #include "Core/ResourceCache.h"
 #include "glm/gtx/matrix_decompose.hpp"
 
@@ -25,8 +26,14 @@ namespace Trinity
 		destroy();
 	}
 
-	bool BatchRenderer::create(RenderTarget& renderTarget, ResourceCache& cache, const std::string& texturedShaderFile, 
-		const std::string& coloredShaderFile)
+	bool BatchRenderer::create(
+		RenderTarget& renderTarget, 
+		ResourceCache& cache, 
+		const std::string& texturedShaderFile, 
+		const std::string& coloredShaderFile, 
+		const std::vector<const BindGroupLayout*>& customLayouts, 
+		uint32_t perFrameDataSize
+	)
 	{
 		mResourceCache = &cache;
 
@@ -36,22 +43,25 @@ namespace Trinity
 			return false;
 		}
 
-		if (!createCommonBindGroup())
+		if (!createCommonBindGroup(perFrameDataSize))
 		{
 			LogError("createCommonBindGroup() failed!!");
 			return false;
 		}
 
-		if (!createTexturedPipeline(renderTarget, texturedShaderFile))
+		if (!createTexturedPipeline(renderTarget, texturedShaderFile, customLayouts))
 		{
 			LogError("createTexturedPipeline() failed!!");
 			return false;
 		}
 
-		if (!createColoredPipeline(renderTarget, coloredShaderFile))
+		if (!coloredShaderFile.empty())
 		{
-			LogError("createTexturedPipeline() failed!!");
-			return false;
+			if (!createColoredPipeline(renderTarget, coloredShaderFile, customLayouts))
+			{
+				LogError("createTexturedPipeline() failed!!");
+				return false;
+			}
 		}
 
 		return true;
@@ -77,11 +87,7 @@ namespace Trinity
 
 	void BatchRenderer::begin(const glm::mat4& viewProj)
 	{
-		PerFrameData perFrameData = {
-			.viewProj = viewProj
-		};
-
-		mRenderContext.perFrameBuffer->write(0, sizeof(PerFrameData), &perFrameData);
+		updatePerFrameBuffer(viewProj);
 	}
 
 	void BatchRenderer::end(const RenderPass& renderPass)
@@ -117,6 +123,8 @@ namespace Trinity
 		renderPass.setVertexBuffer(0, *mRenderContext.vertexBuffer);
 		renderPass.setIndexBuffer(*mRenderContext.indexBuffer);
 		renderPass.setBindGroup(kCommonBindGroupIndex, *mRenderContext.bindGroup);
+
+		setCustomBindGroups(renderPass);
 
 		for (auto& command : mCommands)
 		{
@@ -188,10 +196,48 @@ namespace Trinity
 		glm::vec4 p4 = transform * glm::vec4{ x2, y1, 0.0f, 1.0f };
 
 		Vertex vertices[4] = {
-			{.position = glm::vec3(p1), .uv = { 0.0f, 0.0f }, .color = color },
-			{.position = glm::vec3(p2), .uv = { 0.0f, 0.0f }, .color = color },
-			{.position = glm::vec3(p3), .uv = { 0.0f, 0.0f }, .color = color },
-			{.position = glm::vec3(p4), .uv = { 0.0f, 0.0f }, .color = color }
+			{ .position = glm::vec3(p1), .uv = { 0.0f, 0.0f }, .color = color },
+			{ .position = glm::vec3(p2), .uv = { 0.0f, 0.0f }, .color = color },
+			{ .position = glm::vec3(p3), .uv = { 0.0f, 0.0f }, .color = color },
+			{ .position = glm::vec3(p4), .uv = { 0.0f, 0.0f }, .color = color }
+		};
+
+		auto numVertices = mStagingContext.numVertices;
+		uint32_t indices[6] = {
+			numVertices,
+			numVertices + 1,
+			numVertices + 2,
+			numVertices + 2,
+			numVertices + 3,
+			numVertices
+		};
+
+		addVertices(vertices, 4);
+		addIndices(indices, 6);
+
+		return true;
+	}
+
+	bool BatchRenderer::drawRect(const glm::vec2& position,
+		const glm::vec2& size,
+		const glm::vec4& color)
+	{
+		if (!addCommand(nullptr, mStagingContext.numIndices, 6))
+		{
+			LogError("BatchRenderer::addCommand() failed");
+			return false;
+		}
+
+		float x1{ position.x };
+		float y1{ position.y };
+		float x2{ x1 + size.x };
+		float y2{ y1 + size.y };
+
+		Vertex vertices[4] = {
+			{ .position = { x1, y1 }, .uv = { 0.0f, 0.0f }, .color = color },
+			{ .position = { x1, y2 }, .uv = { 0.0f, 0.0f }, .color = color },
+			{ .position = { x2, y2 }, .uv = { 0.0f, 0.0f }, .color = color },
+			{ .position = { x2, y1 }, .uv = { 0.0f, 0.0f }, .color = color }
 		};
 
 		auto numVertices = mStagingContext.numVertices;
@@ -220,8 +266,7 @@ namespace Trinity
 		const glm::mat4& transform, 
 		const glm::vec4& color, 
 		bool flipX, 
-		bool flipY
-	)
+		bool flipY)
 	{
 		if (!addCommand(texture, mStagingContext.numIndices, 6))
 		{
@@ -265,10 +310,10 @@ namespace Trinity
 		}
 
 		Vertex vertices[4] = {
-			{.position = glm::vec2(p1), .uv = { u1, v2 }, .color = color },
-			{.position = glm::vec2(p2), .uv = { u1, v1 }, .color = color },
-			{.position = glm::vec2(p3), .uv = { u2, v1 }, .color = color },
-			{.position = glm::vec2(p4), .uv = { u2, v2 }, .color = color }
+			{ .position = glm::vec2(p1), .uv = { u1, v2 }, .color = color },
+			{ .position = glm::vec2(p2), .uv = { u1, v1 }, .color = color },
+			{ .position = glm::vec2(p3), .uv = { u2, v1 }, .color = color },
+			{ .position = glm::vec2(p4), .uv = { u2, v2 }, .color = color }
 		};
 
 		auto numVertices = mStagingContext.numVertices;
@@ -339,10 +384,10 @@ namespace Trinity
 		}
 
 		Vertex vertices[4] = {
-			{.position = glm::vec2(p1), .uv = { u1, v2 }, .color = color },
-			{.position = glm::vec2(p2), .uv = { u1, v1 }, .color = color },
-			{.position = glm::vec2(p3), .uv = { u2, v1 }, .color = color },
-			{.position = glm::vec2(p4), .uv = { u2, v2 }, .color = color }
+			{ .position = glm::vec2(p1), .uv = { u1, v2 }, .color = color },
+			{ .position = glm::vec2(p2), .uv = { u1, v1 }, .color = color },
+			{ .position = glm::vec2(p3), .uv = { u2, v1 }, .color = color },
+			{ .position = glm::vec2(p4), .uv = { u2, v2 }, .color = color }
 		};
 
 		auto numVertices = mStagingContext.numVertices;
@@ -369,8 +414,7 @@ namespace Trinity
 		const glm::vec2& dstSize,
 		const glm::vec4& color,
 		bool flipX,
-		bool flipY
-	)
+		bool flipY)
 	{
 		if (!addCommand(texture, mStagingContext.numIndices, 6))
 		{
@@ -403,10 +447,10 @@ namespace Trinity
 		}
 
 		Vertex vertices[4] = {
-			{.position = { x1, y1 }, .uv = { u1, v2 }, .color = color},
-			{.position = { x1, y2 }, .uv = { u1, v1 }, .color = color},
-			{.position = { x2, y2 }, .uv = { u2, v1 }, .color = color },
-			{.position = { x2, y1 }, .uv = { u2, v2 }, .color = color }
+			{ .position = { x1, y1 }, .uv = { u1, v2 }, .color = color },
+			{ .position = { x1, y2 }, .uv = { u1, v1 }, .color = color },
+			{ .position = { x2, y2 }, .uv = { u2, v1 }, .color = color },
+			{ .position = { x2, y1 }, .uv = { u2, v2 }, .color = color }
 		};
 
 		auto numVertices = mStagingContext.numVertices;
@@ -505,10 +549,10 @@ namespace Trinity
 		return true;
 	}
 
-	bool BatchRenderer::createCommonBindGroup()
+	bool BatchRenderer::createCommonBindGroup(uint32_t perFrameDataSize)
 	{
 		auto perFrameBuffer = std::make_unique<UniformBuffer>();
-		if (!perFrameBuffer->create(sizeof(PerFrameData)))
+		if (!perFrameBuffer->create(perFrameDataSize))
 		{
 			LogError("UniformBuffer::create() failed!!");
 			return false;
@@ -544,10 +588,10 @@ namespace Trinity
 		{
 			{
 				.binding = 0,
-				.shaderStages = wgpu::ShaderStage::Vertex,
+				.shaderStages = wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment,
 				.bindingLayout = BufferBindingLayout {
 					.type = wgpu::BufferBindingType::Uniform,
-					.minBindingSize = sizeof(PerFrameData)
+					.minBindingSize = perFrameDataSize
 				}
 			}
 		};
@@ -556,7 +600,7 @@ namespace Trinity
 		{
 			{
 				.binding = 0,
-				.size = sizeof(PerFrameData),
+				.size = perFrameDataSize,
 				.resource = BufferBindingResource(*perFrameBuffer)
 			}
 		};
@@ -678,7 +722,21 @@ namespace Trinity
 		return true;
 	}
 
-	bool BatchRenderer::createTexturedPipeline(RenderTarget& renderTarget, const std::string& texturedShaderFile)
+	void BatchRenderer::setCustomBindGroups(const RenderPass& renderPass)
+	{
+	}
+
+	void BatchRenderer::updatePerFrameBuffer(const glm::mat4& viewProj)
+	{
+		PerFrameData perFrameData = {
+			.viewProj = viewProj
+		};
+
+		mRenderContext.perFrameBuffer->write(0, sizeof(PerFrameData), &perFrameData);
+	}
+
+	bool BatchRenderer::createTexturedPipeline(RenderTarget& renderTarget, const std::string& texturedShaderFile,
+		const std::vector<const BindGroupLayout*>& customLayouts)
 	{
 		ShaderPreProcessor processor;
 
@@ -689,12 +747,12 @@ namespace Trinity
 			return false;
 		}
 
+		std::vector<const BindGroupLayout*> bindGroupLayouts = { mRenderContext.bindGroupLayout, mImageContext.bindGroupLayout };
+		bindGroupLayouts.insert(bindGroupLayouts.end(), customLayouts.begin(), customLayouts.end());
+
 		RenderPipelineProperties renderProps = {
 			.shader = shader.get(),
-			.bindGroupLayouts = {
-				mRenderContext.bindGroupLayout,
-				mImageContext.bindGroupLayout
-			},
+			.bindGroupLayouts = std::move(bindGroupLayouts),
 			.vertexLayouts = { mRenderContext.vertexLayout },
 			.colorTargets = {{
 				.format = renderTarget.getColorFormat(),
@@ -714,7 +772,7 @@ namespace Trinity
 			.primitive = {
 				.topology = wgpu::PrimitiveTopology::TriangleList,
 				.frontFace = wgpu::FrontFace::CW,
-				.cullMode = wgpu::CullMode::None
+				.cullMode = wgpu::CullMode::Back
 			}
 		};
 
@@ -740,7 +798,8 @@ namespace Trinity
 		return true;
 	}
 
-	bool BatchRenderer::createColoredPipeline(RenderTarget& renderTarget, const std::string& coloredShaderFile)
+	bool BatchRenderer::createColoredPipeline(RenderTarget& renderTarget, const std::string& coloredShaderFile, 
+		const std::vector<const BindGroupLayout*>& customLayouts)
 	{
 		ShaderPreProcessor processor;
 
@@ -751,11 +810,12 @@ namespace Trinity
 			return false;
 		}
 
+		std::vector<const BindGroupLayout*> bindGroupLayouts = { mRenderContext.bindGroupLayout };
+		bindGroupLayouts.insert(bindGroupLayouts.end(), customLayouts.begin(), customLayouts.end());
+
 		RenderPipelineProperties renderProps = {
 			.shader = shader.get(),
-			.bindGroupLayouts = {
-				mRenderContext.bindGroupLayout
-			},
+			.bindGroupLayouts = std::move(bindGroupLayouts),
 			.vertexLayouts = { mRenderContext.vertexLayout },
 			.colorTargets = {{
 				.format = renderTarget.getColorFormat(),

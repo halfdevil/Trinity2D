@@ -14,7 +14,7 @@ namespace Trinity
 		static constexpr ImVec2 kBaseButtonSize = ImVec2{ 100.0f, 36.0f };
 
 		EditorTheme() = default;
-		virtual ~EditorTheme();
+		virtual ~EditorTheme() = default;
 
 		EditorTheme(const EditorTheme&) = delete;
 		EditorTheme& operator = (const EditorTheme&) = delete;
@@ -27,8 +27,7 @@ namespace Trinity
 			return mScaleFactor;
 		}
 
-		virtual bool create(const std::string& fileName);
-		virtual void destroy();
+		virtual void init(const std::string& fileName);
 
 	public:
 

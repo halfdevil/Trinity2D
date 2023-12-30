@@ -7,11 +7,6 @@ namespace Trinity
 	{
 	}
 
-	void RigidShape::setPosition(const glm::vec2& position)
-	{
-		mPosition = position;
-	}
-
 	void RigidShape::setCenter(const glm::vec2& center)
 	{
 		mCenter = center;
@@ -75,7 +70,6 @@ namespace Trinity
 		}
 
 		mCenter += value;
-		mPosition += value;
 	}
 
 	void RigidShape::rotate(float value)

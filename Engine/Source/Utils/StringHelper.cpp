@@ -65,9 +65,22 @@ namespace Trinity
 		std::string str;
 		while (std::getline(f, str, delim)) 
 		{
-			strings.push_back(s);
+			strings.push_back(str);
 		}
 
 		return strings;
+	}
+
+	std::string StringHelper::join(const std::vector<std::string>& splits, char delim)
+	{
+		std::string s;
+
+		for (auto& split : splits)
+		{
+			s.append(split);
+			s += delim;
+		}
+
+		return s;
 	}
 }

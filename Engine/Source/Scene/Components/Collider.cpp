@@ -1,6 +1,9 @@
 #include "Scene/Components/Collider.h"
 #include "Scene/Components/RigidBody.h"
+#include "Scene/Components/Transform.h"
 #include "Scene/Node.h"
+#include "Physics/RectangleShape.h"
+#include "Physics/CircleShape.h"
 #include "Editor/EditorLayout.h"
 #include "VFS/FileReader.h"
 #include "VFS/FileWriter.h"
@@ -38,6 +41,10 @@ namespace Trinity
 			return false;
 		}
 
+		mQuadTreeData = {
+			.collider = this
+		};
+
 		return true;
 	}
 
@@ -49,6 +56,58 @@ namespace Trinity
 	UUIDv4::UUID Collider::getTypeUUID() const
 	{
 		return Collider::UUID;
+	}
+
+	void Collider::setColliders(std::vector<Collider*>&& colliders)
+	{
+		for (auto* collider : mColliders)
+		{
+			if (std::find(colliders.begin(), colliders.end(), collider) == colliders.end())
+			{
+				onCollisionExit.notify(*collider);
+			}
+		}
+
+		for (auto* collider: colliders)
+		{
+			if (std::find(mColliders.begin(), mColliders.end(), collider) == colliders.end())
+			{
+				onCollisionEnter.notify(*collider);
+			}
+		}
+
+		for (auto* collider : mColliders)
+		{
+			if (std::find(colliders.begin(), colliders.end(), collider) != colliders.end())
+			{
+				onCollisionStay.notify(*collider);
+			}
+		}
+
+		mColliders = std::move(colliders);
+	}
+
+	bool Collider::hasLayer(uint32_t layerIdx) const
+	{
+		return mLayers & (1 << layerIdx);
+	}
+
+	void Collider::addLayer(uint32_t layerIdx)
+	{
+		mLayers |= (1 << layerIdx);
+	}
+
+	void Collider::removeLayer(uint32_t layerIdx)
+	{
+		mLayers &= ~(1 << layerIdx);
+	}
+
+	void Collider::update()
+	{
+		if (mRigidBody != nullptr)
+		{			
+			mQuadTreeData.bounds = mRigidBody->getBounds();
+		}		
 	}
 
 	void ColliderEditor::setCollider(Collider& collider)
@@ -79,6 +138,12 @@ namespace Trinity
 			return false;
 		}
 
+		if (!reader.read(&mCollider->mLayers))
+		{
+			LogError("FileReader::read() failed for 'layers'");
+			return false;
+		}
+
 		return true;
 	}
 
@@ -87,6 +152,12 @@ namespace Trinity
 		if (!ComponentSerializer::write(writer))
 		{
 			LogError("ComponentSerialzer::write() failed");
+			return false;
+		}
+
+		if (!writer.write(&mCollider->mLayers))
+		{
+			LogError("FileWriter::write() failed for 'layers'");
 			return false;
 		}
 
@@ -101,6 +172,13 @@ namespace Trinity
 			return false;
 		}
 
+		if (!object.contains("layers"))
+		{
+			LogError("JSON collider object doesn't have 'layers' key");
+			return false;
+		}
+
+		mCollider->mLayers = object["layers"].get<uint32_t>();
 		return true;
 	}
 
@@ -112,6 +190,7 @@ namespace Trinity
 			return false;
 		}
 
+		object["layers"] = mCollider->mLayers;
 		return true;
 	}
 }

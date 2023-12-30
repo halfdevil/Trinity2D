@@ -62,6 +62,11 @@ namespace Trinity
 		mPosCorrectionRate = posCorrectionRate;
 	}
 
+	void Physics::setSystemAcceleration(const glm::vec2& acceleration)
+	{
+		mSystemAcceleration = acceleration;
+	}
+
 	bool Physics::collision(RectangleShape& rect1, RectangleShape& rect2, CollisionInfo& collisionInfo)
 	{
 		CollisionInfo collisionInfo1;

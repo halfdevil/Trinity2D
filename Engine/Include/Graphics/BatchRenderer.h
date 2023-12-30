@@ -92,7 +92,9 @@ namespace Trinity
 			RenderTarget& renderTarget, 
 			ResourceCache& cache, 
 			const std::string& texturedShaderFile,
-			const std::string& coloredShaderFile);
+			const std::string& coloredShaderFile = "",
+			const std::vector<const BindGroupLayout*>& customLayouts = {},
+			uint32_t perFrameDataSize = sizeof(PerFrameData));
 
 		virtual void destroy();
 		virtual void begin(const glm::mat4& viewProj);
@@ -104,6 +106,12 @@ namespace Trinity
 			const glm::vec2& size,
 			const glm::vec2& origin,
 			const glm::mat4& transform,
+			const glm::vec4& color = glm::vec4{ 0.0f }
+		);
+
+		virtual bool drawRect(
+			const glm::vec2& position,
+			const glm::vec2& size,
 			const glm::vec4& color = glm::vec4{ 0.0f }
 		);
 
@@ -148,15 +156,19 @@ namespace Trinity
 		virtual void addIndices(const uint32_t* indices, uint32_t numIndices);
 		virtual bool addCommand(Texture* texture, uint32_t baseIndex, uint32_t numIndices);
 
-		virtual bool createCommonBindGroup();
+		virtual bool createCommonBindGroup(uint32_t perFrameDataSize);
 		virtual bool createImageBindGroup(const Texture& texture);
 		virtual bool createBufferData();
+		virtual void setCustomBindGroups(const RenderPass& renderPass);
+		virtual void updatePerFrameBuffer(const glm::mat4& viewProj);
 
 		virtual bool createTexturedPipeline(RenderTarget& renderTarget, 
-			const std::string& texturedShaderFile);
+			const std::string& texturedShaderFile, 
+			const std::vector<const BindGroupLayout*>& customLayouts);
 
 		virtual bool createColoredPipeline(RenderTarget& renderTarget, 
-			const std::string& coloredShaderFile);
+			const std::string& coloredShaderFile, 
+			const std::vector<const BindGroupLayout*>& customLayouts);
 
 	protected:
 

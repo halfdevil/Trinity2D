@@ -1,6 +1,7 @@
 #include "Scene/SceneSystem.h"
 #include "Scene/Scene.h"
 #include "Scene/Sprite.h"
+#include "Scene/QuadTree.h"
 #include "Scene/Components/Camera.h"
 #include "Scene/Components/SpriteRenderable.h"
 #include "Scene/Components/TextureRenderable.h"
@@ -69,6 +70,12 @@ namespace Trinity
 		}
 	}
 
+	void SceneSystem::setupQuadTree(const BoundingRect& sceneBounds, const BoundingRect& minBounds)
+	{
+		mQuadTree = std::make_unique<QuadTree>();
+		mQuadTree->create(minBounds, sceneBounds);
+	}
+
 	void SceneSystem::update(float deltaTime)
 	{
 		auto rigidBodies = mScene->getComponents<RigidBody>();
@@ -89,6 +96,21 @@ namespace Trinity
 				rigidBody->updateTransform();
 			}
 		}
+
+		auto& physics = Physics::get();
+
+		for (uint32_t idx = 0; idx < physics.getNumRelaxations(); idx++)
+		{
+			for (auto* collider : colliders)
+			{
+				updateQuadTree(*collider);
+			}
+
+			for (auto* collider : colliders)
+			{
+				collision(*collider);
+			}
+		}
 	}
 
 	void SceneSystem::draw(const RenderPass& renderPass)
@@ -107,6 +129,99 @@ namespace Trinity
 			drawTextures(renderPass, viewProj);
 			drawSprites(renderPass, viewProj);
 		}
+	}
+
+	void SceneSystem::updateQuadTree(Collider& collider)
+	{
+		if (mQuadTree != nullptr)
+		{
+			collider.update();
+			mQuadTree->update(collider.getQuadTreeData());
+		}
+	}
+
+	void SceneSystem::queryColliders(Collider& collider, std::vector<Collider*>& colliders)
+	{
+		if (mQuadTree != nullptr)
+		{
+			std::vector<QuadTreeData*> result;
+			mQuadTree->query(collider.getQuadTreeData().bounds, result);
+
+			for (auto* data : result)
+			{
+				if (data != nullptr)
+				{	
+					auto* other = ((ColliderData*)data)->collider;
+					if (other == &collider)
+					{
+						continue;
+					}
+
+					for (uint32_t idx = 0; idx < mScene->getNumLayers(); idx++)
+					{
+						if (other->hasLayer(idx) && collider.hasLayer(idx))
+						{
+							colliders.push_back(other);
+							break;
+						}
+					}
+				}
+			}
+		}
+		else
+		{
+			auto others = mScene->getComponents<Collider>();
+			for (auto& other : others)
+			{
+				if (other == &collider)
+				{
+					continue;
+				}
+
+				auto* rb1 = collider.getRigidBody();
+				auto* rb2 = other->getRigidBody();
+
+				for (uint32_t idx = 0; idx < mScene->getNumLayers(); idx++)
+				{
+					if (collider.hasLayer(idx) && other->hasLayer(idx))
+					{
+						if (rb1->getBounds().collideStatus(rb2->getBounds()) != BoundCollideStatus::Outside)
+						{
+							colliders.push_back(other);	
+							break;
+						}
+					}
+				}
+			}
+		}
+	}	
+
+	void SceneSystem::collision(Collider& collider)
+	{
+		std::vector<Collider*> others;
+		queryColliders(collider, others);
+
+		auto* rb1 = collider.getRigidBody();
+		auto* rs1 = rb1->getShape();
+
+		std::vector<Collider*> colliders;
+		for (auto* other : others)
+		{
+			CollisionInfo collisionInfo{};
+			auto* rb2 = other->getRigidBody();
+			auto* rs2 = rb2->getShape();
+
+			if (Physics::get().collision(*rs1, *rs2, collisionInfo))
+			{
+				colliders.push_back(other);
+				if (!rb1->isKinematic() && !rb2->isKinematic())
+				{
+					Physics::get().resolve(*rs1, *rs2, collisionInfo);
+				}
+			}
+		}
+
+		collider.setColliders(std::move(colliders));
 	}
 
 	void SceneSystem::drawTextures(const RenderPass& renderPass, const glm::mat4& viewProj)

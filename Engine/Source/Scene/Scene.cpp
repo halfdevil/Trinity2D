@@ -112,6 +112,11 @@ namespace Trinity
 		return nullptr;
 	}
 
+	void Scene::setNumLayers(uint32_t numLayers)
+	{
+		mNumLayers = numLayers;
+	}
+
 	void Scene::addNode(std::unique_ptr<Node> node)
 	{
 		mNodeMap.insert(std::make_pair(node->getUUID(), node.get()));

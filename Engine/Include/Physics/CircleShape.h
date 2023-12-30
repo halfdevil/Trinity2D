@@ -22,10 +22,9 @@ namespace Trinity
 			return mRadius;
 		}
 
-		virtual BoundingRect getBoundingRect() const override;
+		virtual void init(const glm::vec2& center, float radius);
 
-		virtual void setRadius(float radius);
-		virtual void setPosition(const glm::vec2& position) override;
+		virtual BoundingRect getBoundingRect() const override;
 		virtual void updateInertia() override;
 
 	protected:

@@ -108,6 +108,7 @@ namespace Trinity
 		virtual void drawTopView(AssetEntry* currentEntry);
 		virtual void drawSideView(AssetEntry* currentEntry);
 		virtual void drawMainView(AssetEntry* currentEntry);
+		virtual void drawBreadCrumb(AssetEntry* currentEntry);
 
 		virtual void drawTree(const std::string& path);		
 		virtual void openTree(const std::string& path);

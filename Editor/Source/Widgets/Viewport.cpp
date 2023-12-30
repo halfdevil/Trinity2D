@@ -28,7 +28,8 @@ namespace Trinity
 		destroy();
 	}
 
-	bool Viewport::create(EditorResources& resources, uint32_t resolutionIndex,	const glm::vec4& clearColor)
+	bool Viewport::create(EditorResources& resources, uint32_t resolutionIndex,	const glm::vec4& clearColor, 
+		const std::string& texturedShader, const std::string& coloredShader)
 	{
 		mResolutions = {
 			{ "1920 x 1080", 1920, 1080 },
@@ -62,9 +63,9 @@ namespace Trinity
 		}
 
 		mRenderer = std::make_unique<BatchRenderer>();
-		if (!mRenderer->create(*mFrameBuffer, *resources.getResourceCache(), kTexturedShader, kColoredShader))
+		if (!mRenderer->create(*mFrameBuffer, *resources.getResourceCache(), texturedShader, coloredShader))
 		{
-			LogError("BatchRenderer::create() failed with shader: '%s' and '%s'", kTexturedShader, kColoredShader);
+			LogError("BatchRenderer::create() failed with shader: '%s' and '%s'", texturedShader, coloredShader);
 			return true;
 		}
 

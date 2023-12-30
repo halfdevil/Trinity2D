@@ -80,8 +80,13 @@ namespace Trinity
 			return mSize;
 		}
 
-		virtual bool create(EditorResources& resources, uint32_t resolutionIndex = 0, 
-			const glm::vec4& clearColor = glm::vec4{ 0.5f, 0.5f, 0.5f, 1.0f });
+		virtual bool create(
+			EditorResources& resources, 
+			uint32_t resolutionIndex = 0, 
+			const glm::vec4& clearColor = glm::vec4{ 0.5f, 0.5f, 0.5f, 1.0f },
+			const std::string& texturedShader = kTexturedShader,
+			const std::string& coloredShader = kColoredShader
+		);
 
 		virtual void destroy();				
 		virtual void resize(uint32_t width, uint32_t height);
@@ -101,7 +106,6 @@ namespace Trinity
 		virtual void onMousePositionUpdated(float x, float y);
 		virtual void onMouseScrollUpdated(float x, float y);
 		virtual void onMouseButtonStateUpdated(int32_t button, bool pressed);
-
 		virtual glm::vec2 convertToViewport(const glm::vec2& v) const;
 
 	public:

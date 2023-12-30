@@ -92,6 +92,11 @@ namespace Trinity
 		mAnimations = std::move(animations);
 	}
 
+	void Sprite::setCollisionRect(const BoundingRect& collisionRect)
+	{
+		mCollisionRect = collisionRect;
+	}
+
 	void Sprite::addFrame(SpriteFrame&& frame)
 	{
 		mFrames.push_back(std::move(frame));
@@ -185,7 +190,7 @@ namespace Trinity
 
 	void SpriteEditor::onInspectorGui(const IEditorLayout& layout, ResourceCache& cache)
 	{
-		if (layout.beginLayout("Sprite"))
+		if (layout.beginLayout("General"))
 		{
 			layout.inputVec2("Size", mSprite->mSize);
 			
@@ -210,6 +215,8 @@ namespace Trinity
 				}
 			}
 
+			layout.inputVec2("Collision Min", mSprite->mCollisionRect.min);
+			layout.inputVec2("Collision Max", mSprite->mCollisionRect.max);
 			layout.endLayout();
 		}
 
@@ -319,6 +326,12 @@ namespace Trinity
 			mSprite->mTexture = cache.getResource<Texture>(textureFileName);
 		}
 
+		if (!reader.read(&mSprite->mCollisionRect))
+		{
+			LogError("FileReader::read() failed for 'collision rect'");
+			return false;
+		}
+
 		uint32_t numFrames{ 0 };
 		if (!reader.read(&numFrames))
 		{
@@ -396,6 +409,12 @@ namespace Trinity
 			return false;
 		}
 
+		if (!writer.write(&mSprite->mCollisionRect))
+		{
+			LogError("FileWriter::write() failed for 'collision rect'");
+			return false;
+		}
+
 		const auto numFrames = (uint32_t)mSprite->mFrames.size();
 		if (!writer.write(&numFrames))
 		{
@@ -469,6 +488,12 @@ namespace Trinity
 			return false;
 		}
 
+		if (!object.contains("collisionRect"))
+		{
+			LogError("JSON sprite object doesn't have 'collision rect' key");
+			return false;
+		}
+
 		if (!object.contains("frames"))
 		{
 			LogError("JSON sprite object doesn't have 'frames' key");
@@ -505,6 +530,11 @@ namespace Trinity
 
 			mSprite->mTexture = cache.getResource<Texture>(textureFileName);
 		}
+
+		mSprite->mCollisionRect = {
+			{ object["collisionRect"][0].get<float>(), object["collisionRect"][1].get<float>() },
+			{ object["collisionRect"][2].get<float>(), object["collisionRect"][3].get<float>() },
+		};
 
 		for (auto& frameObj : object["frames"])
 		{
@@ -579,6 +609,13 @@ namespace Trinity
 		};
 
 		object["texture"] = textureFileName;
+		object["collisionRect"] = std::vector<float>{
+			mSprite->mCollisionRect.min.x,
+			mSprite->mCollisionRect.min.y,
+			mSprite->mCollisionRect.max.x,
+			mSprite->mCollisionRect.max.y
+		};
+
 		object["frames"] = framesObj;
 		object["animations"] = animationsObj;
 

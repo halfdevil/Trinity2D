@@ -15,15 +15,10 @@ namespace Trinity
 		};
 	}
 
-	void CircleShape::setRadius(float radius)
+	void CircleShape::init(const glm::vec2& center, float radius)
 	{
+		mCenter = center;
 		mRadius = radius;
-	}
-
-	void CircleShape::setPosition(const glm::vec2& position)
-	{
-		mPosition = position;
-		mCenter = { mPosition.x + mRadius, mPosition.y + mRadius };
 	}
 
 	void CircleShape::updateInertia()

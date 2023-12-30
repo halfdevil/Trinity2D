@@ -46,6 +46,11 @@ namespace Trinity
 			return mRoot;
 		}
 
+		uint32_t getNumLayers() const
+		{
+			return mNumLayers;
+		}
+
 		ComponentFactory* getComponentFactory()
 		{
 			return mComponentFactory.get();
@@ -64,6 +69,7 @@ namespace Trinity
 		virtual const std::vector<std::unique_ptr<Component>>& getComponents(const std::type_index& type) const;
 		virtual Component* getComponent(const std::type_index& type) const;
 
+		virtual void setNumLayers(uint32_t numLayers);
 		virtual void addNode(std::unique_ptr<Node> node);
 		virtual void addChild(Node& child);
 		virtual void setNodes(std::vector<std::unique_ptr<Node>> nodes);
@@ -186,6 +192,7 @@ namespace Trinity
 	protected:
 
 		Node* mRoot{ nullptr };
+		uint32_t mNumLayers{ 0 };
 		std::unique_ptr<ComponentFactory> mComponentFactory{ nullptr };
 		std::vector<std::unique_ptr<Node>> mNodes;
 		std::unordered_map<UUIDv4::UUID, Node*> mNodeMap;

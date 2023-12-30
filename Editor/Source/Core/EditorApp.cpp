@@ -53,11 +53,7 @@ namespace Trinity
 		}
 
 		mTheme = std::make_unique<EditorTheme>();
-		if (!mTheme->create("/Assets/Editor/Themes/DefaultTheme.json"))
-		{
-			LogError("EditorTheme::create() failed");
-			return false;
-		}
+		mTheme->init("/Assets/Editor/Themes/DefaultTheme.json");
 
 		mLayout = std::make_unique<EditorLayout>();
 		if (!mLayout->updateFiles("/Assets", FileType::Texture))

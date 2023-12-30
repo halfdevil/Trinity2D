@@ -61,12 +61,18 @@ namespace Trinity
 			return mPosCorrectionRate;
 		}
 
+		const glm::vec2& getSystemAcceleration() const
+		{
+			return mSystemAcceleration;
+		}
+
 		virtual bool collision(RigidShape& shape1, RigidShape& shape2, CollisionInfo& collisionInfo);
 		virtual void resolve(RigidShape& shape1, RigidShape& shape2, CollisionInfo& collisionInfo);
 
 		virtual void setNumRelaxations(bool numRelaxations);
 		virtual void setPosCorrectionFlag(bool posCorrectionFlag);
 		virtual void setPosCorrectionRate(float posCorrectionRate);
+		virtual void setSystemAcceleration(const glm::vec2& acceleration);
 
 	protected:
 
@@ -82,5 +88,6 @@ namespace Trinity
 		uint32_t mNumRelaxations{ 15 };
 		bool mPosCorrectionFlag{ true };
 		float mPosCorrectionRate{ 1.0f };
+		glm::vec2 mSystemAcceleration{ 0.0f, -10.0f };
 	};
 }

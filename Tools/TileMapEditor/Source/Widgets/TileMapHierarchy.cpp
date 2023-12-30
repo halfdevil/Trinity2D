@@ -39,8 +39,8 @@ namespace Trinity
 			const float tableHeight = ImGui::GetTextLineHeightWithSpacing() * 7.25f + 
 				ImGui::GetStyle().FramePadding.y * 2.0f;
 
-			const auto& tileLayers = mTileMap->getTileLayers();
-			const auto& tileSets = mTileMap->getTileSets();
+			auto tileLayers = mTileMap->getTileLayers();
+			auto tileSets = mTileMap->getTileSets();
 
 			if (ImGui::CollapsingHeader("Tile Layers", ImGuiTreeNodeFlags_DefaultOpen))
 			{

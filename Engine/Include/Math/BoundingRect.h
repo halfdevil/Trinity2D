@@ -8,6 +8,16 @@
 
 namespace Trinity
 {
+	enum BoundCollideStatus : uint32_t
+	{
+		Left	= (1 << 0),
+		Right	= (1 << 1),
+		Top		= (1 << 2),
+		Bottom	= (1 << 3),
+		Inside	= (1 << 4),
+		Outside = 0
+	};
+
 	class BoundingRect
 	{
 	public:
@@ -20,19 +30,21 @@ namespace Trinity
 
 		BoundingRect(const std::vector<glm::vec2>& points);
 
-		glm::vec2 getSize() const;
-		glm::vec2 getCenter() const;
+		virtual glm::vec2 getSize() const;
+		virtual glm::vec2 getCenter() const;
 
-		void transform(const glm::mat4& m);
-		BoundingRect getTransformed(const glm::mat4& m) const;
+		virtual void transform(const glm::mat4& m);
+		virtual BoundingRect getTransformed(const glm::mat4& m) const;
 
-		void fromPoints(const std::vector<glm::vec2>& points);
-		void combinePoint(const glm::vec2& p);
-		void combineRect(const BoundingRect& other);
+		virtual void fromPoints(const std::vector<glm::vec2>& points);
+		virtual void combinePoint(const glm::vec2& p);
+		virtual void combineRect(const BoundingRect& other);
 
-		bool isPointInside(const glm::vec2& p) const;
-		bool isIntersecting(const BoundingRect& other) const;
-		bool contains(const BoundingRect& other) const;
+		virtual bool isPointInside(const glm::vec2& p) const;
+		virtual bool isIntersecting(const BoundingRect& other) const;
+		virtual bool contains(const BoundingRect& other) const;
+
+		virtual BoundCollideStatus collideStatus(const BoundingRect& other) const;
 
 	public:
 

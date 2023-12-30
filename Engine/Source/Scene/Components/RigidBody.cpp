@@ -62,6 +62,24 @@ namespace Trinity
 		return true;
 	}
 
+	void RigidBody::updateBounds()
+	{
+		if (mShapeType == RigidShapeType::Rectangle)
+		{
+			const auto& vertices = ((RectangleShape*)mShape.get())->getVertices();
+			mBounds.fromPoints({ vertices.begin(), vertices.end() });
+		}
+		else
+		{
+			auto& transform = mNode->getTransform();
+			const auto& translation = transform.getTranslation();
+			auto radius = ((CircleShape*)mShape.get())->getRadius();
+
+			mBounds.min = { translation.x - radius, translation.y - radius };
+			mBounds.max = { translation.x + radius, translation.y + radius };
+		}
+	}
+
 	void RigidBody::update(float deltaTime)
 	{
 		if (mShape != nullptr)
@@ -75,11 +93,9 @@ namespace Trinity
 		if (mShape != nullptr)
 		{
 			auto& transform = mNode->getTransform();
-			auto& translation = transform.getTranslation();
-			auto& position = mShape->getPosition();
-
-			transform.setTranslation(position);
+			transform.setTranslation(mShape->getCenter());
 			transform.setRotation(mShape->getAngle());
+			updateBounds();
 		}
 	}
 
@@ -104,44 +120,47 @@ namespace Trinity
 		auto& transform = mNode->getTransform();
 		auto* sprite = renderable.getSprite();
 
+		const auto& position = transform.getTranslation();
+		const auto& size = sprite->getCollisionRect().getSize();
+
 		if (mShapeType == RigidShapeType::Rectangle)
 		{
 			auto shape = std::make_unique<RectangleShape>();
-			shape->setPosition(transform.getTranslation());
-			shape->setSize(sprite->getSize());
-			shape->setOrigin(renderable.getOrigin());
+			shape->init(position, size);
 			mShape = std::move(shape);
 		}
 		else
 		{
 			auto shape = std::make_unique<CircleShape>();
-			shape->setPosition(transform.getTranslation());
-			shape->setRadius(glm::length(sprite->getSize()) / 2.0f);
+			shape->init(position, glm::length(size) / 2.0f);
 			mShape = std::move(shape);
 		}
+
+		updateBounds();
 	}
 
 	void RigidBody::init(TextureRenderable& renderable)
 	{
 		auto& transform = mNode->getTransform();
 		auto* texture = renderable.getTexture();
+
 		auto size = glm::vec2{ (float)texture->getWidth(), (float)texture->getHeight() };
+		const auto& position = transform.getTranslation();
 
 		if (mShapeType == RigidShapeType::Rectangle)
 		{
-			auto shape = std::make_unique<RectangleShape>();			
-			shape->setPosition(transform.getTranslation());
-			shape->setSize(size);
-			shape->setOrigin(renderable.getOrigin());
+			auto shape = std::make_unique<RectangleShape>();
+			shape->init(position, size);
 			mShape = std::move(shape);
 		}
 		else
 		{
 			auto shape = std::make_unique<CircleShape>();
-			shape->setPosition(transform.getTranslation());
-			shape->setRadius(glm::length(size) / 2.0f);
+			shape->init(position, glm::length(size) / 2.0f);
 			mShape = std::move(shape);
 		}
+
+
 	}
 
 	void RigidBodyEditor::setRigidBody(RigidBody& rigidBody)

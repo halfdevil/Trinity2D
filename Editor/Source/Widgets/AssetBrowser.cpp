@@ -271,7 +271,7 @@ namespace Trinity
 		if (currentEntry != nullptr)
 		{
 			ImGui::SameLine();
-			ImGui::TextUnformatted(currentEntry->name.c_str());
+			drawBreadCrumb(currentEntry);
 		}
 	}
 
@@ -361,6 +361,33 @@ namespace Trinity
 
 			ImGui::EndTable();
 		}
+	}
+
+	void AssetBrowser::drawBreadCrumb(AssetEntry* currentEntry)
+	{
+		ImGui::BeginGroup();
+
+		auto folders = StringHelper::split(currentEntry->path, '/');		
+		for (uint32_t idx = 0; idx < folders.size(); idx++)
+		{
+			auto& folder = folders[idx];
+			if (folder.empty())
+			{
+				continue;
+			}
+
+			if (ImGui::Button(folder.c_str()))
+			{
+				std::vector<std::string> splits(folders.begin(), folders.begin() + idx + 1);
+				contentClicked(StringHelper::join(splits, '/'), true);
+			}
+
+			ImGui::SameLine();
+			ImGui::TextUnformatted("/");
+			ImGui::SameLine();
+		}
+
+		ImGui::EndGroup();
 	}
 
 	void AssetBrowser::drawTree(const std::string& path)

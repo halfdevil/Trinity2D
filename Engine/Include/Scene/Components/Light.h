@@ -15,12 +15,11 @@ namespace Trinity
 
 	struct LightProperties
 	{
-		glm::vec3 direction{ 0.0f, 0.0f, -1.0f };
-		glm::vec3 color{ 1.0f, 1.0f, 1.0f };
+		glm::vec4 color{ 1.0f, 1.0f, 1.0f, 1.0f };
+		float depth{ 0.0f };
 		float intensity{ 1.0f };
-		float range{ 0.0f };
-		float innerConeAngle{ 0.0f };
-		float outerConeAngle{ 0.0f };
+		float near{ 0.0f };
+		float far{ 0.0f };
 	};
 
 	class Light : public Component

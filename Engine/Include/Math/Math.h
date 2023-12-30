@@ -12,5 +12,6 @@ namespace Trinity
 			glm::vec3& rotation, glm::vec3& scale);
 
 		static float cross(const glm::vec2& v1, const glm::vec2& v2);
+		static glm::vec2 rotate(const glm::vec2& v, float angle, const glm::vec2& ref);
 	};
 }

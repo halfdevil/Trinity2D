@@ -4,23 +4,12 @@
 
 namespace Trinity
 {	
-	EditorTheme::~EditorTheme()
-	{
-		destroy();
-	}
-
-	bool EditorTheme::create(const std::string& fileName)
+	void EditorTheme::init(const std::string& fileName)
 	{
 		auto& application = Application::get();
 		auto* window = application.getWindow();
 
 		mScaleFactor = window->getScaleFactor();
 		buttonSize = { kBaseButtonSize.x * mScaleFactor, kBaseButtonSize.y * mScaleFactor };
-
-		return true;
-	}
-
-	void EditorTheme::destroy()
-	{
 	}
 }

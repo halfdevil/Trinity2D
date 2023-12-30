@@ -29,11 +29,6 @@ namespace Trinity
 			return mType;
 		}
 
-		const glm::vec2& getPosition() const
-		{
-			return mPosition;
-		}
-
 		const glm::vec2& getCenter() const
 		{
 			return mCenter;
@@ -91,7 +86,6 @@ namespace Trinity
 
 		virtual BoundingRect getBoundingRect() const = 0;
 
-		virtual void setPosition(const glm::vec2& position);
 		virtual void setCenter(const glm::vec2& center);
 		virtual void setVelocity(const glm::vec2& velocity);
 		virtual void setAcceleration(const glm::vec2& acceleration);
@@ -110,7 +104,6 @@ namespace Trinity
 	protected:
 
 		RigidShapeType mType{ RigidShapeType::Rectangle };
-		glm::vec2 mPosition{ 0.0f };
 		glm::vec2 mCenter{ 0.0f };
 		glm::vec2 mVelocity{ 0.0f };
 		glm::vec2 mAcceleration{ 0.0f };

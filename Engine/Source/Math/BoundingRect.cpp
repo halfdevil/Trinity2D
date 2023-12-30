@@ -91,6 +91,21 @@ namespace Trinity
 			min.y <= other.min.y && max.y >= other.max.y;
 	}
 
+	BoundCollideStatus BoundingRect::collideStatus(const BoundingRect& other) const
+	{
+		uint32_t status = BoundCollideStatus::Outside;
+
+		if (isIntersecting(other))
+		{
+			if (other.min.x < min.x)	status |= BoundCollideStatus::Left;
+			if (other.max.x > max.x)	status |= BoundCollideStatus::Right;
+			if (other.min.y < min.y)	status |= BoundCollideStatus::Bottom;
+			if (other.max.y > max.y)	status |= BoundCollideStatus::Top;
+		}
+
+		return (BoundCollideStatus)status;
+	}
+
 	BoundingRect BoundingRect::combineRects(const std::vector<BoundingRect>& boxes)
 	{
 		std::vector<glm::vec2> allPoints;

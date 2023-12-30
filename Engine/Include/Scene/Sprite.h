@@ -3,6 +3,7 @@
 #include "Core/Resource.h"
 #include "VFS/Serializer.h"
 #include "Editor/Editor.h"
+#include "Math/BoundingRect.h"
 #include <memory>
 #include <string>
 #include <vector>
@@ -99,8 +100,12 @@ namespace Trinity
 			return mAnimations;
 		}
 
-		virtual std::type_index getType() const override;
+		const BoundingRect& getCollisionRect() const
+		{
+			return mCollisionRect;
+		}
 
+		virtual std::type_index getType() const override;
 		virtual IEditor* getEditor(uint32_t selectedFrame, uint32_t selectedAnimation);
 		virtual ISerializer* getSerializer();
 
@@ -112,6 +117,7 @@ namespace Trinity
 		virtual void setTexture(Texture& texture);
 		virtual void setFrames(std::vector<SpriteFrame>&& frames);
 		virtual void setAnimations(std::vector<SpriteAnimation>&& animations);
+		virtual void setCollisionRect(const BoundingRect& collisionRect);
 
 		virtual void addFrame(SpriteFrame&& frame);
 		virtual void removeFrame(uint32_t frameIndex);
@@ -133,6 +139,7 @@ namespace Trinity
 
 		glm::vec2 mSize{ 0.0f };
 		Texture* mTexture{ nullptr };
+		BoundingRect mCollisionRect;
 		std::vector<SpriteFrame> mFrames;
 		std::vector<SpriteAnimation> mAnimations;
 	};

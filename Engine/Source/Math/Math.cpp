@@ -68,4 +68,15 @@ namespace Trinity
 	{
 		return v1.x * v2.y - v1.y * v2.x;
 	}
+
+	glm::vec2 Math::rotate(const glm::vec2& v, float angle, const glm::vec2& ref)
+	{
+		auto r = v - ref;
+
+		r.x = v.x * std::cos(angle) - v.y * std::sin(angle);
+		r.y = v.y * std::sin(angle) + v.y * std::cos(angle);
+		r += ref;
+
+		return r;
+	}
 }

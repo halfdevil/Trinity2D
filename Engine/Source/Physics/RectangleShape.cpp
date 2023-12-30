@@ -1,5 +1,6 @@
 #include "Physics/RectangleShape.h"
 #include "Physics/Physics.h"
+#include "Math/Math.h"
 
 namespace Trinity
 {
@@ -8,42 +9,26 @@ namespace Trinity
 	{
 	}
 
+	void RectangleShape::init(const glm::vec2& center, const glm::vec2& size)
+	{
+		mCenter = center;
+		mSize = size;
+		mAcceleration = Physics::get().getSystemAcceleration();
+
+		mVertices[0] = { mCenter.x - mSize.x / 2, mCenter.y - mSize.y / 2 };
+		mVertices[1] = { mCenter.x + mSize.x / 2, mCenter.y - mSize.y / 2 };
+		mVertices[2] = { mCenter.x + mSize.x / 2, mCenter.y + mSize.y / 2 };
+		mVertices[3] = { mCenter.x - mSize.x / 2, mCenter.y + mSize.y / 2 };
+
+		mFaceNormals[0] = glm::normalize(mVertices[1] - mVertices[0]);
+		mFaceNormals[1] = glm::normalize(mVertices[2] - mVertices[3]);
+		mFaceNormals[2] = glm::normalize(mVertices[3] - mVertices[0]);
+		mFaceNormals[3] = glm::normalize(mVertices[0] - mVertices[1]);
+	}
+
 	BoundingRect RectangleShape::getBoundingRect() const
 	{
 		return { { mVertices.begin(), mVertices.end() } };
-	}
-
-	void RectangleShape::setOrigin(const glm::vec2& origin)
-	{
-		mOrigin = origin;
-	}
-
-	void RectangleShape::setSize(const glm::vec2& size)
-	{
-		mSize = size;
-		mCenter = {
-			mPosition.x + mSize.x * mOrigin.x,
-			mPosition.y + mSize.y * mOrigin.y
-		};
-
-		updateVertices();
-	}
-
-	void RectangleShape::setPosition(const glm::vec2& position)
-	{
-		mPosition = position;
-		mCenter = { 
-			mPosition.x + mSize.x * mOrigin.x, 
-			mPosition.y + mSize.y * mOrigin.y 
-		};
-
-		updateVertices();
-	}
-
-	void RectangleShape::setCenter(const glm::vec2& center)
-	{
-		mCenter = center;
-		updateVertices();
 	}
 
 	void RectangleShape::move(const glm::vec2& value)
@@ -59,6 +44,16 @@ namespace Trinity
 	void RectangleShape::rotate(float value)
 	{
 		RigidShape::rotate(value);
+
+		for (auto& vertex : mVertices)
+		{
+			vertex = Math::rotate(vertex, value, mCenter);
+		}
+
+		mFaceNormals[0] = glm::normalize(mVertices[1] - mVertices[0]);
+		mFaceNormals[1] = glm::normalize(mVertices[2] - mVertices[3]);
+		mFaceNormals[2] = glm::normalize(mVertices[3] - mVertices[0]);
+		mFaceNormals[3] = glm::normalize(mVertices[0] - mVertices[1]);
 	}
 
 	void RectangleShape::updateInertia()
@@ -99,9 +94,9 @@ namespace Trinity
 		float bestDistance{ FLT_MAX };
 		glm::vec2 point{ 0.0f };
 
-		bool hasSupport{ false };
-		int32_t index = 0;
-		int32_t bestIndex = -1;
+		auto hasSupport{ false };
+		auto index{ 0 };
+		auto bestIndex{ -1 };
 
 		while (hasSupport && index < (int32_t)mFaceNormals.size())
 		{
@@ -129,18 +124,5 @@ namespace Trinity
 		}
 
 		return hasSupport;
-	}
-
-	void RectangleShape::updateVertices()
-	{
-		mVertices[0] = { mCenter.x - mSize.x / 2, mCenter.y - mSize.y / 2 };
-		mVertices[1] = { mCenter.x + mSize.x / 2, mCenter.y - mSize.y / 2 };
-		mVertices[2] = { mCenter.x + mSize.x / 2, mCenter.y + mSize.y / 2 };
-		mVertices[3] = { mCenter.x - mSize.x / 2, mCenter.y + mSize.y / 2 };
-
-		mFaceNormals[0] = glm::normalize(mVertices[1] - mVertices[0]);
-		mFaceNormals[1] = glm::normalize(mVertices[2] - mVertices[3]);
-		mFaceNormals[2] = glm::normalize(mVertices[3] - mVertices[0]);
-		mFaceNormals[3] = glm::normalize(mVertices[0] - mVertices[1]);
 	}
 }

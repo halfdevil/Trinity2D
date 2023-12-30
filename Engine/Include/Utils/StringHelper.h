@@ -15,5 +15,6 @@ namespace Trinity
 
 		static std::string toSnakeCase(const std::string& s);
 		static std::vector<std::string> split(const std::string& s, char delim);
+		static std::string join(const std::vector<std::string>& splits, char delim);
 	};
 }
